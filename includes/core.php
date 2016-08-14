@@ -48,19 +48,21 @@ function generate($level)
 {
     global $db;
     if (isset($_SESSION['id'])) {
-        if ($_SESSION['level'] < '3' && $level > $_SESSION['level'] && $level < '4') {
+        if ($_SESSION['level'] < '3') {
             if (empty($level)) {
                 include_once('./invite.php');
             } else {
-                $q = $db->prepare("INSERT INTO invites (code, level, issuer) VALUES (:code, :level, :issuer)");
-                $code = generateString(CODE_CHARSET, 16);
-                $q->bindParam(':code', $code);
-                $q->bindParam(':level', $level);
-                $q->bindParam(':issuer', $_SESSION['user']);
-                $q->execute();
-                echo '<p>Generation Successful.</p><br>
-                    <p>Code: '.$code.'</p><br>
-                    <p>Access Level: '.$level.'</p>';
+                if ($level > $_SESSION['level'] && $level < '4') {
+                    $q = $db->prepare("INSERT INTO invites (code, level, issuer) VALUES (:code, :level, :issuer)");
+                    $code = generateString(CODE_CHARSET, 16);
+                    $q->bindParam(':code', $code);
+                    $q->bindParam(':level', $level);
+                    $q->bindParam(':issuer', $_SESSION['user']);
+                    $q->execute();
+                    echo '<p>Generation Successful.</p><br>
+                        <p>Code: '.$code.'</p><br>
+                        <p>Access Level: '.$level.'</p>';
+                }
             }
         } else {
             echo 'Insufficient Access Level.';

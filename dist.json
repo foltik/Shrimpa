@@ -1,0 +1,41 @@
+{
+	"init": {
+          "allowErrors": false
+        },
+        "dest": "dist",
+        "pkgVersion": "2.0.0",
+	"src": [
+		"templates/faq.swig",
+		"templates/footer.swig",
+		"templates/header.swig",
+		"templates/index.swig",
+		"templates/invites.swig",
+		"templates/layout.swig",
+		"templates/locked.swig",
+		"templates/nav.swig",
+		"templates/navbar.swig",
+		"templates/report.swig",
+		"templates/reports.swig",
+		"templates/search.swig",
+		"templates/shimapan.swig",
+		"templates/tools.swig",
+		"templates/upload.swig",
+		"templates/upload_form.swig",
+		"templates/login/index.swig",
+		"templates/panel/index.swig",
+		"templates/panel/search.swig",
+		"templates/register/index.swig"
+	],
+	"generateRobotstxt": false,
+	"generateSitemap": false,
+	"max_upload_size": 128,
+	"production": false,
+	"siteName": "Shimapan",
+	"siteUrl": "http://www.shimapan.rocks/",
+	"imgUrl": "http://i.shimapan.rocks/",
+	"abuseContact": "abuse@shimapan.rocks",
+	"infoContact": "info@shimapan.rocks",
+	"paypalUrl": "",
+	"bitcoinAddress": "",
+	"flattrUrl": ""
+}

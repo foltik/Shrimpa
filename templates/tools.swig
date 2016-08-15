@@ -10,7 +10,7 @@
 		<dt>Download</dt>
 		<dd><a href="https://getsharex.com/">https://getsharex.com/</a></dd>
 		<dt>Custom Temlate</dt>
-      <dd><a href="/tools/shimapan.rocks.json">http://www.shimapan.rocks/assets/tools/shimapan.rocks.json</a></dd>
+      <dd><a href="/assets/tools/shimapan.rocks.json">http://www.shimapan.rocks/assets/tools/shimapan.rocks.json</a></dd>
       <dd>How to import into ShareX:</dd>
 		<dd><img src="/assets/img/sharex.png"></dd>
 	</dl>
@@ -19,7 +19,7 @@
 	<h2>Bash Uploader</h2>
 	<dl>
 		<dt>Download</dt>
-		<dd><a href="/tools/upload.sh">http://www.shimapan.rocks/assets/tools/upload.sh</a></dd>
+		<dd><a href="/assets/tools/upload.sh">http://www.shimapan.rocks/assets/tools/upload.sh</a></dd>
 		<dt>How to Use</dt>
 		<dd>In order for the script to work, you must change <b>[USER KEY HERE]</b> in the script to your API key.</dd>
       <dd>You must also allow execution of the script by running <b>chmod +x upload.sh</b></dd>

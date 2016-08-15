@@ -11,6 +11,7 @@
 				<form action="/includes/api.php?do=register" method="post">
 					<input type="text" name="user" placeholder="Username" required>
 					<input type="password" name="pass" placeholder="Password" required> 
+					<input type="password" name="confirmpass" placeholder="Confirm Password" required> 
 					<input type="text" name="code" placeholder="Invite Code" required>
 					<input type="submit" value="Register">
 					<footer class="clearfix">

@@ -141,7 +141,7 @@ function fetchFiles($date, $count, $keyword, $action)
             include('./search.php');
 
             if ($action === 'Fetch All') {
-                if ($_SESSION['level'] < '2') {
+                if ($_SESSION['level'] === '0') {
                     $q = $db->prepare("SELECT * FROM files ORDER BY id DESC LIMIT :count");
                 } else {
                     $q = $db->prepare("SELECT * FROM files WHERE user = (:user) ORDER BY id DESC LIMIT :count");
@@ -164,7 +164,7 @@ function fetchFiles($date, $count, $keyword, $action)
                 echo '<p>'.$i.' Files in total at being shown.</p>';
                 echo '</table>';
             } elseif ($action === 'Fetch') {
-                if ($_SESSION['level'] < '2') {
+                if ($_SESSION['level'] === '0') {
                     $q = $db->prepare("SELECT * FROM files WHERE originalname LIKE (:keyword) AND date LIKE (:date) OR filename LIKE (:keyword) AND date LIKE (:date) ORDER BY id DESC LIMIT :count");
                 } else {
                     $q = $db->prepare("SELECT * FROM files WHERE originalname LIKE (:keyword) AND date LIKE (:date) AND user = (:user) OR filename LIKE (:keyword) AND date LIKE (:date) AND user = (:userid) ORDER BY id DESC LIMIT :count");

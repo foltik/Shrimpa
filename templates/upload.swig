@@ -77,13 +77,6 @@ function uploadFile($file)
         }
     }
 
-    if ($file->size > {{max_upload_size}} * 1048576) {
-        throw new Exception(
-            'File too large',
-            500
-        );
-    }
-
 
     // Check if a file with the same hash and size (a file which is the same)
     // does already exist in the database; if it does, return the proper link
@@ -94,7 +87,7 @@ function uploadFile($file)
     $q->bindValue(':size', $file->size);
     $q->execute();
     $result = $q->fetch();
-    if ($result['count'] > 0) {024024024
+    if ($result['count'] > 0) {
         return array(
             'hash' => $file->getSha1(),
             'name' => $file->name,
@@ -132,7 +125,7 @@ function uploadFile($file)
         $q->bindValue(':apikey', $_POST['apikey']);
         $q->execute();
         $result = $q->fetch();
-        $user = result['user'];
+        $user = $result['user'];
         $q = $db->prepare('INSERT INTO files (hash, originalname, filename, size, date, ' .
                     'expire, delid, user) VALUES (:hash, :orig, :name, :size, :date, ' .
                         ':exp, :del, :user)');    if (!isset($_POST['apikey']) && isset($_SESSION['user'])) {
@@ -202,7 +195,7 @@ $type = isset($_GET['output']) ? $_GET['output'] : 'json';
 $response = new Response($type);
 
 if (isset($_FILES['files'])) {
-    if (isset($_POST['apikey]) || isset($_SESSION['id'])) {
+    if (isset($_POST['apikey']) || isset($_SESSION['id'])) {
         if (isset($_POST['apikey'])) {
             $q = $db->prepare('SELECT user FROM accounts WHERE apikey = (:apikey)');
             $q->bindValue(':apikey', $_POST['apikey']);

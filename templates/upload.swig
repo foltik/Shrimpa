@@ -77,6 +77,13 @@ function uploadFile($file)
         }
     }
 
+    if ($file->size > {{max_upload_size}} * 1048576) {
+        throw new Exception(
+            'File too large',
+            500
+        );
+    }
+
 
     // Check if a file with the same hash and size (a file which is the same)
     // does already exist in the database; if it does, return the proper link
@@ -87,7 +94,7 @@ function uploadFile($file)
     $q->bindValue(':size', $file->size);
     $q->execute();
     $result = $q->fetch();
-    if ($result['count'] > 0) {
+    if ($result['count'] > 0) {024024024
         return array(
             'hash' => $file->getSha1(),
             'name' => $file->name,
@@ -127,8 +134,14 @@ function uploadFile($file)
         $result = $q->fetch();
         $user = result['user'];
         $q = $db->prepare('INSERT INTO files (hash, originalname, filename, size, date, ' .
-                    'expire, delid) VALUES (:hash, :orig, :name, :size, :date, ' .
-                        ':exp, :del, :user)');
+                    'expire, delid, user) VALUES (:hash, :orig, :name, :size, :date, ' .
+                        ':exp, :del, :user)');    if (!isset($_POST['apikey']) && isset($_SESSION['user'])) {
+        $q = $db->prepare('SELECT apikey FROM accounts WHERE user = (:user)');
+        $q->bindValue(':user', $_SESSION['user']);
+        $q->execute();
+        $result = $q->fetch();
+        $apikey = $result['apikey'];
+    }
         $q->bindValue(':user', $user);
     } else {
         // Otherwise just use session data
@@ -189,33 +202,27 @@ $type = isset($_GET['output']) ? $_GET['output'] : 'json';
 $response = new Response($type);
 
 if (isset($_FILES['files'])) {
-    if (!isset($_POST['apikey']) && isset($_SESSION['user'])) {
-        $q = $db->prepare('SELECT apikey FROM accounts WHERE user = (:user)');
-        $q->bindValue(':user', $_SESSION['user']);
-        $q->execute();
-        $result = $q->fetch();
-        $apikey = $result['apikey'];
-    }
-
-    if (isset($_POST['apikey'])) {
-        $q = $db->prepare('SELECT user FROM accounts WHERE apikey = (:apikey)');
-        $q->bindValue(':apikey', $_POST['apikey']);
-        $q->execute();
-        if ($q->rowCount() == 0) {
-            $response->error(500, 'Invalid API Key');
-            return;
+    if (isset($_POST['apikey]) || isset($_SESSION['id'])) {
+        if (isset($_POST['apikey'])) {
+            $q = $db->prepare('SELECT user FROM accounts WHERE apikey = (:apikey)');
+            $q->bindValue(':apikey', $_POST['apikey']);
+            $q->execute();
+            if ($q->rowCount() == 0) {
+                $response->error(500, 'Invalid API Key');
+                return;
+            }
         }
-    }
 
-    $uploads = refiles($_FILES['files']);
+        $uploads = refiles($_FILES['files']);
 
-    try {
-        foreach ($uploads as $upload) {
-            $res[] = uploadFile($upload);
-        } 
-        $response->send($res);
-    } catch (Exception $e) {
-        $response->error($e->getCode(), $e->getMessage());
+        try {
+            foreach ($uploads as $upload) {
+                $res[] = uploadFile($upload);
+            } 
+            $response->send($res);
+        } catch (Exception $e) {
+            $response->error($e->getCode(), $e->getMessage());
+        }
     }
 } else {
     $response->error(400, 'No input file(s)');

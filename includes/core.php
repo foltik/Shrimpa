@@ -16,7 +16,7 @@ function register($user, $pass, $code)
         $q->prepare("SELECT user FROM accounts WHERE user = (:user)");
         $q->bindParam(':user', $user);
         $q->execute();
-        if ($q->rowCount == 0) {
+        if ($q->fetchColumn() == 0) {
             // Add new account
             $q = $db->prepare("INSERT INTO accounts (user, pass, level, apikey) VALUES (:user, :pass, :level, :apikey)");
             $q->bindParam(':user', $user);
@@ -208,7 +208,7 @@ function report($file, $reason)
                 $q->execute();
                 $result = $q->fetch();
                 
-                if ($q->rowCount() != '0') {
+                if ($q->fetchColumn() != '0') {
                     $q = $db->prepare("INSERT INTO reports (hash, date, file, fileid, reporter, reason) VALUES (:hash, :date, :file, :fileid, :reporter, :reason)");
                     $q->bindValue(':file', strip_tags($file));
                     $q->bindValue(':date', date('Y-m-d'));

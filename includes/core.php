@@ -115,7 +115,7 @@ function delete($filename, $deleteid)
                 $q->execute();
                 $result = $q->fetch();
 
-                if ($_SESSION['level'] === '0' || $result['user'] === $_SESSION['id']) {
+                if ($_SESSION['level'] === '0' || $result['user'] === $_SESSION['user']) {
                     $q = $db->prepare("DELETE FROM files WHERE id = (:id)");
                     $q->bindParam(':id', $result['id']);
                     $q->execute();

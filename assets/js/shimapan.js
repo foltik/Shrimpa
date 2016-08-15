@@ -129,7 +129,10 @@ document.addEventListener('DOMContentLoaded', function() {
       }
     } else {
       var response = JSON.parse(xhr.responseText);
-      link.textContent = response.description;
+      if (response.description == 'The uploaded file exceeds the upload_max_filesize directive in php.ini')
+        link.textContent = 'File too large!';
+      else
+        link.textContent = 'Internal Server Error!';
       url.appendChild(link);
     }
   }

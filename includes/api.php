@@ -34,7 +34,7 @@ if (isset($_GET['do'])) {
             break;
 
         case "panel":
-            header('Location: ../panel');
+            header('Location: ../panel/index.php');
             break;
 
         case "delete":

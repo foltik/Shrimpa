@@ -13,7 +13,7 @@ function register($user, $pass, $code)
     // Check if code is used
     if ($result['used'] == '0') {
         // Check to see if the username is in use
-        $q->prepare("SELECT user FROM accounts WHERE user = (:user)");
+        $q = $db->prepare("SELECT user FROM accounts WHERE user = (:user)");
         $q->bindParam(':user', $user);
         $q->execute();
         if ($q->fetchColumn() == 0) {
@@ -38,10 +38,13 @@ function register($user, $pass, $code)
             $_SESSION['id'] = $result['id'];
             $_SESSION['user'] = $user;
             $_SESSION['level'] = $result['level'];
-            header('Location: api.php?do=panel');
+            header('Location: http://www.shimapan.rocks/includes/api.php?do=panel');
+        } else {
+            header('Location: ../register/index.html#fail');
         }
+    } else {
+        header('Location: ../register/index.html#fail');
     }
-    header('Location: ../register/index.html#fail');
 }
 
 function generate($level)
@@ -208,8 +211,8 @@ function report($file, $reason)
                 $q->execute();
                 $result = $q->fetch();
                 
-                if ($q->fetchColumn() != '0') {
-                    $q = $db->prepare("INSERT INTO reports (hash, date, file, fileid, reporter, reason) VALUES (:hash, :date, :file, :fileid, :reporter, :reason)");
+                if ($q->rowCount() != '0') {
+                    $q = $db->prepare("    header('Location: ../register/index.html#fail');INSERT INTO reports (hash, date, file, fileid, reporter, reason) VALUES (:hash, :date, :file, :fileid, :reporter, :reason)");
                     $q->bindValue(':file', strip_tags($file));
                     $q->bindValue(':date', date('Y-m-d'));
                     $q->bindValue(':reporter', $_SESSION['user']);

@@ -2,7 +2,7 @@
   "Name": "shimapan.rocks",
   "RequestType": "POST",
   "RequestURL": "http://www.shimapan.rocks/upload.php",
-  "FileFormName": "file[]",
+  "FileFormName": "files[]",
   "Arguments": {
     "apikey": "[Insert User API Key]"
   },

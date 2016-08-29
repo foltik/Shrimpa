@@ -1,0 +1,39 @@
+#!/bin/bash
+
+#Paste your api key directly after the "=" sign
+APIKEY=YOURAPIKEYHERE
+
+mkdir -p ~/Pictures/
+DATE=$(date +"%Y-%m-%d_%H-%M-%S")
+FILE="$HOME/Pictures/Screenshots/$DATE.png"
+if [ ! $# > 1 ];
+then echo "Too many arguments supplied!
+(Try pantsushot --help)"
+	exit;
+fi
+
+if [ $# == 0 ];
+	then gnome-screenshot -f $FILE $2;
+fi	
+case $1 in
+	-h )
+echo "Welcome to the pantsushot!
+Option      Description
+
+-f          Takes a fullscreen screenshot (default behavior)
+-w          Takes a screenshot of the focused window
+-a          Takes a screenshot of a selected area";
+	exit;
+	;;
+	-f ) 
+		gnome-screenshot -f $FILE $2;
+				;;
+	-w )
+		gnome-screenshot -w -f $FILE $2;
+				;;
+	-a )
+		gnome-screenshot -a -f $FILE $2;
+				;;
+esac
+URL=$(curl -s -F "apikey=$APIKEY" -F "files[]=@$FILE" www.shimapan.rocks/upload.php | grep url | awk '{print $2}') 
+echo $URL | tr -d '[\\\,"\n]' | xclip -selection c

@@ -16,7 +16,7 @@ function register($user, $pass, $code)
         $q = $db->prepare("SELECT user FROM accounts WHERE user = (:user)");
         $q->bindParam(':user', $user);
         $q->execute();
-        if ($q->fetchColumn() == 0) {
+        if (!($result = $q->fetch())) {
             // Add new account
             $q = $db->prepare("INSERT INTO accounts (user, pass, level, apikey) VALUES (:user, :pass, :level, :apikey)");
             $q->bindParam(':user', $user);

@@ -35,5 +35,5 @@ Option      Description
 		gnome-screenshot -a -f $FILE $2;
 				;;
 esac
-URL=$(curl -s -F "apikey=$APIKEY" -F "files[]=@$FILE" www.shimapan.rocks/upload.php | grep url | awk '{print $2}') 
+URL=$(curl -s -F "apikey=$APIKEY" -F "files[]=@$FILE" https://www.shimapan.rocks/upload.php | grep url | awk '{print $2}') 
 echo $URL | tr -d '[\\\,"\n]' | xclip -selection c

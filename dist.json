@@ -3,7 +3,7 @@
           "allowErrors": false
         },
         "dest": "dist",
-        "pkgVersion": "2.0.0",
+        "pkgVersion": "3.0.0",
 	"src": [
 		"templates/faq.swig",
 		"templates/footer.swig",
@@ -31,8 +31,8 @@
 	"max_upload_size": 128,
 	"production": false,
 	"siteName": "Shimapan",
-	"siteUrl": "http://www.shimapan.rocks/",
-	"imgUrl": "http://i.shimapan.rocks/",
+	"siteUrl": "https://www.shimapan.rocks/",
+	"imgUrl": "https://i.shimapan.rocks/",
 	"abuseContact": "abuse@shimapan.rocks",
 	"infoContact": "info@shimapan.rocks",
 	"paypalUrl": "",

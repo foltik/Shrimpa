@@ -1,7 +1,7 @@
 {
   "name": "shimapan",
-  "version": "2.0.0",
-  "description": "File Host",
+  "version": "3.0.0",
+  "description": "Shimapan Sharing Service",
   "homepage": "http://www.shimapan.rocks",
   "repository": {
     "type": "git",
@@ -13,11 +13,6 @@
     "url": "https://github.com/Foltik/shimapan/issues"
   },
   "devDependencies": {
-    "clean-css": "^3.4.18",
-    "uglify-js": "^2.6.2",
     "swig": "^1.4.2"
-  },
-  "dependencies": {
-    "htmlmin": "0.0.6"
   }
 }

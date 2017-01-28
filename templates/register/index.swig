@@ -1,6 +1,6 @@
 <html>
 	<head>
-		<link rel="stylesheet" type="text/css" href="/assets/css/shimapan-panel.min.css" media="screen" />
+		<link rel="stylesheet" type="text/css" href="/assets/css/shimapan-panel.css" media="screen" />
 		<meta charset="utf-8">
 		<title>{{siteName}} Register</title>
 	</head>
@@ -11,6 +11,7 @@
 				<form action="/includes/api.php?do=register" method="post">
 					<input type="text" name="user" placeholder="Username" required>
 					<input type="password" name="pass" placeholder="Password" required> 
+					<input type="password" name="confirmpass" placeholder="Confirm Password" required> 
 					<input type="text" name="code" placeholder="Invite Code" required>
 					<input type="submit" value="Register">
 					<footer class="clearfix">

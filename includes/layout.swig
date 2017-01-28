@@ -7,8 +7,8 @@
 		<meta name="generator" content="Shimapan {{pkgVersion}}">
 		<title>{{siteName}} {% block title %}Services{% endblock %}</title>
 		<link rel="icon" href="/assets/img/favicon.ico">
-		<link rel="stylesheet" href="/assets/css/shimapan.min.css">
-		<script src="/assets/js/shimapan.min.js"></script>
+		<link rel="stylesheet" href="/assets/css/shimapan.css">
+		<script src="/assets/js/shimapan.js"></script>
 	</head>
 	<body>
 		<div class="container">

@@ -6,46 +6,66 @@ if (isset($_GET['do'])) {
 
     switch ($action) {
         case "login":
-            login($_POST['user'], $_POST['pass']);
+			login($_POST['user'], $_POST['pass']);
             break;
 
         case "register":
             register($_POST['user'], $_POST['pass'], $_POST['code']);
             break;
 
-        case "invite":
-            generate($_GET['level']);
+		case "invite":
+			if (!empty($_GET['level']))
+				generate($_GET['level']);
+			else 
+				generate(NULL);
             break;
 
-        case "fetch":
-            fetchFiles($_GET['date'], $_GET['count'], $_GET['keyword'], $_GET['action']);
-            break;
+		case "fetch":
+			switch($_GET['method']) {
+				case "Fetch All":
+					fetchFiles($_GET['method'], NULL, $_GET['count'], NULL);
+					break;
 
-        case "search":
-            fetchFiles();
-            break;
+				case "Fetch":
+					fetchFiles($_GET['method'], $_GET['date'], $_GET['count'], $_GET['keyword']);
+					break;
 
-        case "report":
-            report($_POST['file'], $_POST['reason']);
-            break;
+				default:
+					fetchFiles(NULL, NULL, NULL, NULL);
+					break;
+			}
+			break;
 
-        case "mod":
-            mod($_GET['action'], $_GET['date'], $_GET['count'], $_GET['why'], $_GET['file'], $_GET['keyword'], $_GET['fileid'], $_GET['hash'], $_GET['originalname']);
-            break;
+		case "report":
+			if (!empty($_POST['file']))
+	            report($_POST['file'], $_POST['reason']);
+			else
+				report(NULL, NULL);
+			break;
+
+		case "reports":
+			reports();
+			break;
+			
+
+		case "acceptreport":
+			acceptreport($_GET['id']);
+			break;
+
+		case "dismissreport":
+			dismissreport($_GET['id']);
+			break;
 
         case "panel":
-            header('Location: ../panel/index.php');
+            panel();
             break;
 
-        case "delete":
-            delete($_GET['filename'], $_GET['fileid']);
+		case "delete":
+	            delete($_GET['fileid']);
             break;
 
-        case "logout":
-            session_unset();
-            session_destroy();
-            session_write_close();
-            header('Location: ../login');
+		case "logout":
+			destroySession();
             break;
 
         default:

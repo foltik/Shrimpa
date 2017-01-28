@@ -11,12 +11,13 @@
         </div>
         <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
             <ul class="nav navbar-nav">
-                <li><a href="/panel" target="_BLANK">Panel</a></li>
-                <li><a href="/includes/api.php?do=search" target="_BLANK">Search</a></li>
-                <?php if ($_SESSION['level'] < '3') echo '<li><a href="/includes/api.php?do=invite" target="_BLANK">Invites</a></li>'; ?>
-                <li><a href="/includes/api.php?do=report" target="_BLANK">Report</a></li>
-                <?php if ($_SESSION['level'] < '2') echo '<li><a href="/includes/api.php?do=mod&action=reports" target="_BLANK">Reports</a></li>'; ?>
-                <li><a href="/includes/api.php?do=logout">Logout</a></li>
+                <li><a href="/includes/api.php?do=panel">Panel</a></li>
+                <li><a href="/includes/api.php?do=fetch">Search</a></li>
+                <?php if ($_SESSION['level'] < '3') echo '<li><a href="/includes/api.php?do=invite">Invites</a></li>'; ?>
+                <li><a href="/includes/api.php?do=report">Report</a></li>
+                <?php if ($_SESSION['level'] < '2') echo '<li><a href="/includes/api.php?do=reports">Reports</a></li>'; ?>
+		<?php if ($_SESSION['level'] < '1') echo '<li><a href="/includes/api.php?do=users">Users</a></li>'; ?>
+		<li><a href="/includes/api.php?do=logout">Logout</a></li>
             </ul>
         </div>
     </div>

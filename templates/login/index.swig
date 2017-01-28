@@ -1,6 +1,6 @@
 <html lang="en-US">
 	<head>
-		<link rel="stylesheet" type="text/css" href="/assets/css/shimapan-panel.min.css" media="screen"/>
+		<link rel="stylesheet" type="text/css" href="/assets/css/shimapan-panel.css" media="screen"/>
 		<meta charset="utf-8">
 		<title>{{siteName}} Login</title>
 	</head>

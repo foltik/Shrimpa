@@ -14,5 +14,5 @@ $images = array(
 
 // Redirect to a random image from the above array using status code "303 See Other" 
 if (headers_sent() === false) {
-    header('Location: '.$images[array_rand($images)], true, 303);
+    //header('Location: '.$images[array_rand($images)], true, 303);
 }

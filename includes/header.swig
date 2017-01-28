@@ -6,7 +6,7 @@
 		<meta name="viewport" content="width=device-width, initial-scale=1">
 
 		<title>{{siteName}} Panel</title>
-		<link href="/assets/css/bootstrap.min.css" rel="stylesheet">
+		<link href="/assets/css/bootstrap.css" rel="stylesheet">
 	</head>
 	<body>
 	{% include "navbar.swig" %}

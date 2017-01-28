@@ -4,8 +4,8 @@
 /* ---------- GENERAL ---------- */
 
 body {
-	background: #eaeaea;
-	color: #999;
+	background-color: #060606;
+	color: #d3d3d3;
 	font: 100%/1.5em sans-serif;
 	margin: 0;
 }
@@ -55,9 +55,9 @@ input[type="submit"] { cursor: pointer; }
 }
 
 #login-form h3 {
-	background-color: #282830;
+	background-color: #222222;
 	border-radius: 5px 5px 0 0;
-	color: #fff;
+	color: #2a9fd6;
 	font-size: 14px;
 	padding: 20px;
 	text-align: center;
@@ -65,14 +65,14 @@ input[type="submit"] { cursor: pointer; }
 }
 
 #login-form fieldset {
-	background: #fff;
+	background: #151515;
 	border-radius: 0 0 5px 5px;
 	padding: 20px;
 	position: relative;
 }
 
 #login-form fieldset:before {
-	background-color: #fff;
+	background-color: #222222;
 	content: "";
 	height: 8px;
 	left: 50%;
@@ -94,13 +94,12 @@ input[type="submit"] { cursor: pointer; }
 #login-form input[name="user"],
 #login-form input[name="code"],
 #login-form input[type="password"] {
-	border: 1px solid #dcdcdc;
-	padding: 12px 10px;
-	width: 238px;
-}
-
-#login-form input[name="user"] {
+	color: #888888;
+	background: #ffffff;
+	border: 1px solid #282828;
 	border-radius: 3px 3px 0 0;
+	width: 248px;
+	padding: 12px 10px;
 }
 
 #login-form input[name="code"],
@@ -110,7 +109,7 @@ input[type="submit"] { cursor: pointer; }
 }
 
 #login-form input[type="submit"] {
-	background: #1dabb8;
+	background: #454545;
 	border-radius: 3px;
 	color: #fff;
 	float: right;
@@ -127,7 +126,7 @@ input[type="submit"] { cursor: pointer; }
 }
 
 .info {
-	background: #e5e5e5;
+	background: #2a9fd6;
 	border-radius: 50%;
 	display: inline-block;
 	height: 20px;
@@ -150,9 +149,9 @@ input[type="submit"] { cursor: pointer; }
 }
 
 #fail:target h3 {
-	background-color: #282830;
+	background-color: #222222;
 	border-radius: 5px 5px 0 0;
-	color: #fff;
+	color: #2a9fd6;
 	font-size: 14px;
 	padding: 20px;
 	text-align: center;
@@ -160,14 +159,14 @@ input[type="submit"] { cursor: pointer; }
 }
 
 #fail:target fieldset {
-	background: #fff;
+	background: #151515;
 	border-radius: 0 0 5px 5px;
 	padding: 20px;
 	position: relative;
 }
 
 #fail:target fieldset:before {
-	background-color: #fff;
+	background-color: #151515;
 	content: "";
 	height: 8px;
 	left: 50%;

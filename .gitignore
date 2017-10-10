@@ -1,5 +1,7 @@
-build/
-dist/
 node_modules/
-.vscode/
-*.sh
+public/libs/
+.idea/
+.awcache/
+
+package-lock.json
+jwt.pem

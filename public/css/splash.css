@@ -1,0 +1,148 @@
+body {
+    background-color: #060606;
+    color: #D3D3D3;
+    font-family: 'Roboto', sans-serif;
+    font-size: 14px;
+    height: 100%;
+    line-height: 20px;
+    margin: 0;
+    padding-top: 20px;
+    padding-bottom: 40px;
+}
+
+#container {
+    max-width: 700px;
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    margin: auto;
+}
+
+a {
+    color: #0078B4;
+    text-decoration: none;
+    transition: color 0.25s;
+}
+
+a:hover,
+a:focus,
+a:active {
+    color: #005580;
+}
+
+
+h1 {
+    font-size: 72px;
+    font-weight: bold;
+}
+.upload {
+    margin: 60px 0;
+}
+.btn {
+    font-family: 'Roboto', sans-serif;
+    background: #000000;
+    border: 2px solid #2A9FD6;
+    border-radius: 4px;
+    color: #D3D3D3;
+    cursor: pointer;
+    display: inline-block;
+    font-size: 24px;
+    padding: 28px 48px;
+    transition: background-color 0.25s, width 0.5s, height 0.5s;
+}
+.btn:hover {
+    background-color: #2A9FD6;
+    color: #FFFFFF;
+    text-decoration: none;
+    outline: none;
+}
+
+:focus {
+    outline: none;
+}
+::-moz-focus-inner {border: 0;}
+
+#upload-filelist {
+    list-style-type: none;
+    margin: 20px 50px;
+    padding: 0;
+    text-align: left;
+}
+
+
+
+#upload-filelist > li {
+    margin-top: 5px;
+    overflow: hidden;
+    display: flex;
+}
+
+.list-name {
+    margin-top: 6px;
+    overflow: hidden;
+    max-width: 70%;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.list-url {
+    font-family: 'Roboto Mono', monospace;
+    margin-left: auto;
+}
+
+.list-progress {
+    margin: 10px 30px 10px 30px;
+    flex-grow: 2;
+}
+
+
+.list-url a {
+    vertical-align: super;
+    color: #5C5C5C;
+}
+.list-url a:hover {
+    color: #D3D3D3;
+}
+
+.list-url-clipboard-btn {
+    border: 2px solid #222222;
+    height: 32px;
+    margin-left: 5px;
+    border-radius: 3px;
+    cursor: pointer;
+    background-color: #5C5C5C;
+    transition: background-color 0.25s;
+}
+.list-url-clipboard-btn:hover,
+.list-url-clipboard-btn:focus {
+    background-color: #ABABAB;
+    outline: none;
+}
+
+
+
+nav > ul,
+nav a {
+    color: #32809F;
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    text-align: center;
+}
+
+nav > ul > li {
+    display: inline-block;
+    margin: 0;
+    padding: 0;
+    cursor: default;
+}
+
+nav > ul > li:after {
+    content: "|";
+    margin: 0 8px;
+    opacity: 0.3;
+}
+nav > ul > li:last-child:after {
+    content: "";
+    margin: 0;
+}

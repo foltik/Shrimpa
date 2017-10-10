@@ -1,0 +1,1 @@
+angular.module('shimapan', ['ngFileUpload', 'ngclipboard', 'UploadCtrl']);

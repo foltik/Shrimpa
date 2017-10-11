@@ -2,7 +2,8 @@ function RegisterController($scope, AuthService) {
     $scope.register = function() {
         AuthService.register({
             username: $scope.username,
-            password: $scope.password
+            password: $scope.password,
+            invite: $scope.invite
         }).then(function() {
             alert('Registered');
         });

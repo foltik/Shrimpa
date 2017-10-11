@@ -18,7 +18,8 @@ var UserSchema = mongoose.Schema({
     },
     level: Number,
     hash: String,
-    salt: String
+    salt: String,
+    date: Date
 });
 
 UserSchema.methods.setPassword = function(password) {

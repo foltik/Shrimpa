@@ -18,6 +18,11 @@ angular.module('AuthSvc', []).service('AuthService', ['$http', '$window', functi
         return $window.localStorage['shimapan-token'];
     }
 
+    this.getAuthHeader = function() {
+        return 'Bearer ' + getToken();
+    };
+
+
     this.login = function(user) {
         return $http({
             method: 'POST',

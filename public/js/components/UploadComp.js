@@ -1,4 +1,4 @@
-function UploadController($scope, Upload, $timeout) {
+function UploadController($scope, Upload, $timeout, AuthService) {
     $scope.errToString = function(err) {
         if (err === 'maxSize')
             return "File too large.";
@@ -14,7 +14,9 @@ function UploadController($scope, Upload, $timeout) {
             file.upload = Upload.upload({
                 url: '/upload',
                 method: 'POST',
-                // data: loginToken, unique id, something
+                headers: {
+                    'Authorization': AuthService.getAuthHeader()
+                },
                 file: file
             });
 
@@ -36,7 +38,7 @@ function UploadController($scope, Upload, $timeout) {
     };
 }
 
-angular.module('UploadComp', ['ngFileUpload']).component('uploadComponent', {
+angular.module('UploadComp', ['ngFileUpload', 'AuthSvc']).component('uploadComponent', {
     templateUrl: '/views/upload-form.html',
     controller: UploadController,
     controllerAs: 'vm'

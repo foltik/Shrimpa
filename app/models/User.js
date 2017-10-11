@@ -23,16 +23,20 @@ var UserSchema = mongoose.Schema({
 
 UserSchema.methods.setPassword = function(password) {
     this.salt = crypto.randomBytes(16).toString('hex');
-    this.hash = crypto.pbkdf2Sync(password, this.salt, 1000, 64).toString('hex');
+    this.hash = crypto.pbkdf2Sync(password, this.salt, 1000, 64, 'sha256').toString('hex');
 };
 
 UserSchema.methods.validatePassword = function(password) {
-    var hash = crypto.pbkdf2Sync(password, this.salt, 1000, 64).toString('hex');
+    var hash = crypto.pbkdf2Sync(password, this.salt, 1000, 64, 'sha256').toString('hex');
     return this.hash === hash;
 };
 
-UserSchema.methods.generateJwt = function() {
-    var expiry = Date.now();
+UserSchema.methods.genApiKey = function() {
+    this.apikey = crypto.randomBytes(16).toString('hex');
+};
+
+UserSchema.methods.genJwt = function() {
+    var expiry = new Date();
     expiry.setDate(expiry.getDate() + 7);
 
     var payload = {
@@ -41,7 +45,7 @@ UserSchema.methods.generateJwt = function() {
         level: this.level
     };
 
-    var key = fs.readFileSync(path.join(__dirname, '/jwt.pem'), 'utf8');
+    var key = fs.readFileSync(path.join(__dirname, '../../jwt.pem'), 'utf8');
 
     return jwt.sign(payload, key);
 };

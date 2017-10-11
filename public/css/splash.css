@@ -119,6 +119,13 @@ h1 {
     outline: none;
 }
 
+.list-err {
+    font-family: 'Roboto Mono', monospace;
+    margin-left: auto;
+    color: #ff6666;
+    vertical-align: super;
+}
+
 
 
 nav > ul,

@@ -1,8 +1,10 @@
 var express = require('express');
-var multer = require('multer');
 var router = express.Router();
 
+var mongoose = require('mongoose');
 var Upload = require('../models/Upload.js');
+
+var multer = require('multer');
 var dest = multer({dest: 'uploads/'});
 
 function fileNameExists(name) {
@@ -22,6 +24,12 @@ function genFileName() {
 }
 
 router.post('/', dest.single('file'), function(req, res) {
+    //if (!req.payload._id) {
+        //console.log("Got unauthorized POST attempt");
+        //res.status(401);
+        //return;
+    //}
+
     var entry = {
         name: genFileName(),
         oname: req.file.originalname,

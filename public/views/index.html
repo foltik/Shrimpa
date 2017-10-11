@@ -14,30 +14,15 @@
     <script src="https://cdn.rawgit.com/zenorocha/clipboard.js/master/dist/clipboard.min.js"></script>
     <script src="/libs/ngclipboard/src/ngclipboard.js"></script>
 
-    <script src="/js/controllers/UploadCtrl.js"></script>
+    <script src="/js/components/UploadComp.js"></script>
+    <script src="/js/components/RegisterComp.js"></script>
+    <script src="/js/services/AuthSvc.js"></script>
     <script src="/js/app.js"></script>
 </head>
 <body ng-app="shimapan">
     <div id="container">
         <h1>Shimapan~</h1>
-        <div class="upload" ng-controller="UploadController">
-            <form id="upload-form" ng-submit="submit()">
-                <button id="upload-btn" class="btn" ngf-select="uploadFiles($files, $invalidFiles)" multiple>Select or drop file(s)</button>
-            </form>
-            <ul id="upload-filelist">
-                <li ng-repeat="file in files">
-                    <span class="list-name" ng-bind="file.name"></span>
-                    <progress class="list-progress" max="100" value="{{file.progress}}" ng-hide="file.progress == 100"></progress>
-                    <span class="list-url">
-                        <a href="https://shimapan.rocks/v/{{file.result.name}}" ng-hide="file.progress < 100">https://shimapan.rocks/v/{{file.result.name}}</a>
-                        <button class="list-url-clipboard-btn" ngclipboard data-clipboard-text="https://shimapan.rocks/v/{{file.result.name}}">
-                            <img src="/img/glyphicons-512-copy.png"/>
-                        </button>
-                    </span>
-                </li>
-                <li ng-repeat="file in errorFiles">{{file.name}} {{file.$error}} {{file.$errorParam}}</li>
-            </ul>
-        </div>
+        <upload-component></upload-component>
         <nav>
             <ul>
                 <li><a href="/">Shimapan</a></li>

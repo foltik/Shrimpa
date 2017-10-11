@@ -1,11 +1,14 @@
-angular.module('UploadCtrl', ['ngFileUpload']).controller('UploadController', ['$scope', 'Upload', '$timeout', function ($scope, Upload, $timeout) {
-    $scope.uploadFiles = function (files, errorFiles) {
-        if (!$scope.files)
-            $scope.files = files;
+function UploadController($scope, Upload, $timeout) {
+    $scope.errToString = function(err) {
+        if (err === 'maxSize')
+            return "File too large.";
         else
-            $scope.files = $scope.files.concat(files);
+            return err;
+    };
 
-        $scope.errorFiles = errorFiles;
+    $scope.uploadFiles = function(files, errorFiles) {
+        $scope.files =      $scope.files      ? $scope.files.concat(files)           : files;
+        $scope.errorFiles = $scope.errorFiles ? $scope.errorFiles.concat(errorFiles) : errorFiles;
 
         angular.forEach(files, function (file) {
             file.upload = Upload.upload({
@@ -31,4 +34,10 @@ angular.module('UploadCtrl', ['ngFileUpload']).controller('UploadController', ['
             );
         });
     };
-}]);
+}
+
+angular.module('UploadComp', ['ngFileUpload']).component('uploadComponent', {
+    templateUrl: '/views/upload-form.html',
+    controller: UploadController,
+    controllerAs: 'vm'
+});

@@ -3,5 +3,7 @@ public/libs/
 .idea/
 .awcache/
 
+uploads/
+
 package-lock.json
 jwt.pem

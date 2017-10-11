@@ -12,6 +12,5 @@ function RegisterController($scope, AuthService) {
 
 angular.module('RegisterComp', ['AuthSvc']).component('registerComponent', {
     templateUrl: '/views/register-form.html',
-    controller: RegisterController,
-    controllerAs: 'vm'
+    controller: RegisterController
 });

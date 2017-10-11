@@ -22,7 +22,7 @@ angular.module('AuthSvc', []).service('AuthService', ['$http', '$window', functi
         return $http({
             method: 'POST',
             url: '/api/auth/login',
-            headers: {'Content-Type': 'x-www-form-urlencoded'},
+            headers: {'Content-Type': 'application/x-www-form-urlencoded'},
             transformRequest: function(obj) {
                 var str = [];
                 for (var p in obj)

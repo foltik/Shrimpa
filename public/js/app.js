@@ -1,1 +1,1 @@
-angular.module('shimapan', ['ngFileUpload', 'ngclipboard', 'UploadComp', 'RegisterComp']);
+angular.module('shimapan', ['ngFileUpload', 'ngclipboard', 'UploadComp', 'RegisterComp', 'LoginComp']);

@@ -3,6 +3,7 @@ var upload = require('./routes/upload.js');
 var view = require('./routes/view.js');
 var auth = require('./routes/auth.js');
 var register = require('./routes/register.js');
+var login = require('./routes/login.js');
 
 var fs = require('fs');
 var path = require('path');
@@ -18,6 +19,7 @@ module.exports = function(app) {
     app.use('/upload', upload);
     app.use('/api/auth', auth);
     app.use('/register', register);
+    app.use('/login', login);
 
     app.use(function(err, req, res, next) {
         if (err.name === 'UnauthorizedError') {

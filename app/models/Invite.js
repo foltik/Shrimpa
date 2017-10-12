@@ -6,7 +6,7 @@ var InviteSchema = mongoose.Schema({
         unique: true,
         required: true
     },
-    level: Number,
+    scope: [String],
     issuer: String,
     recipient: String,
     issued: Date,

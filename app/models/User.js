@@ -11,12 +11,7 @@ var UserSchema = mongoose.Schema({
         unique: true,
         required: true
     },
-    apikey: {
-        type: String,
-        unique: true,
-        required: true
-    },
-    level: Number,
+    scope: [String],
     hash: String,
     salt: String,
     date: Date
@@ -32,10 +27,6 @@ UserSchema.methods.validatePassword = function(password) {
     return this.hash === hash;
 };
 
-UserSchema.methods.genApiKey = function() {
-    this.apikey = crypto.randomBytes(16).toString('hex');
-};
-
 UserSchema.methods.genJwt = function() {
     var expiry = new Date();
     expiry.setDate(expiry.getDate() + 7);
@@ -43,7 +34,8 @@ UserSchema.methods.genJwt = function() {
     var payload = {
         _id: this._id,
         username: this.username,
-        level: this.level
+        scope: this.scope,
+        exp: parseInt(expiry.getTime() / 1000)
     };
 
     var key = fs.readFileSync(path.join(__dirname, '../../jwt.pem'), 'utf8');

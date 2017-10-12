@@ -48,9 +48,8 @@ router.post('/register', function(req, res) {
 
             var user = new User();
             user.username = req.body.username;
-            user.level = invite.level;
+            user.scope = invite.scope;
             user.date = Date.now();
-            user.genApiKey();
             user.setPassword(req.body.password);
 
             user.save(function(err) {

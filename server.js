@@ -27,10 +27,6 @@ app.use(bodyParser.urlencoded({ extended: true }));
 app.use(passport.initialize());
 app.use(methodOverride('X-HTTP-Method-Override'));
 
-app.get('/secret', passport.authenticate('local', { session: false }), function(req, res) {
-    res.json("You cannot see this without a token!");
-});
-
 // Set /public to document root
 app.use(express.static(__dirname + '/public'));
 require('./app/routes')(app);

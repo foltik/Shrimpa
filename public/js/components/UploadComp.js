@@ -12,7 +12,7 @@ function UploadController($scope, Upload, $timeout, AuthService) {
 
         angular.forEach(files, function (file) {
             file.upload = Upload.upload({
-                url: '/upload',
+                url: '/api/upload',
                 method: 'POST',
                 headers: {
                     'Authorization': AuthService.getAuthHeader()
@@ -27,8 +27,16 @@ function UploadController($scope, Upload, $timeout, AuthService) {
                     });
                 },
                 function (response) {
-                    if (response.status > 0)
-                        $scope.errorMsg = response.status + ': ' + response.data;
+                    if (response.status > 0) {
+                        if (response.status === 401) {
+                            file.$error = "Invalid authorization token.";
+                        } else {
+                            file.$error = "Internal server error.";
+                        }
+                        var index = $scope.files.indexOf(file);
+                        $scope.errorFiles.push(file);
+                        $scope.files.splice(index, 1);
+                    }
                 },
                 function (evt) {
                     file.progress = Math.floor(Math.min(100.0, 100 * evt.loaded / evt.total));

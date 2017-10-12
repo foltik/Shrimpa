@@ -4,6 +4,7 @@ var view = require('./routes/view.js');
 var auth = require('./routes/auth.js');
 var register = require('./routes/register.js');
 var login = require('./routes/login.js');
+var panel = require('./routes/panel');
 
 var fs = require('fs');
 var path = require('path');
@@ -16,10 +17,12 @@ var jwtauth = jwt({
 module.exports = function(app) {
     app.use('/', index);
     app.use('/v', view);
-    app.use('/upload', upload);
+    app.use('/api/upload', jwtauth, upload);
     app.use('/api/auth', auth);
     app.use('/register', register);
     app.use('/login', login);
+    app.use('/panel', panel);
+    app.use('/panel*', panel);
 
     app.use(function(err, req, res, next) {
         if (err.name === 'UnauthorizedError') {

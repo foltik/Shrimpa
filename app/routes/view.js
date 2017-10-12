@@ -5,7 +5,6 @@ var mongoose = require('mongoose');
 var Upload = mongoose.model('Upload');
 
 router.get('/:name', function(req, res, next) {
-    console.log('GET: ', req.params);
     Upload.findOne({
         'name': req.params.name
     }, function(err, upload) {

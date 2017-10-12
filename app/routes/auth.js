@@ -10,74 +10,75 @@ var Invite = require('../models/Invite.js');
 
 var passport = require('passport');
 
-function validUsername(username, callback) {
+function checkUsername(username, callback) {
     User.find({username: username}).limit(1).count(function(err, count) {
         if (err) return callback(err);
         count === 0 ? callback(null, true) : callback(null, false);
     });
 }
 
-function useInvite(code, user, callback) {
+function checkInvite(code, callback) {
     Invite.findOne({code: code}, function(err, invite) {
         if (err) return callback(err);
-        if (!invite || invite.used) {
-            return callback(null, false, null);
-        } else {
-            Invite.updateOne({code: code}, {recipient: user, used: Date.now()}, function(err, res) {
-                if (err) throw err;
-            });
+        if (!invite || invite.used || invite.exp < new Date())
+            callback(null, false);
+        else
             callback(null, true, invite);
-        }
-    })
+    });
+}
+
+function useInvite(code, username) {
+    Invite.updateOne({code: code}, {recipient: username, used: new Date()}, function(err, res) {
+        if (err) throw err;
+    });
 }
 
 router.post('/register', function(req, res) {
-    // Check the username
-    validUsername(req.body.username, function(err, valid) {
-        if (!valid) {
-            res.status(401).json({'message': 'Username in use.'});
-            return;
+    // Validate the parameters
+    async.parallel({
+        username: function(callback) {
+            checkUsername(function(err, valid) {
+                callback(err, valid);
+            });
+        },
+        invite: function(callback) {
+            checkInvite(function(err, valid, invite) {
+                callback(err, {valid: valid, invite: invite});
+            });
         }
-
-        // Check and use the invite
-        useInvite(req.body.invite, req.body.username, function(err, valid, invite) {
-            if (!valid) {
-                res.status(401).json({'message': 'Invalid invite code.'});
-                return;
-            }
+    }, function(err, res) {
+        if (!res.username) {
+            res.status(401).json({'message': 'Username in use.'});
+        } else if (!res.invite.valid) {
+            res.status(401).json({'message': 'Invalid invite code.'});
+        } else {
+            useInvite(req.body.invite);
 
             var user = new User();
             user.username = req.body.username;
-            user.scope = invite.scope;
-            user.date = Date.now();
+            user.scope = res.invite.scope;
+            user.date = new Date();
             user.setPassword(req.body.password);
 
             user.save(function(err) {
-                if (err) {
-                    res.status(500).json({'message': 'Internal server error'});
-                } else {
-                    var token = user.genJwt();
-                    res.status(200).json({'token': token});
-                }
+                if (err)
+                    res.status(500).json({'message': 'Internal server error.'});
+                else
+                    res.status(200).json({'token': user.genJwt()});
             })
-        })
+        }
     });
 });
 
 router.post('/login', function(req, res) {
     passport.authenticate('local', function(err, user, info) {
-        if (err) {
-            res.status(404).json(err);
-            return;
-        }
-
-        var token;
-        if (user) {
-            token = user.genJwt();
-            res.status(200).json({'token': token });
-        } else {
+        if (err)
+            res.status(500).json(err);
+        else if (user)
+            res.status(200).json({'token': user.genJwt() });
+        else
             res.status(401).json(info);
-        }
+
     })(req, res);
 });
 

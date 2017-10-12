@@ -3,8 +3,8 @@ var path = require('path');
 
 var express = require('express');
 var router = express.Router();
+var async = require('async');
 
-var mongoose = require('mongoose');
 var User = require('../models/User.js');
 var Invite = require('../models/Invite.js');
 
@@ -37,26 +37,26 @@ router.post('/register', function(req, res) {
     // Validate the parameters
     async.parallel({
         username: function(callback) {
-            checkUsername(function(err, valid) {
+            checkUsername(req.body.username, function(err, valid) {
                 callback(err, valid);
             });
         },
         invite: function(callback) {
-            checkInvite(function(err, valid, invite) {
+            checkInvite(req.body.invite, function(err, valid, invite) {
                 callback(err, {valid: valid, invite: invite});
             });
         }
-    }, function(err, res) {
-        if (!res.username) {
+    }, function(err, result) {
+        if (!result.username) {
             res.status(401).json({'message': 'Username in use.'});
-        } else if (!res.invite.valid) {
+        } else if (!result.invite.valid) {
             res.status(401).json({'message': 'Invalid invite code.'});
         } else {
-            useInvite(req.body.invite);
+            useInvite(req.body.invite, req.body.username);
 
             var user = new User();
             user.username = req.body.username;
-            user.scope = res.invite.scope;
+            user.scope = result.invite.scope;
             user.date = new Date();
             user.setPassword(req.body.password);
 

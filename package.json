@@ -34,7 +34,7 @@
   "author": "Jack Foltz",
   "license": "WTFPL",
   "scripts": {
-    "test": "echo No tests implemented."
+    "test": "mocha"
   },
   "repository": {
     "type": "git",

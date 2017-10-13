@@ -24,11 +24,10 @@ function genFileName() {
 }
 
 router.post('/', dest.single('file'), function(req, res) {
-    //if (!req.payload._id) {
-        //console.log("Got unauthorized POST attempt");
-        //res.status(401);
-        //return;
-    //}
+    if (req.payload.scope.indexOf('file.upload') === -1) {
+        res.status(401).json({'message': 'Permission error.'});
+        return;
+    }
 
     var entry = {
         name: genFileName(),

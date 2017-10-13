@@ -25,7 +25,13 @@ function genFileName() {
 
 router.post('/', dest.single('file'), function(req, res) {
     if (req.payload.scope.indexOf('file.upload') === -1) {
-        res.status(401).json({'message': 'Permission error.'});
+        res.status(403).json({'message': 'Permission error.'});
+        return;
+    }
+
+    // Size must be below 128 Megabytes (1024*1024*128 Bytes)
+    if (req.file.size >= 134217728) {
+        res.status(413).json({'message': 'File too large.'});
         return;
     }
 

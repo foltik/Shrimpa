@@ -36,27 +36,26 @@ function useInvite(code, username) {
 router.post('/register', function(req, res) {
     // Validate the parameters
     async.parallel({
-        username: function(callback) {
+        userCheck: function(callback) {
             checkUsername(req.body.username, function(err, valid) {
                 callback(err, valid);
             });
         },
-        invite: function(callback) {
+        inviteCheck: function(callback) {
             checkInvite(req.body.invite, function(err, valid, invite) {
                 callback(err, {valid: valid, invite: invite});
             });
         }
     }, function(err, result) {
-        if (!result.username) {
+        if (!result.userCheck) {
             res.status(401).json({'message': 'Username in use.'});
-        } else if (!result.invite.valid) {
+        } else if (!result.inviteCheck.valid) {
             res.status(401).json({'message': 'Invalid invite code.'});
         } else {
             useInvite(req.body.invite, req.body.username);
-
             var user = new User();
             user.username = req.body.username;
-            user.scope = result.invite.scope;
+            user.scope = result.inviteCheck.invite.scope;
             user.date = new Date();
             user.setPassword(req.body.password);
 

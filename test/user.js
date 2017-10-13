@@ -15,17 +15,26 @@ var db = app.db;
 
 chai.use(http);
 
+function register(user, cb) {
+    chai.request(server)
+        .post('/api/auth/register')
+        .send(user)
+        .end(cb);
+}
+
 before(function (done) {
-    async.parallel([
+    async.series([
         function (cb) {
-            db.once('open', cb);
+            db.once('open', function() {
+                cb();
+            });
         },
         function (cb) {
             User.remove({}, function (err) {
                 cb(err);
             });
         },
-        function (cb) {
+        function(cb) {
             Invite.remove({}, function (err) {
                 cb(err);
             });
@@ -38,9 +47,22 @@ before(function (done) {
                 cb(err);
             });
         },
-        function (cb) {
+        function(cb) {
             var inv = new Invite();
             inv.code = 'TestCode2';
+            inv.scope = ['test.perm', 'file.upload'];
+            inv.save(function (err) {
+                cb(err);
+            });
+        },
+        function (cb) {
+            var inv = new Invite();
+            inv.code = 'TestCode3';
+
+            var yesterday = new Date();
+            yesterday.setDate(yesterday.getDate() - 1);
+            inv.exp = yesterday;
+
             inv.scope = ['test.perm', 'file.upload'];
             inv.save(function (err) {
                 cb(err);
@@ -61,15 +83,12 @@ describe('Users', function () {
                 invite: 'TestCode1'
             };
 
-            chai.request(server)
-                .post('/api/auth/register')
-                .send(user)
-                .end(function (err, res) {
-                    res.should.have.status(200);
-                    res.body.should.be.a('object');
-                    res.body.should.have.property('token');
-                    done();
-                });
+            register(user, function(err, res) {
+                res.should.have.status(200);
+                res.body.should.be.a('object');
+                res.body.should.have.property('token');
+                done();
+            });
         });
 
         it('SHOULD NOT register invalid user, valid invite', function (done) {
@@ -79,15 +98,12 @@ describe('Users', function () {
                 invite: 'TestCode2'
             };
 
-            chai.request(server)
-                .post('/api/auth/register')
-                .send(user)
-                .end(function (err, res) {
+            register(user, function(err, res) {
                     res.should.have.status(401);
                     res.body.should.be.a('object');
                     res.body.should.have.property('message').eql('Username in use.');
                     done();
-                });
+            });
         });
 
         it('SHOULD NOT register valid user, nonexistant invite', function(done) {
@@ -97,15 +113,12 @@ describe('Users', function () {
                 invite: 'bogus'
             };
 
-            chai.request(server)
-                .post('/api/auth/register')
-                .send(user)
-                .end(function(err, res) {
+            register(user, function(err, res) {
                     res.should.have.a.status(401);
                     res.body.should.be.a('object');
                     res.body.should.have.property('message').eql('Invalid invite code.');
                     done();
-                });
+            });
         });
 
         it('SHOULD NOT register valid user, used invite', function(done) {
@@ -115,18 +128,28 @@ describe('Users', function () {
                 invite: 'TestCode1'
             };
 
-            chai.request(server)
-                .post('/api/auth/register')
-                .send(user)
-                .end(function(err, res) {
+            register(user, function(err, res) {
                     res.should.have.a.status(401);
                     res.body.should.be.a('object');
                     res.body.should.have.property('message').eql('Invalid invite code.');
                     done();
-                });
+            });
         });
 
-        //TODO: Make sure expired invites don't work
+        it('SHOULD NOT register valid user, expired invite', function(done) {
+            var user = {
+                username: 'TestUser3',
+                password: 'TestPassword',
+                invite: 'TestCode3'
+            };
+
+            register(user, function(err, res) {
+                res.should.have.a.status(401);
+                res.body.should.be.a('object');
+                res.body.should.have.property('message').eql('Invalid invite code.');
+                done();
+            })
+        })
     });
 });
 

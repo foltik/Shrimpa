@@ -6,7 +6,11 @@ var UploadSchema = mongoose.Schema({
         unique: true,
         required: true
     },
-    oname: String,
+    views: {
+        type: Number,
+        default: 0
+    },
+    uploader: String,
     date: Date,
     file: Object
 });

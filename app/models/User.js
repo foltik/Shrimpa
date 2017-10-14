@@ -11,6 +11,14 @@ var UserSchema = mongoose.Schema({
         unique: true,
         required: true
     },
+    uploadCount: {
+        type: Number,
+        default: 0
+    },
+    uploadSize: {
+        type: Number,
+        default: 0
+    },
     scope: [String],
     hash: String,
     salt: String,

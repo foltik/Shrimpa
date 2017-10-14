@@ -2,14 +2,23 @@ var express = require('express');
 var router = express.Router();
 
 var mongoose = require('mongoose');
+var User = require('../models/User.js');
 var Upload = require('../models/Upload.js');
 
 var multer = require('multer');
 var dest = multer({dest: 'uploads/'});
 
 function fileNameExists(name) {
-    Upload.count({name: name}, function(err, count) {
+    Upload.count({name: name}, function (err, count) {
         return count !== 0;
+    });
+}
+
+function updateStats(user, size) {
+    User.updateOne({username: user}, { $inc: { uploadCount: 1, uploadSize: size } }, function(err, res) {
+        if (err) {
+            throw err;
+        }
     });
 }
 
@@ -23,7 +32,7 @@ function genFileName() {
     return chars.join('');
 }
 
-router.post('/', dest.single('file'), function(req, res) {
+router.post('/', dest.single('file'), function (req, res) {
     if (req.payload.scope.indexOf('file.upload') === -1) {
         res.status(403).json({'message': 'Permission error.'});
         return;
@@ -35,18 +44,23 @@ router.post('/', dest.single('file'), function(req, res) {
         return;
     }
 
+    updateStats(req.payload.username, req.file.size);
+
     var entry = {
         name: genFileName(),
-        oname: req.file.originalname,
+        uploader: req.payload.username,
         created: Date.now(),
         file: req.file
     };
 
-    Upload.create(entry, function(err, next) {
+    Upload.create(entry, function (err, next) {
         if (err) {
             next(err);
         } else {
-            res.send(entry);
+            res.send({
+                name: entry.name,
+                url: 'https://shimapan.rocks/v/' + entry.name
+            });
         }
     });
 });

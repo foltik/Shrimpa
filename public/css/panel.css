@@ -50,12 +50,13 @@ body {
 }
 
 .sidebar-title {
+    color: #2a9fd6;
+    cursor: pointer;
     font-size: 16px;
     line-height: 50px;
     text-align: center;
     text-transform: uppercase;
     letter-spacing: 7px;
-    color: #eee;
     border-bottom: 1px solid #222;
     background: #2a2a2a;
 }

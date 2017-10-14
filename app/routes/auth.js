@@ -10,10 +10,15 @@ var Invite = require('../models/Invite.js');
 
 var passport = require('passport');
 
+var striptags = require('striptags');
+
 function checkUsername(username, callback) {
+    if (username.length > 30) return callback(null, false);
+    if (striptags(username) !== username) return callback(null, false);
+
     User.find({username: username}).limit(1).count(function(err, count) {
         if (err) return callback(err);
-        count === 0 ? callback(null, true) : callback(null, false);
+        (count === 0) ? callback(null, true) : callback(null, false);
     });
 }
 
@@ -48,7 +53,7 @@ router.post('/register', function(req, res) {
         }
     }, function(err, result) {
         if (!result.userCheck) {
-            res.status(401).json({'message': 'Username in use.'});
+            res.status(401).json({'message': 'Invalid username.'});
         } else if (!result.inviteCheck.valid) {
             res.status(401).json({'message': 'Invalid invite code.'});
         } else {

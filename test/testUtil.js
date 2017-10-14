@@ -14,6 +14,9 @@ var app = require('../server');
 var server = app.server;
 var db = app.db;
 
+var should = chai.should;
+var expect = chai.expect;
+
 chai.use(http);
 
 //---------------- DATABASE UTIL ----------------//
@@ -80,7 +83,7 @@ var verifyFailedUserRegister = function(user, done) {
     register(user, function (err, res) {
         res.should.have.status(401);
         res.body.should.be.a('object');
-        res.body.should.have.property('message').eql('Username in use.');
+        res.body.should.have.property('message').eql('Invalid username.');
         done();
     });
 };
@@ -160,9 +163,9 @@ var verifySuccessfulUpload = function(user, done) {
     loginUpload(user, function(err, res) {
         res.should.have.status(200);
         res.body.should.have.be.a('object');
+        res.body.should.have.property('url');
         res.body.should.have.property('name');
-        res.body.should.have.property('oname');
-        res.body.should.have.property('created');
+        expect(res.body.name).to.match(/^[a-z]{6}$/);
         done();
     });
 };

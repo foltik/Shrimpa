@@ -28,7 +28,7 @@ before(function (done) {
                 code: 'TestCode2'
             }, {
                 code: 'TestCode3',
-                exp: new Date() - 1
+                exp: new Date()
             }
             ], cb);
         }

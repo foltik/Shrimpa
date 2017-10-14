@@ -29,7 +29,7 @@ var jwtauth = jwt({
 
 module.exports = function(app) {
     app.use('/', index);
-    app.use('/home', home);
+    app.use('/home', jwtauth, home);
     app.use('/v', view);
     app.use('/api/upload', jwtauth, upload);
     app.use('/api/auth', auth);
@@ -41,6 +41,7 @@ module.exports = function(app) {
     app.use(function(err, req, res, next) {
         if (err.name === 'UnauthorizedError') {
             res.status(401);
+            res.redirect('/login');
             res.json({"message": err.name + ": " + err.message});
         }
     })

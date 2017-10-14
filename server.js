@@ -4,6 +4,7 @@ var methodOverride = require('method-override');
 var mongoose = require('mongoose');
 var morgan = require('morgan');
 var passport = require('passport');
+var cookieParser = require('cookie-parser');
 
 var app = express();
 
@@ -21,6 +22,7 @@ db.on('error', function(err) {
 
 require('./config/passport.js');
 
+app.use(cookieParser());
 app.use(bodyParser.json());
 app.use(bodyParser.json({ type: 'application/json' }));
 app.use(bodyParser.urlencoded({ extended: true }));

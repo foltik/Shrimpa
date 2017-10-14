@@ -42,7 +42,12 @@ angular.module('AuthSvc', []).service('AuthService', ['$http', '$window', functi
     };
     this.logout = function() {
         $window.localStorage.removeItem('shimapan-token');
-        $window.location.href = '/';
+        $http({
+            method: 'GET',
+            url: '/api/auth/logout'
+        }).then(function(res) {
+            $window.location.href = '/';
+        });
     };
     this.isLoggedIn = function() {
         var payload = decodeToken(getToken());

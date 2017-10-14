@@ -12,7 +12,19 @@ var path = require('path');
 var jwt = require('express-jwt');
 var jwtauth = jwt({
     secret: fs.readFileSync(path.join(__dirname, '../jwt.pem'), 'utf8'),
-    userProperty: 'payload'
+    userProperty: 'payload',
+    getToken: function(req) {
+        if (req.headers.authorization && req.headers.authorization.split(' ')[0] === 'Bearer') {
+            // First check Authorization header
+            return req.headers.authorization.split(' ')[1];
+        } else if (req.cookies && req.cookies['shimapan-token']) {
+            // Get from cookies as fallback
+            return req.cookies['shimapan-token'];
+        }
+
+        // no token received
+        return null;
+    }
 });
 
 module.exports = function(app) {
@@ -23,8 +35,8 @@ module.exports = function(app) {
     app.use('/api/auth', auth);
     app.use('/register', register);
     app.use('/login', login);
-    app.use('/panel', panel);
-    app.use('/panel*', panel);
+    app.use('/panel', jwtauth, panel);
+    app.use('/panel*', jwtauth, panel);
 
     app.use(function(err, req, res, next) {
         if (err.name === 'UnauthorizedError') {

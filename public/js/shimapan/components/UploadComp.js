@@ -27,11 +27,13 @@ function UploadController($scope, Upload, $timeout, AuthService) {
                     });
                 },
                 function (response) {
-                    if (response.status > 0) {
+                    if (response.status !== 200) {
                         if (response.status === 401) {
-                            file.$error = "Invalid authorization token.";
+                            file.$error = "Invalid authorization token";
+                        } else if (response.status === 403) {
+                            file.$error = "Forbidden";
                         } else {
-                            file.$error = "Internal server error.";
+                            file.$error = "Unknown error " + response.status;
                         }
                         var index = $scope.files.indexOf(file);
                         $scope.errorFiles.push(file);
@@ -47,7 +49,7 @@ function UploadController($scope, Upload, $timeout, AuthService) {
 }
 
 angular.module('UploadComp', ['ngFileUpload', 'AuthSvc']).component('uploadComponent', {
-    templateUrl: '/views/upload-form.html',
+    templateUrl: '/views/shimapan/upload-form.html',
     controller: UploadController,
     controllerAs: 'vm'
 });

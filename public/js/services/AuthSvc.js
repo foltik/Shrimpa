@@ -68,4 +68,9 @@ angular.module('AuthSvc', []).service('AuthService', ['$http', '$window', functi
         var payload = decodeToken(getToken());
         return payload.username;
     };
+
+    this.currentScope = function() {
+        var payload = decodeToken(getToken());
+        return payload.scope;
+    }
 }]);

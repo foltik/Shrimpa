@@ -10,6 +10,6 @@ function LoginController($scope, AuthService) {
 }
 
 angular.module('LoginComp', ['AuthSvc']).component('loginComponent', {
-    templateUrl: '/views/login-form.html',
+    templateUrl: '/views/shimapan/login-form.html',
     controller: LoginController
 });

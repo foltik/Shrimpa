@@ -6,9 +6,9 @@ angular.module('PanelRoutes', ['ui.router']).config(['$stateProvider', '$urlRout
     $stateProvider
         .state('/panel', {
             url: '/panel',
-            templateUrl: '/views/panel-home.html'
+            templateUrl: '/views/shimapan-panel/panel-home.html'
         }).state('/panel/api', {
         url: '/panel/api',
-            templateUrl: '/views/panel-api.html'
+            templateUrl: '/views/shimapan-panel/panel-api.html'
         });
 }]);

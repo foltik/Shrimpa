@@ -1,4 +1,5 @@
 var index = require('./routes/index.js');
+var home = require('./routes/home.js');
 var upload = require('./routes/upload.js');
 var view = require('./routes/view.js');
 var auth = require('./routes/auth.js');
@@ -16,6 +17,7 @@ var jwtauth = jwt({
 
 module.exports = function(app) {
     app.use('/', index);
+    app.use('/home', home);
     app.use('/v', view);
     app.use('/api/upload', jwtauth, upload);
     app.use('/api/auth', auth);

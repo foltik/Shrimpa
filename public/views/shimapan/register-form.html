@@ -1,15 +1,11 @@
-<form ng-submit="register()">
-    <div class="form-group">
-        <label for="username">Username</label>
-        <input id="username" class="form-control" type="text" ng-model="username"/>
-    </div>
-    <div class="form-group">
-        <label for="password">Password</label>
-        <input id="password" class="form-control" type="password" ng-model="password"/>
-    </div>
-    <div class="form-group">
-        <label for="invite">Invite Code</label>
-        <input id="invite" class="form-control" type="text" ng-model="invite"/>
-    </div>
-    <button type="submit" class="btn">Register</button>
-</form>
+<div id="register-form" class="form">
+    <h3>Register</h3>
+    <fieldset>
+        <form ng-submit="register()">
+            <input id="username" placeholder="Username" class="form-control" type="text" ng-model="username"/>
+            <input id="password" placeholder="Password" class="form-control" type="password" ng-model="password"/>
+            <input id="invite" placeholder="Invite Code" class="form-control" type="text" ng-model="invite"/>
+            <button type="submit" class="btn">Submit</button>
+        </form>
+    </fieldset>
+</div>

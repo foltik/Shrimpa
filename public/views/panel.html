@@ -27,7 +27,7 @@
                 <li><a href="/panel/invites" ng-class="{active: $state.$current.name=='/panel/invites'}">Invites</a></li>
                 <li ng-hide="!hasPermission('users.view')"><a href="/panel/users" ng-class="{active: $state.$current.name=='/panel/users'}">Users</a></li>
                 <li><a href="/panel/stats" ng-class="{active: $state.$current.name=='/panel/stats'}">Statistics</a></li>
-                <li><a href="" ng-click="goLogout()">Logout</a></li>
+                <li><a href="" ng-click="logout()">Logout</a></li>
             </ul>
         </div>
         <div class="content isOpen" ng-class="{isOpen: open}">

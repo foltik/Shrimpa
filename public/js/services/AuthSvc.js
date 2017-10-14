@@ -37,10 +37,12 @@ angular.module('AuthSvc', []).service('AuthService', ['$http', '$window', functi
             data: user
         }).then(function(res) {
             saveToken(res.data.token);
+            $window.location.href = '/home';
         })
     };
     this.logout = function() {
         $window.localStorage.removeItem('shimapan-token');
+        $window.location.href = '/';
     };
     this.isLoggedIn = function() {
         var payload = decodeToken(getToken());
@@ -61,6 +63,7 @@ angular.module('AuthSvc', []).service('AuthService', ['$http', '$window', functi
             data: user
         }).then(function(res) {
             saveToken(res.data.token);
+            $window.location.href = '/home';
         });
     };
 

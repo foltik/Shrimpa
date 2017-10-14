@@ -5,9 +5,7 @@ angular.module('LoginComp', ['AuthSvc']).component('loginComponent', {
             AuthService.login({
                 username: $scope.username,
                 password: $scope.password
-            }).then(function () {
-                alert('Logged In');
             });
-        }
+        };
     }]
 });

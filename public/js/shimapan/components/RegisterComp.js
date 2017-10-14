@@ -6,8 +6,6 @@ angular.module('RegisterComp', ['AuthSvc']).component('registerComponent', {
                 username: $scope.username,
                 password: $scope.password,
                 invite: $scope.invite
-            }).then(function () {
-                alert('Registered');
             });
         };
     }]

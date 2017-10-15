@@ -98,17 +98,3 @@ body {
     box-shadow: inset 5px 0 0 #2A9FD6, inset 6px 0 0 #222;
     background: #444;
 }
-
-/* Demo Description */
-
-h1 {
-    margin: 25px 0 15px;
-    font-size: 28px;
-    font-weight: 400;
-}
-
-h2 {
-    font-size: 18px;
-    font-weight: 400;
-    color: #999;
-}

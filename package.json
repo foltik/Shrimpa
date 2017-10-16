@@ -1,18 +1,45 @@
 {
   "name": "shimapan",
-  "version": "3.0.0",
-  "description": "Shimapan Sharing Service",
-  "homepage": "http://www.shimapan.rocks",
+  "version": "1.0.0",
+  "dependencies": {
+    "angular-messages": "^1.6.6",
+    "angular-ui-router": "^0.4.3",
+    "async": "^2.5.0",
+    "body-parser": "^1.18.2",
+    "config": "^1.26.2",
+    "cookie-parser": "^1.4.3",
+    "express": "^4.16.2",
+    "express-jwt": "^5.3.0",
+    "jsonwebtoken": "^8.1.0",
+    "jwt-sign": "^0.1.0",
+    "method-override": "latest",
+    "mongoose": "^4.12.1",
+    "morgan": "^1.9.0",
+    "multer": "^1.3.0",
+    "ng-file-upload": "^12.2.13",
+    "passport": "^0.4.0",
+    "passport-local": "^1.0.0",
+    "striptags": "^3.1.0"
+  },
+  "description": "A simple file sharing website.",
+  "main": "index.js",
+  "devDependencies": {
+    "chai": "^4.1.2",
+    "chai-http": "^3.0.0",
+    "gulp": "latest",
+    "gulp-concat": "^2.6.1",
+    "gulp-rename": "^1.2.2",
+    "gulp-uglify": "^3.0.0",
+    "mocha": "^4.0.1",
+    "nyc": "^11.2.1"
+  },
+  "author": "Jack Foltz",
+  "license": "WTFPL",
+  "scripts": {
+    "test": "mocha"
+  },
   "repository": {
     "type": "git",
     "url": "https://github.com/Foltik/shimapan"
-  },
-  "author": "Jack Foltz",
-  "license": "MIT",
-  "bugs": {
-    "url": "https://github.com/Foltik/shimapan/issues"
-  },
-  "devDependencies": {
-    "swig": "^1.4.2"
   }
 }

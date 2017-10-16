@@ -1,0 +1,21 @@
+<div class="upload">
+    <form id="upload-form" ng-submit="submit()">
+        <button id="upload-btn" class="btn" ngf-select="uploadFiles($files, $invalidFiles)" ngf-max-size="128MB" multiple>Select or drop file(s)</button>
+    </form>
+    <ul id="upload-filelist">
+        <li ng-repeat="file in files">
+            <span class="list-name" ng-bind="file.name"></span>
+            <progress class="list-progress" max="100" value="{{file.progress}}" ng-hide="file.progress == 100"></progress>
+            <span class="list-url">
+                <a href="https://shimapan.rocks/v/{{file.result.name}}" ng-hide="file.progress < 100">https://shimapan.rocks/v/{{file.result.name}}</a>
+                <button class="list-url-clipboard-btn" ngclipboard data-clipboard-text="https://shimapan.rocks/v/{{file.result.name}}">
+                    <img src="/img/glyphicons-512-copy.png"/>
+                </button>
+            </span>
+        </li>
+        <li ng-repeat="file in errorFiles">
+            <span class="list-name" ng-bind="file.name"></span>
+            <span class="list-err">Error: {{errToString(file.$error)}}</span>
+        </li>
+    </ul>
+</div>

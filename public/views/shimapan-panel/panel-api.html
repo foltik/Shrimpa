@@ -1,9 +1,11 @@
-<div class="inner">
+<div class="inner" ng-controller="ApiController" ng-init="getKeys()">
     <p ng-hide="keys">Loading...</p>
-    <div class="keys" ng-controller="ApiController" ng-init="getKeys()">
+    <div class="keys">
         <div class="key" ng-repeat="key in keys">
+            <i class="fa fa-key"></i>
+            <span>{{key.identifier}}</span>
         </div>
-        <div class="key add-key">
+        <div class="key add-key" ng-hide="keys.length >= 10">
             <i class="fa fa-plus"></i>
             <span>Create</span>
         </div>

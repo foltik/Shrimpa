@@ -30,8 +30,11 @@
                 <li><a ui-sref="" ng-click="logout()">Logout</a></li>
             </ul>
         </div>
-        <div class="content isOpen" ng-class="{isOpen: open}">
-            <a class="button" ng-init="open = true" ng-click="open = !open"></a>
+        <div class="content" ng-class="{isOpen: open}">
+            <div class="button" ng-class="{isOpen: open}" ng-init="open = false" ng-click="open = !open">
+                <div class="button-inner"></div>
+                <span class="button-label">Menu</span>
+            </div>
             <div class="view" ui-view></div>
         </div>
     </div>

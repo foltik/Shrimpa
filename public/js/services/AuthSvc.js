@@ -1,28 +1,4 @@
 angular.module('AuthSvc', []).service('AuthService', ['$http', '$window', function($http, $window) {
-    function decodeToken(token) {
-        if (token) {
-            var payload = token.split('.')[1];
-            payload = $window.atob(payload);
-            payload = JSON.parse(payload);
-            return payload;
-        } else {
-            return {};
-        }
-    }
-
-    function saveToken(token) {
-        $window.localStorage['shimapan-token'] = token;
-    }
-
-    function getToken() {
-        return $window.localStorage['shimapan-token'];
-    }
-
-    this.getAuthHeader = function() {
-        return 'Bearer ' + getToken();
-    };
-
-
     this.login = function(user) {
         return $http({
             method: 'POST',
@@ -36,22 +12,18 @@ angular.module('AuthSvc', []).service('AuthService', ['$http', '$window', functi
             },
             data: user
         }).then(function(res) {
-            saveToken(res.data.token);
+            if (res.status === 401) return false;
             $window.location.href = '/home';
         })
     };
+
     this.logout = function() {
-        $window.localStorage.removeItem('shimapan-token');
         $http({
             method: 'GET',
             url: '/api/auth/logout'
-        }).then(function(res) {
+        }).then(function() {
             $window.location.href = '/';
         });
-    };
-    this.isLoggedIn = function() {
-        var payload = decodeToken(getToken());
-        return payload.exp > Date.now() / 1000;
     };
 
     this.register = function(user) {
@@ -67,18 +39,18 @@ angular.module('AuthSvc', []).service('AuthService', ['$http', '$window', functi
             },
             data: user
         }).then(function(res) {
-            saveToken(res.data.token);
+            if (res.status === 401) return false;
             $window.location.href = '/home';
         });
     };
 
-    this.currentUser = function() {
-        var payload = decodeToken(getToken());
-        return payload.username;
-    };
-
-    this.currentScope = function() {
-        var payload = decodeToken(getToken());
-        return payload.scope;
+    this.currentUser = function(cb) {
+        return $http({
+            method: 'GET',
+            url: '/api/auth/session',
+            headers: {'Content-Type': 'application/json'}
+        }).then(function(res) {
+            cb(res.data);
+        });
     }
 }]);

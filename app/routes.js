@@ -5,43 +5,34 @@ var view = require('./routes/view.js');
 var auth = require('./routes/auth.js');
 var register = require('./routes/register.js');
 var login = require('./routes/login.js');
-var panel = require('./routes/panel');
+var panel = require('./routes/panel.js');
+var keys = require('./routes/keys.js');
 
 var fs = require('fs');
 var path = require('path');
-var jwt = require('express-jwt');
-var jwtauth = jwt({
-    secret: fs.readFileSync(path.join(__dirname, '../jwt.pem'), 'utf8'),
-    userProperty: 'payload',
-    getToken: function(req) {
-        if (req.headers.authorization && req.headers.authorization.split(' ')[0] === 'Bearer') {
-            // First check Authorization header
-            return req.headers.authorization.split(' ')[1];
-        } else if (req.cookies && req.cookies['shimapan-token']) {
-            // Get from cookies as fallback
-            return req.cookies['shimapan-token'];
-        }
 
-        // no token received
-        return null;
-    }
-});
+var requireLogin = function(req, res, next) {
+    if (!req.session.passport.user)
+        res.redirect('/login');
+    else
+        next();
+};
 
 module.exports = function(app) {
     app.use('/', index);
-    app.use('/home', jwtauth, home);
+    app.use('/home', requireLogin, home);
     app.use('/v', view);
-    app.use('/api/upload', jwtauth, upload);
+    app.use('/api/upload', upload);
     app.use('/api/auth', auth);
+    app.use('/api/keys', requireLogin, keys);
     app.use('/register', register);
     app.use('/login', login);
-    app.use('/panel', jwtauth, panel);
-    app.use('/panel*', jwtauth, panel);
+    app.use('/panel', requireLogin, panel);
+    app.use('/panel*', requireLogin, panel);
 
     app.use(function(err, req, res, next) {
         if (err.name === 'UnauthorizedError') {
             res.status(401);
-            res.redirect('/login');
             res.json({"message": err.name + ": " + err.message});
         }
     })

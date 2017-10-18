@@ -1,1 +1,11 @@
-<h1>Panel api hurr durr</h1>
+<div class="inner">
+    <p ng-hide="keys">Loading...</p>
+    <div class="keys" ng-controller="ApiController" ng-init="getKeys()">
+        <div class="key" ng-repeat="key in keys">
+        </div>
+        <div class="key add-key">
+            <i class="fa fa-plus"></i>
+            <span>Create</span>
+        </div>
+    </div>
+</div>

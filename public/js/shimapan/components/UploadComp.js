@@ -16,9 +16,6 @@ angular.module('UploadComp', ['ngFileUpload', 'AuthSvc']).component('uploadCompo
                 file.upload = Upload.upload({
                     url: '/api/upload',
                     method: 'POST',
-                    headers: {
-                        'Authorization': AuthService.getAuthHeader()
-                    },
                     file: file
                 });
 

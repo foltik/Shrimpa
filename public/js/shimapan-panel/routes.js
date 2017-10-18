@@ -6,7 +6,7 @@ angular.module('PanelRoutes', ['ui.router']).config(['$stateProvider', '$urlRout
     $stateProvider
         .state('dashboard', {
             url: '/panel',
-            templateUrl: '/views/shimapan-panel/panel-home.html'
+            templateUrl: '/views/shimapan-panel/panel-dash.html'
         }).state('search', {
             url: '/panel/search',
             templateUrl: '/views/shimapan-panel/panel-search.html'

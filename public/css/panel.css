@@ -98,3 +98,43 @@ body {
     box-shadow: inset 5px 0 0 #2A9FD6, inset 6px 0 0 #222;
     background: #444;
 }
+
+.inner {
+    display: flex;
+    flex-direction: column;
+}
+
+.keys {
+    display: flex;
+    flex-direction: row;
+}
+
+.key {
+    background: #555;
+    border: 3px solid #2a9fd6;
+    border-radius: 5px;
+    box-shadow: 5px 5px 10px #000;
+    margin: 10px;
+    width: 300px;
+    height: 100px;
+}
+
+.add-key {
+    cursor: pointer;
+    display: flex;
+    justify-content: flex-start;
+    flex-direction: row;
+}
+
+.add-key i {
+    font-size: 48px;
+    margin: auto 0 auto 20px;
+}
+
+.add-key span {
+    font-size: 36px;
+    vertical-align: center;
+    margin: auto;
+    -moz-user-select: none;
+    user-select: none;
+}

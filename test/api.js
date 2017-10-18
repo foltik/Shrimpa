@@ -6,7 +6,6 @@ var mongoose = require('mongoose');
 var User = require('../app/models/User.js');
 var Invite = require('../app/models/Invite.js');
 var Upload = require('../app/models/Upload.js');
-var Token = require('../app/models/Token.js');
 
 var chai = require('chai');
 var should = chai.should();

@@ -6,7 +6,6 @@ var mongoose = require('mongoose');
 var User = require('../app/models/User.js');
 var Invite = require('../app/models/Invite.js');
 var Upload = require('../app/models/Upload.js');
-var Token = require('../app/models/Token.js');
 
 var chai = require('chai');
 var http = require('chai-http');
@@ -24,7 +23,7 @@ chai.use(http);
 var resetDatabase = function(callback) {
     db.once('open', function() {
         async.each([
-            User, Invite, Upload, Token
+            User, Invite, Upload,
         ], function(schema, cb) {
             schema.remove({}, function(err) {
                 cb(err);
@@ -73,8 +72,6 @@ var register = function(user, cb) {
 var verifySuccessfulRegister = function(user, done) {
     register(user, function (err, res) {
         res.should.have.status(200);
-        res.body.should.be.a('object');
-        res.body.should.have.property('token');
         done();
     });
 };
@@ -111,8 +108,6 @@ var login = function(user, cb) {
 var verifySuccessfulLogin = function(user, done) {
     login(user, function (err, res) {
         res.should.have.status(200);
-        res.body.should.be.a('object');
-        res.body.should.have.property('token');
         done();
     });
 };

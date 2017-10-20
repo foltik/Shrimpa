@@ -5,12 +5,12 @@
     <base href="/panel"/>
     <title>Panel</title>
     <link rel="stylesheet" href="/css/panel.min.css"/>
-    <script src="/libs/app/panel.bundle.js"></script>
+    <script src="/js/panel.bundle.js"></script>
 </head>
 <body ng-app="shimapan-panel">
     <div class="container">
         <div class="sidebar" ng-controller="NavController">
-            <div class="sidebar-title"><a ui-sref="home">Shimapan</a></div>
+            <div class="sidebar-title" ng-click="$state.go('home')"><span>Shimapan</span></div>
             <ul class="nav">
                 <li><a ui-sref="dashboard" ng-class="{active: $state.$current.name=='dashboard'}">Dashboard</a></li>
                 <li><a ui-sref="search" ng-class="{active: $state.$current.name=='search'}">Search</a></li>

@@ -59,7 +59,7 @@ app.use(passport.initialize());
 app.use(express.static(__dirname + '/public'));
 
 
-require('./app/routes')(app);
+require('./app/routes/routes.js')(app);
 require('./config/passport.js');
 
 

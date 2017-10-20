@@ -8,22 +8,22 @@ angular.module('PanelRoutes', ['ui.router']).config(['$stateProvider', '$urlRout
     $stateProvider
         .state('dashboard', {
             url: '/panel',
-            templateUrl: '/views/shimapan-panel/panel-dash.html'
+            templateUrl: '/views/panel/dash.html'
         }).state('search', {
             url: '/panel/search',
-            templateUrl: '/views/shimapan-panel/panel-search.html'
+            templateUrl: '/views/panel/search.html'
         }).state('api', {
             url: '/panel/api',
-            templateUrl: '/views/shimapan-panel/panel-api.html'
+            templateUrl: '/views/panel/api.html'
         }).state('invites', {
             url: '/panel/invites',
-            templateUrl: '/views/shimapan-panel/panel-invites.html'
+            templateUrl: '/views/panel/invites.html'
         }).state('stats', {
             url: '/panel/stats',
-            templateUrl: '/views/shimapan-panel/panel-stats.html'
+            templateUrl: '/views/panel/stats.html'
         }).state('users', {
             url: '/panel/users',
-            templateUrl: '/views/shimapan-panel/panel-users.html'
+            templateUrl: '/views/panel/users.html'
         }).state('home', {
             onEnter: ['$window', function($window) {
                 $window.location.href = '/home';

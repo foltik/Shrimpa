@@ -14,6 +14,10 @@ gulp.task('start', function () {
         script: 'server.js',
         ext: 'js html css',
         env: {'NODE_ENV': 'dev'},
+        watch: [
+            'app/',
+            'config/'
+        ],
         tasks: function (changedFiles) {
             var tasks = [];
             changedFiles.forEach(function (file) {
@@ -37,19 +41,19 @@ gulp.task('default', function () {
 gulp.task('mincss', function () {
     var files = [
         {
-            src: 'public/css/form.css',
+            src: 'app/public/css/form.css',
             name: 'form.min.css'
         },
         {
-            src: 'public/css/home.css',
+            src: 'app/public/css/home.css',
             name: 'home.min.css'
         },
         {
-            src: 'public/css/panel.css',
+            src: 'app/public/css/panel.css',
             name: 'panel.min.css'
         },
         {
-            src: 'public/css/index.css',
+            src: 'app/public/css/index.css',
             name: 'index.min.css'
         }
     ];
@@ -73,17 +77,21 @@ gulp.task('concatjs', function () {
     var files = [
         {
             src: [
-                'public/js/services/*.js',
-                'public/js/shimapan-panel/**/*.js'
+                'app/public/services/*.js',
+                'app/public/panel/**/*.js'
             ],
             name: 'panel.min.js'
         },
         {
             src: [
-                'public/js/services/*.js',
-                'public/js/shimapan/**/*.js'
+                'app/public/services/*.js',
+                'app/public/shimapan/**/*.js'
             ],
             name: 'shimapan.min.js'
+        },
+        {
+            src: 'app/public/index/*.js',
+            name: 'index.min.js'
         }
     ];
 
@@ -91,7 +99,7 @@ gulp.task('concatjs', function () {
         return gulp.src(entry.src)
             .pipe(concat(entry.name))
             .pipe(uglify())
-            .pipe(gulp.dest('public/libs/app'));
+            .pipe(gulp.dest('public/js'));
     });
 
     return evstream.merge.apply(null, tasks);
@@ -100,11 +108,11 @@ gulp.task('concatjs', function () {
 gulp.task('browserify', ['concatjs'], function () {
     var files = [
         {
-            src: 'public/libs/app/shimapan.min.js',
+            src: 'public/js/shimapan.min.js',
             name: 'shimapan.bundle.js'
         },
         {
-            src: 'public/libs/app/panel.min.js',
+            src: 'public/js/panel.min.js',
             name: 'panel.bundle.js'
         }
     ];
@@ -114,7 +122,7 @@ gulp.task('browserify', ['concatjs'], function () {
             .bundle()
             .pipe(source(entry.src))
             .pipe(rename(entry.name))
-            .pipe(gulp.dest('public/libs/app'));
+            .pipe(gulp.dest('public/js'));
     });
 
     return evstream.merge.apply(null, tasks);

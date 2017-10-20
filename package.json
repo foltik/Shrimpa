@@ -34,7 +34,7 @@
     "nyc": "^11.2.1"
   },
   "author": "Jack Foltz",
-  "license": "WTFPL",
+  "license": "LICENSE",
   "scripts": {
     "test": "mocha"
   },

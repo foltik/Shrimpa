@@ -47,9 +47,8 @@
   "scripts": {
     "test": "npx mocha",
     "build": "npx gulp",
-    "watch": "npm run watch-js & npm run watch-css",
-    "watch-js": "npx nodemon -e js -w public/js -x 'npx gulp minjs'",
-    "watch-css": "npx nodemon -e css -w public/css -x 'npx gulp mincss'"
+    "start": "npx gulp start",
+    "watch": "npx gulp watch"
   },
   "repository": {
     "type": "git",

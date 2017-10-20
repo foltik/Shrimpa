@@ -9,7 +9,14 @@ var cleanCSS = require('gulp-clean-css');
 var nodemon = require('gulp-nodemon');
 var path = require('path');
 
-gulp.task('start', function () {
+gulp.task('start', function() {
+    nodemon({
+        script: 'server.js',
+        ignore: '*.*'
+    });
+})
+
+gulp.task('watch', function () {
     nodemon({
         script: 'server.js',
         ext: 'js html css',

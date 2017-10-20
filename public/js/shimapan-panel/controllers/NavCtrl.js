@@ -1,3 +1,5 @@
+var angular = require('angular');
+
 angular.module('NavCtrl', ['AuthSvc']).controller('NavController', ['$scope', '$window', 'AuthService', function($scope, $window, AuthService) {
     $scope.user = {};
     AuthService.currentUser(function(user) {

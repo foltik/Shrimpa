@@ -1,3 +1,5 @@
+var angular = require('angular');
+
 angular.module('AuthSvc', []).service('AuthService', ['$http', '$window', function($http, $window) {
     this.login = function(user) {
         return $http({

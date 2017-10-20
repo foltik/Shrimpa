@@ -1,3 +1,5 @@
+var angular = require('angular');
+
 angular.module('ApiSvc', []).service('ApiService', ['$http', '$window', function ($http, $window) {
     this.getKey = function (identifier, cb) {
         $http({

@@ -1,3 +1,5 @@
+var angular = require('angular');
+
 angular.module('PanelRoutes', ['ui.router']).config(['$stateProvider', '$urlRouterProvider', '$locationProvider', function($stateProvider, $urlRouterProvider, $locationProvider) {
     $locationProvider.html5Mode(true);
 

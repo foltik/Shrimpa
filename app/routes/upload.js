@@ -14,11 +14,9 @@ function fileNameExists(name) {
     });
 }
 
-function updateStats(user, size) {
-    User.updateOne({username: user}, { $inc: { uploadCount: 1, uploadSize: size } }, function(err, res) {
-        if (err) {
-            throw err;
-        }
+function updateUserStats(user, size) {
+    User.updateOne({username: user}, {$inc: {uploadCount: 1, uploadSize: size}}, function (err, res) {
+        if (err) throw err;
     });
 }
 
@@ -33,22 +31,17 @@ function genFileName() {
 }
 
 router.post('/', dest.single('file'), function (req, res) {
-    if (req.payload.scope.indexOf('file.upload') === -1) {
-        res.status(403).json({'message': 'Permission error.'});
-        return;
-    }
-
     // Size must be below 128 Megabytes (1024*1024*128 Bytes)
     if (req.file.size >= 134217728) {
         res.status(413).json({'message': 'File too large.'});
         return;
     }
 
-    updateStats(req.payload.username, req.file.size);
+    updateUserStats(req.session.passport.user, req.file.size);
 
     var entry = {
         name: genFileName(),
-        uploader: req.payload.username,
+        uploader: req.session.passport.user,
         created: Date.now(),
         file: req.file
     };

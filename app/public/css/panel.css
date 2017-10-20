@@ -1,0 +1,234 @@
+@import url('https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css');
+@import url('https://fonts.googleapis.com/css?family=Roboto');
+@import url('https://fonts.googleapis.com/css?family=Roboto+Mono');
+
+*, *:before, *:after {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+html, body {
+    height: 100vh;
+}
+
+body {
+    font: 600 14px 'Roboto', sans-serif;
+    color: #000000;
+    background: #000000;
+    overflow-x: hidden;
+}
+
+.container {
+    display: flex;
+    min-height: 100%;
+}
+
+.sidebar {
+    position: absolute;
+    width: 220px;
+}
+
+.content {
+    flex: 1;
+    padding: 30px;
+    background: #444444;
+    box-shadow: 0 0 5px rgba(0,0,0,1);
+    transform: translate3d(0,0,0);
+    transition: transform .3s;
+    color: #cccccc;
+}
+
+.content.isOpen {
+    transform: translate3d(220px,0,0);
+}
+
+.button {
+    position: relative;
+    width: 120px;
+    height: 40px;
+    cursor: pointer;
+    margin: 10px 0 40px 0;
+    padding: 15px;
+    transition-property: opacity, filter;
+    transition-duration: .15s;
+    text-transform: none;
+}
+
+.button-inner {
+    left: 0;
+    top: 50%;
+    display: inline-block;
+    margin-top: -2px;
+}
+
+.button-inner,
+.button-inner::after,
+.button-inner::before {
+    background-color: #fff;
+    position: absolute;
+    width: 40px;
+    height: 4px;
+    transition: transform 0.15s ease;
+    border-radius: 4px;
+}
+
+.button-inner::before,
+.button-inner::after {
+    content: "";
+    display: block;
+}
+
+.button-inner::before {
+    top: -10px;
+}
+
+.button-inner::after {
+    bottom: -10px;
+}
+
+.button.isOpen .button-inner::before {
+    transform: translate3d(-8px, 0, 0) rotate(-45deg) scale(0.7, 1);
+}
+
+.button.isOpen .button-inner::after {
+    transform: translate3d(-8px, 0, 0) rotate(45deg) scale(0.7, 1);
+}
+
+.button-label {
+    position: absolute;
+    top: 6px;
+    left: 50px;
+    font-size: 24px;
+    color: #fff;
+}
+
+.sidebar-title {
+    color: #2a9fd6;
+    cursor: pointer;
+    font-size: 16px;
+    line-height: 50px;
+    text-align: center;
+    text-transform: uppercase;
+    letter-spacing: 7px;
+    border-bottom: 1px solid #222;
+    background: #2a2a2a;
+}
+
+.nav li {
+    cursor: pointer;
+}
+
+.nav li a {
+    outline: 0;
+    position: relative;
+    display: block;
+    padding: 20px 0 20px 50px;
+    font-size: 14px;
+    color: #eee;
+    background: #333333;
+    border-bottom: 1px solid #222;
+    text-decoration: none;
+}
+
+.nav li a:before {
+    font: 14px fontawesome;
+    position: absolute;
+    top: 19px;
+    left: 20px;
+}
+
+.nav li:nth-child(1) a:before { content: '\f00a'; }
+.nav li:nth-child(2) a:before { content: '\f002'; }
+.nav li:nth-child(3) a:before { content: '\f084'; }
+.nav li:nth-child(4) a:before { content: '\f0e0'; }
+.nav li:nth-child(5) a:before { content: '\f0c0'; }
+.nav li:nth-child(6) a:before { content: '\f233'; }
+.nav li:nth-child(7) a:before { content: '\f023'; left: 23px; }
+
+.nav li a:hover {
+    background: #444;
+}
+
+::-moz-focus-inner {border: 0;}
+
+.nav li a.active {
+    box-shadow: inset 5px 0 0 #2A9FD6, inset 6px 0 0 #222;
+    background: #444;
+}
+
+.inner {
+    display: flex;
+    flex-direction: column;
+}
+
+.keys {
+    display: flex;
+    flex-direction: row;
+    flex-wrap: wrap;
+}
+
+.key {
+    background: #555;
+    border: 3px solid #2a9fd6;
+    border-radius: 5px;
+    box-shadow: 5px 5px 10px #000;
+    margin: 20px;
+    width: 300px;
+    height: 100px;
+    cursor: pointer;
+    display: flex;
+    justify-content: flex-start;
+    flex-direction: row;
+    transition: box-shadow 0.2s;
+}
+
+.key:hover {
+    box-shadow: 0 0 10px #eee;
+}
+
+.key i {
+    font-size: 48px;
+    margin: auto 0 auto 20px;
+}
+
+.key span {
+    font-size: 16px;
+    vertical-align: center;
+    margin: auto;
+    -moz-user-select: none;
+    user-select: none;
+}
+
+.modal {
+    display: block;
+    position: fixed;
+    z-index: 1;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    overflow: auto;
+    background-color: rgba(0, 0, 0, 0.4);
+}
+
+.modal-header {
+    margin: 15% auto;
+    padding: 20px;
+    border: 1px solid #888;
+    width: 80%;
+}
+
+.modal-body {
+    margin: auto;
+    padding: 20px;
+    border: 1px solid #888;
+    width: 80%;
+}
+
+.modal-footer {
+    margin: auto;
+    padding: 20px;
+    border: 1px solid #888;
+    width: 80%;
+}

@@ -2,19 +2,29 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <link href="/css/index.css" type="text/css" rel="stylesheet"/>
-    <script src="/js/typegraph.js" defer></script>
+    <link href="/css/index.min.css" type="text/css" rel="stylesheet"/>
+    <script src="/js/index.min.js" defer></script>
     <title>「ｓｈｉｍａｐａｎ．ｒｏｃｋｓ」</title>
 </head>
-<body style="background:#000;margin:0;">
+<body>
 <a href="/login"><img src="/img/flower.png"/></a>
 <canvas id="canvas">
     きみのブラウザはキャンバスを対応しません。Ｃｈｒｏｍｅを ダウンロードしてください。
 </canvas>
 <video autoplay loop id="video">
-    <source src="/img/edge.mp4" type="video/mp4"/>
 </video>
-<script>document.getElementById("video").volume = 0.2;</script>
+<script>
+    var videos = [
+        "/img/edge.mp4",
+        "/img/endthis.mp4",
+        "/img/hell.mp4"
+    ];
+    var video = document.createElement("source");
+    video.setAttribute("src", videos[Math.floor(Math.random() * videos.length)]);
+    video.setAttribute("type", "video/mp4");
+    document.getElementById("video").appendChild(video);
+    document.getElementById("video").volume = 0.2;
+</script>
 <div id="buffer"></div>
 </body>
 </html>

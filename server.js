@@ -5,6 +5,9 @@ var mongoose = require('mongoose');
 var morgan = require('morgan');
 var passport = require('passport');
 var cookieParser = require('cookie-parser');
+var session = require('express-session');
+var sanitizer = require('express-sanitizer');
+var helmet = require('helmet');
 
 var app = express();
 
@@ -19,20 +22,46 @@ var db = mongoose.connection;
 db.on('error', function(err) {
     if (err) console.log('MongoDB Connection Error: ', err);
 });
+var MongoStore = require('connect-mongo')(session);
+var mongoStore = new MongoStore({
+    url: config.dbHost
+});
 
-require('./config/passport.js');
 
+app.use(helmet());
+app.set('trust proxy', 1);
+app.use(session({
+    secret: 'secret',
+    name: 'session.id',
+    resave: false,
+    saveUninitialized: false,
+    store: mongoStore,
+    cookie: {
+        //secure: true,
+        httpOnly: true,
+        //domain: 'shimapan.rocks',
+        maxAge: 1000 * 60 * 60
+    }
+}));
+app.use(passport.initialize());
+app.use(passport.session());
 app.use(cookieParser());
 app.use(bodyParser.json());
-app.use(bodyParser.json({ type: 'application/json' }));
+app.use(bodyParser.json({ type: 'application/*+json' }))
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(bodyParser.text());
+app.use(sanitizer());
 app.use(methodOverride('X-HTTP-Method-Override'));
 app.use(passport.initialize());
 
-// Set /public to document root
+
+//app.use(favicon(__dirname + '/public/img/favicon.ico'));
 app.use(express.static(__dirname + '/public'));
-require('./app/routes')(app);
+
+
+require('./app/routes/routes.js')(app);
+require('./config/passport.js');
+
 
 // Start app
 var port = process.env.PORT || 8080;

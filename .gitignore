@@ -1,9 +1,9 @@
 node_modules/
-public/libs/
+
+public/js
+public/css
+
 .idea/
 .awcache/
 
 uploads/
-
-package-lock.json
-jwt.pem

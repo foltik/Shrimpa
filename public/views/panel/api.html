@@ -1,0 +1,30 @@
+<div class="inner" ng-controller="ApiController" ng-init="currKey={};showModal=false;getKeys()">
+    <div class="keys">
+        <div class="key" ng-repeat="key in keys">
+            <i class="fa fa-key"></i>
+            <span>{{key.identifier}}</span>
+        </div>
+        <div class="key add-key" ng-hide="keys.length >= 10">
+            <i class="fa fa-plus"></i>
+            <span>Create</span>
+        </div>
+    </div>
+    <div class="modal" ng-show="showModal==true">
+        <div class="modal-header">
+            <button class="close" type="button"></button>
+            <h4 class="modal-title">API Key</h4>
+        </div>
+        <div class="modal-body modal-key">
+            <p>API Key:</p>
+            <pre class="code">{{currKey.code}}</pre>
+            <p>Use this key with your preferred method of utilizing the Shimapan API.</p>
+            <p>Example with cURL:</p>
+            <pre class="code"></pre>
+            <div id="qr"></div>
+        </div>
+        <div class="modal-footer">
+            <button class="btn-delete" type="button"></button>
+            <button class="btn-back" type="button"></button>
+        </div>
+    </div>
+</div>

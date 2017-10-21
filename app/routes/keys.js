@@ -64,4 +64,11 @@ router.get('/get', function (req, res, next) {
     })
 });
 
+router.post('/delete', function(req, res, next) {
+    Key.deleteOne({key: req.body.key}, function(err) {
+        if (err) next(err);
+        else res.status(200).json({'message': 'Successfully deleted.'});
+    });
+});
+
 module.exports = router;

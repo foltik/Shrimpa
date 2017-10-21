@@ -4,7 +4,6 @@ var methodOverride = require('method-override');
 var mongoose = require('mongoose');
 var morgan = require('morgan');
 var passport = require('passport');
-var cookieParser = require('cookie-parser');
 var session = require('express-session');
 var sanitizer = require('express-sanitizer');
 var helmet = require('helmet');
@@ -45,7 +44,6 @@ app.use(session({
 }));
 app.use(passport.initialize());
 app.use(passport.session());
-app.use(cookieParser());
 app.use(bodyParser.json());
 app.use(bodyParser.json({ type: 'application/*+json' }))
 app.use(bodyParser.urlencoded({ extended: true }));

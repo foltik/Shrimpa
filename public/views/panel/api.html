@@ -1,30 +1,76 @@
-<div class="inner" ng-controller="ApiController" ng-init="currKey={};showModal=false;getKeys()">
+<div class="inner" ng-controller="ApiController" ng-init="getKeys();parseScope()">
     <div class="keys">
-        <div class="key" ng-repeat="key in keys">
+        <div class="key" ng-repeat="key in keys" ng-click="$parent.showKeyInfo(key)">
             <i class="fa fa-key"></i>
             <span>{{key.identifier}}</span>
         </div>
-        <div class="key add-key" ng-hide="keys.length >= 10">
+        <div class="key add-key" ng-hide="keys.length >= 10" ng-click="showNewKey()">
             <i class="fa fa-plus"></i>
             <span>Create</span>
         </div>
     </div>
-    <div class="modal" ng-show="showModal==true">
-        <div class="modal-header">
-            <button class="close" type="button"></button>
-            <h4 class="modal-title">API Key</h4>
+    <div class="modal" style="{{kModalShow?'display:block':'display:none'}}">
+        <div class="modal-sandbox" ng-click="hideKeyInfo()"></div>
+        <div class="modal-box">
+            <div class="modal-header">
+                <h1>Key Info:&emsp;<span class="key-name">{{currKey.identifier}}</span></h1>
+                <div class="close-modal" ng-click="hideKeyInfo()"><i class="fa fa-times"></i></div>
+            </div>
+            <div class="modal-body">
+                <p>API Key:</p>
+                <pre>{{currKey.key}}</pre>
+                <br/>
+                <p>This key can be used with any 3rd party program or service to upload to and manage your account
+                    with Shimapan.</p>
+                <p>For example, it can be used in a bash script to upload from the command line:</p>
+                <pre>APIKEY=[Your API Key Here]<br/>URL=$(curl -s -F "apikey=$APIKEY" -F "file=@$1" https://shimapan.rocks/api/upload | grep url | awk '{print $2}')<br/>echo $URL | tr -d '[\\\,"\n]'</pre>
+                <br/>
+                <p>Key Permissions:</p>
+                <table>
+                    <tr ng-repeat="(prefix, perms) in currKey.scopeObj">
+                        <th>{{prefix}}:</th>
+                        <td ng-repeat="perm in perms">
+                            <span ng-bind="perm.name"></span>
+                        </td>
+                    </tr>
+                </table>
+                <br/>
+                <p>If your key is compromised, it can be used to upload and modify your account without your knowledge.
+                    If it is lost or compromised, you can delete the key below, but be warned that this <em>cannot</em>
+                    be undone.</p>
+            </div>
+            <div class="modal-footer">
+                <button class="btn-del" ng-click="deleteKey(currKey)">Delete Key</button>
+                <button class="btn-close" ng-click="hideKeyInfo()">Close</button>
+            </div>
         </div>
-        <div class="modal-body modal-key">
-            <p>API Key:</p>
-            <pre class="code">{{currKey.code}}</pre>
-            <p>Use this key with your preferred method of utilizing the Shimapan API.</p>
-            <p>Example with cURL:</p>
-            <pre class="code"></pre>
-            <div id="qr"></div>
-        </div>
-        <div class="modal-footer">
-            <button class="btn-delete" type="button"></button>
-            <button class="btn-back" type="button"></button>
+    </div>
+    <div class="modal" style="{{nModalShow?'display:block':'display:none'}}">
+        <div class="modal-sandbox" ng-click="hideNewKey()"></div>
+        <div class="modal-box" id="createKey">
+            <div class="modal-header">
+                <h1>Create a Key</h1>
+                <div class="close-modal" ng-click="hideNewKey()"><i class="fa fa-times"></i></div>
+            </div>
+            <div class="modal-body">
+                <p>Identifier to describe the purpose/use of this key:</p>
+                <input id="identifier" placeholder="Identifier" class="form-control" type="text" ng-model="ckIdentifier"/>
+                <br/>
+                <p>Permissions the key should have:</p>
+                <table>
+                    <tr ng-repeat="(prefix, perms) in scopeObj">
+                        <th>{{prefix}}:</th>
+                        <td ng-repeat="perm in perms">
+                            <input type="checkbox" name="{{perm.name}}" ng-model="perm.isChecked" ng-change="checkCkPerm(prefix, perm)"/>
+                            <label for="{{perm.name}}" ng-bind="perm.name"></label>
+                        </td>
+                    </tr>
+                </table>
+            </div>
+            <div class="modal-footer">
+                <button ng-click="createKey()">Create</button>
+                <button ng-click="hideNewKey()">Cancel</button>
+            </div>
         </div>
     </div>
 </div>

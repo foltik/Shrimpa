@@ -12,10 +12,10 @@ var fs = require('fs');
 var path = require('path');
 
 var requireLogin = function(req, res, next) {
-    if (!req.session.passport.user)
-        res.redirect('/login');
+    if (!req.session || !req.session.passport)
+        return res.redirect('/login');
     else
-        next();
+        return next();
 };
 
 module.exports = function(app) {

@@ -24,3 +24,6 @@ whenever changes are made with `nodemon` for easy live development:
 ```bash
 $ npm run watch
 ```
+
+## Other Notes
+In order to contribute, please read the [Contributing](CONTRIBUTING.md) file.

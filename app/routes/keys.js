@@ -64,4 +64,10 @@ router.get('/get', function (req, res, next) {
     })
 });
 
+router.post('/delete', function(req, res, next) {
+    console.log('Tried to delete ' + req.body.key);
+    res.status(200).json({'message': 'Successfully deleted.'});
+    //Key.deleteOne({key: req.body.key})
+});
+
 module.exports = router;

@@ -38,6 +38,7 @@ router.post('/register', function (req, res, next) {
                         req.session.save(function(err) {
                             if (err) return next(err);
                             useInvite(req.body.invite, req.body.username);
+                            req.session.username = req.body.username;
                             res.status(200).json({'message': 'Registered.'});
                         });
                     });
@@ -55,6 +56,7 @@ router.post('/login', function (req, res, next) {
         if (!user) return res.status(401).json({'message': info});
         req.logIn(user, function(err) {
             if (err) return next(err);
+            req.session.username = user;
             res.status(200).json({'message': 'Logged in.'});
         });
     })(req, res, next);

@@ -20,20 +20,37 @@ angular.module('ApiSvc', []).service('ApiService', ['$http', '$window', function
         });
     };
 
-    this.deleteKey = function(key, cb) {
+    this.deleteKey = function (key, cb) {
         $http({
             method: 'POST',
             url: '/api/keys/delete',
             headers: {'Content-Type': 'application/x-www-form-urlencoded'},
-            transformRequest: function(obj) {
+            transformRequest: function (obj) {
                 var str = [];
                 for (var p in obj)
                     str.push(encodeURIComponent(p) + "=" + encodeURIComponent(obj[p]));
                 return str.join("&");
             },
             data: {key: key.key}
+        }).then(function (res) {
+            cb(res.data);
+        });
+    };
+
+    this.createKey = function (key, cb) {
+        $http({
+            method: 'POST',
+            url: '/api/keys/create',
+            headers: {'Content-Type': 'application/x-www-form-urlencoded'},
+            transformRequest: function (obj) {
+                var str = [];
+                for (var p in obj)
+                    str.push(encodeURIComponent(p) + "=" + encodeURIComponent(obj[p]));
+                return str.join("&");
+            },
+            data: key
         }).then(function(res) {
             cb(res.data);
         });
-    }
+    };
 }]);

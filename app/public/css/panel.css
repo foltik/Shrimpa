@@ -249,10 +249,14 @@ pre {
     position: relative;
     width: 80%;
     max-width: 700px;
-    margin: 100px auto;
+    margin: 60px auto;
     animation-name: modalbox;
     animation-duration: .3s;
     animation-timing-function: ease;
+}
+
+#createKey {
+    max-width: 920px;
 }
 
 .modal-header {
@@ -335,5 +339,34 @@ button:hover {
 em {
     text-transform: uppercase;
     font-weight: bold;
+}
+
+#identifier {
+    font-size: 14px;
+    background: #222;
+    color: #d3d3d3;
+    border: 1px solid #666;
+    border-radius: 4px;
+    padding: 10px;
+    margin: 10px 0;
+}
+
+th {
+    text-transform: uppercase;
+    font-weight: bold;
+    padding: 10px;
+}
+
+td {
+    padding: 10px;
+}
+
+td input {
+    vertical-align: middle;
+}
+
+td label {
+    margin-bottom: 2px;
+    padding-left: 3px;
 }
 

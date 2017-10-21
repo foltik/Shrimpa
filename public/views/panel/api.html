@@ -1,4 +1,4 @@
-<div class="inner" ng-controller="ApiController" ng-init="getKeys()">
+<div class="inner" ng-controller="ApiController" ng-init="getKeys();parseScope()">
     <div class="keys">
         <div class="key" ng-repeat="key in keys" ng-click="$parent.showKeyInfo(key)">
             <i class="fa fa-key"></i>
@@ -25,6 +25,16 @@
                 <p>For example, it can be used in a bash script to upload from the command line:</p>
                 <pre>APIKEY=[Your API Key Here]<br/>URL=$(curl -s -F "apikey=$APIKEY" -F "file=@$1" https://shimapan.rocks/api/upload | grep url | awk '{print $2}')<br/>echo $URL | tr -d '[\\\,"\n]'</pre>
                 <br/>
+                <p>Key Permissions:</p>
+                <table>
+                    <tr ng-repeat="(prefix, perms) in currKey.scopeObj">
+                        <th>{{prefix}}:</th>
+                        <td ng-repeat="perm in perms">
+                            <span ng-bind="perm.name"></span>
+                        </td>
+                    </tr>
+                </table>
+                <br/>
                 <p>If your key is compromised, it can be used to upload and modify your account without your knowledge.
                     If it is lost or compromised, you can delete the key below, but be warned that this <em>cannot</em>
                     be undone.</p>
@@ -37,22 +47,29 @@
     </div>
     <div class="modal" style="{{nModalShow?'display:block':'display:none'}}">
         <div class="modal-sandbox" ng-click="hideNewKey()"></div>
-        <div class="modal-box">
+        <div class="modal-box" id="createKey">
             <div class="modal-header">
                 <h1>Create a Key</h1>
                 <div class="close-modal" ng-click="hideNewKey()"><i class="fa fa-times"></i></div>
             </div>
             <div class="modal-body">
-                <p>Lorem ipsum dolor sit amet, consectetur adipisicing elit. Hic soluta saepe, atque, iure quidem
-                    maiores non dolores, fuga eaque voluptatibus corporis accusantium quas. Eligendi velit eum fugiat
-                    eius? Distinctio reiciendis sint error, repellat ut soluta doloremque, accusamus vitae placeat?</p>
-                <p>Laboriosam voluptas, iure rem provident laborum culpa atque fugit inventore sit. Corrupti dolore
-                    architecto inventore officia, odit totam voluptatem laboriosam tempore reiciendis, et neque,
-                    consequuntur. Non, tenetur? Tempore reprehenderit tenetur nemo asperiores alias commodi assumenda
-                    architecto minima numquam repellendus debitis nulla, rerum officia itaque, sunt nihil sequi quod
-                    perspiciatis, animi quas voluptates velit aperiam voluptatem.</p>
+                <p>Identifier to describe the purpose/use of this key:</p>
+                <input id="identifier" placeholder="Identifier" class="form-control" type="text" ng-model="ckIdentifier"/>
                 <br/>
-                <button ng-click="hideNewKey()">Close!</button>
+                <p>Permissions the key should have:</p>
+                <table>
+                    <tr ng-repeat="(prefix, perms) in scopeObj">
+                        <th>{{prefix}}:</th>
+                        <td ng-repeat="perm in perms">
+                            <input type="checkbox" name="{{perm.name}}" ng-model="perm.isChecked" ng-change="checkCkPerm(prefix, perm)"/>
+                            <label for="{{perm.name}}" ng-bind="perm.name"></label>
+                        </td>
+                    </tr>
+                </table>
+            </div>
+            <div class="modal-footer">
+                <button ng-click="createKey()">Create</button>
+                <button ng-click="hideNewKey()">Cancel</button>
             </div>
         </div>
     </div>

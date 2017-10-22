@@ -8,17 +8,40 @@ var login = require('./login.js');
 var panel = require('./panel.js');
 var keys = require('./keys.js');
 
-var fs = require('fs');
-var path = require('path');
+var Key = require('../models/Key.js');
 
-var requireLogin = function(req, res, next) {
+var checkApiKey = function (key, cb) {
+    Key.find({key: key}, function (err, res) {
+        if (err) throw err;
+        cb(res.length === 1);
+    });
+};
+
+var requireLogin = function (req, res, next) {
     if (!req.session || !req.session.passport)
         return res.redirect('/login');
     else
         return next();
 };
 
-module.exports = function(app) {
+var requireLoginApi = function(req, res, next) {
+    if (!req.session || !req.session.passport) {
+        if (!req.body.apikey) {
+            return res.redirect('/login');
+        } else {
+            checkApiKey(res.body.apikey, function(valid) {
+                if (!valid)
+                    return res.sendStatus(401);
+                else
+                    return next();
+            });
+        }
+    } else {
+        return next();
+    }
+};
+
+module.exports = function (app) {
     app.use('/', index);
     app.use('/home', requireLogin, home);
     app.use('/v', view);
@@ -30,7 +53,7 @@ module.exports = function(app) {
     app.use('/panel', requireLogin, panel);
     app.use('/panel*', requireLogin, panel);
 
-    app.use(function(err, req, res, next) {
+    app.use(function (err, req, res, next) {
         if (err.name === 'UnauthorizedError') {
             res.status(401);
             res.json({"message": err.name + ": " + err.message});

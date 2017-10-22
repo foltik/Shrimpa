@@ -11,6 +11,7 @@ var UploadSchema = mongoose.Schema({
         default: 0
     },
     uploader: String,
+    uploadKey: String,
     date: Date,
     file: Object
 });

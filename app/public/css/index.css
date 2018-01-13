@@ -8,7 +8,7 @@ body {
 
 a {
     position: absolute;
-    top: 5px;
+    top: 40px;
     left: 48%;
     opacity: 0.1;
     height: 30px;
@@ -34,8 +34,6 @@ video {
     left: 50%;
     min-width: 100%;
     min-height: 100%;
-    width: 1920px;
-    height: 760px;
     z-index: -100;
     transform: translateX(-50%) translateY(-50%);
     background-size: cover;

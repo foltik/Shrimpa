@@ -9,7 +9,8 @@ angular.module('AuthSvc', []).service('AuthService', ['$http', '$window', functi
             transformRequest: function(obj) {
                 var str = [];
                 for (var p in obj)
-                    str.push(encodeURIComponent(p) + "=" + encodeURIComponent(obj[p]));
+                    if (obj.hasOwnProperty(p))
+                        str.push(encodeURIComponent(p) + "=" + encodeURIComponent(obj[p]));
                 return str.join("&");
             },
             data: user
@@ -36,7 +37,8 @@ angular.module('AuthSvc', []).service('AuthService', ['$http', '$window', functi
             transformRequest: function(obj) {
                 var str = [];
                 for (var p in obj)
-                    str.push(encodeURIComponent(p) + "=" + encodeURIComponent(obj[p]));
+                    if (obj.hasOwnProperty(p))
+                        str.push(encodeURIComponent(p) + "=" + encodeURIComponent(obj[p]));
                 return str.join("&");
             },
             data: user

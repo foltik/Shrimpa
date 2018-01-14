@@ -2,7 +2,7 @@ var angular = require('angular');
 
 angular.module('UploadComp', ['ngFileUpload', 'AuthSvc']).component('uploadComponent', {
     templateUrl: '/views/shimapan/upload-form.html',
-    controller: ['$scope', 'Upload', '$timeout', 'AuthService', function ($scope, Upload, $timeout, AuthService) {
+    controller: ['$scope', 'Upload', '$timeout', function ($scope, Upload, $timeout) {
         $scope.errToString = function (err) {
             if (err === 'maxSize')
                 return "File too large.";

@@ -15,8 +15,8 @@ angular.module('AuthSvc', []).service('AuthService', ['$http', '$window', functi
             },
             data: user
         }).then(function(res) {
-            if (res.status === 401) return false;
-            $window.location.href = '/home';
+            if (res.status !== 401)
+                $window.location.href = '/home';
         })
     };
 

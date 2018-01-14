@@ -54,14 +54,14 @@
             </div>
             <div class="modal-body">
                 <p>Identifier to describe the purpose/use of this key:</p>
-                <input id="identifier" placeholder="Identifier" class="form-control" type="text" ng-model="ckIdentifier"/>
+                <input id="identifier" placeholder="Identifier" class="form-control" type="text" ng-model="currKeyIdentifier"/>
                 <br/>
                 <p>Permissions the key should have:</p>
                 <table>
                     <tr ng-repeat="(prefix, perms) in scopeObj">
                         <th>{{prefix}}:</th>
                         <td ng-repeat="perm in perms">
-                            <input type="checkbox" title="{{perm.name}} name="{{perm.name}}" ng-model="perm.isChecked" ng-change="checkCkPerm(prefix, perm)"/>
+                            <input type="checkbox" title="{{perm.name}} name="{{perm.name}}" ng-model="perm.isChecked" ng-change="updateCurrKeyPerm(prefix, perm)"/>
                             <label for="{{perm.name}}" ng-bind="perm.name"></label>
                         </td>
                     </tr>

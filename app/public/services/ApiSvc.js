@@ -11,7 +11,7 @@ angular.module('ApiSvc', []).service('ApiService', ['$http', function ($http) {
         });
     };
 
-    this.getAll = function (cb) {
+    this.getAllKeys = function (cb) {
         $http({
             method: 'GET',
             url: '/api/keys/get'

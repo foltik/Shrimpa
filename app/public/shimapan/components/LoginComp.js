@@ -7,7 +7,7 @@ angular.module('LoginComp', ['AuthSvc']).component('loginComponent', {
             AuthService.login({
                 username: $scope.username,
                 password: $scope.password
-            }).catch(function(err) {
+            }).catch(function() {
                 $scope.error = true;
                 $timeout(function() {
                     $scope.error = false;

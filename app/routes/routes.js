@@ -7,6 +7,7 @@ var register = require('./register.js');
 var login = require('./login.js');
 var panel = require('./panel.js');
 var keys = require('./keys.js');
+var invites = require('./invites.js')
 
 var Key = require('../models/Key.js');
 
@@ -48,6 +49,7 @@ module.exports = function (app) {
     app.use('/api/upload', upload);
     app.use('/api/auth', auth);
     app.use('/api/keys', requireLogin, keys);
+    app.use('/api/invites', requireLogin, invites);
     app.use('/register', register);
     app.use('/login', login);
     app.use('/panel', requireLogin, panel);

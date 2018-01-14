@@ -28,7 +28,8 @@ angular.module('ApiSvc', []).service('ApiService', ['$http', function ($http) {
             transformRequest: function (obj) {
                 var str = [];
                 for (var p in obj)
-                    str.push(encodeURIComponent(p) + "=" + encodeURIComponent(obj[p]));
+                    if (obj.hasOwnProperty(p))
+                        str.push(encodeURIComponent(p) + "=" + encodeURIComponent(obj[p]));
                 return str.join("&");
             },
             data: {key: key.key}
@@ -45,7 +46,8 @@ angular.module('ApiSvc', []).service('ApiService', ['$http', function ($http) {
             transformRequest: function (obj) {
                 var str = [];
                 for (var p in obj)
-                    str.push(encodeURIComponent(p) + "=" + encodeURIComponent(obj[p]));
+                    if (obj.hasOwnProperty(p))
+                        str.push(encodeURIComponent(p) + "=" + encodeURIComponent(obj[p]));
                 return str.join("&");
             },
             data: key

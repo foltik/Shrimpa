@@ -7,7 +7,7 @@ var register = require('./register.js');
 var login = require('./login.js');
 var panel = require('./panel.js');
 var keys = require('./keys.js');
-var invites = require('./invites.js')
+var invites = require('./invites.js');
 
 var Key = require('../models/Key.js');
 
@@ -55,7 +55,7 @@ module.exports = function (app) {
     app.use('/panel', requireLogin, panel);
     app.use('/panel*', requireLogin, panel);
 
-    app.use(function (err, req, res, next) {
+    app.use(function (err, req, res) {
         if (err.name === 'UnauthorizedError') {
             res.status(401);
             res.json({"message": err.name + ": " + err.message});

@@ -20,7 +20,7 @@ router.post('/create', function (req, res) {
         try {
             scope = JSON.parse(req.body.scope);
         } catch (e) {
-            res.status(400).json({'message': e.name + ': ' + e.message});
+            res.status(500).json({'message': e.name + ': ' + e.message});
             return;
         }
 

@@ -9,7 +9,7 @@ angular.module('NavCtrl', ['AuthSvc']).controller('NavController', ['$scope', '$
     $scope.logout = AuthService.logout;
 
     $scope.hasPermission = function(permission) {
-        if (!$scope.user.scope) return false;
-        return $scope.user.scope.indexOf(permission) !== -1;
+        return ($scope.user && $scope.user.scope &&
+            $scope.user.scope.indexOf(permission) !== -1);
     };
 }]);

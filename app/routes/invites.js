@@ -3,6 +3,18 @@ var router = express.Router();
 
 var Invite = require('../models/Invite.js');
 
+var requireScope = function (perm) {
+    return function(req, res, next) {
+        User.findOne({username: req.session.passport.user}, function(err, user) {
+            if (err) throw err;
+            if (user.scope.indexOf(perm) === -1)
+                res.status(400).json({'message': 'No permission.'});
+            else
+                next();
+        });
+    }
+};
+
 router.post('/create', function (req, res) {
     if (!req.body.scope) {
         res.status(400).json({'message': 'Bad request.'});

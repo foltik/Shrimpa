@@ -69,8 +69,8 @@ function setupSession(username, req, res, cb) {
     passport.authenticate('local')(req, res, function () {
         req.session.save(function (err) {
             if (!err) {
-                req.session.username = username;
-                req.session.canonicalname = canonicalize(username);
+                req.session.passport.username = username;
+                req.session.passport.canonicalname = canonicalize(username);
             }
             cb(err);
         });
@@ -114,8 +114,8 @@ router.post('/login', function (req, res, next) {
                 req.logIn(user, cb);
         },
         function (cb) {
-            req.session.username = req.body.username;
-            req.session.canonicalname = canonicalize(req.body.username);
+            req.session.passport.username = req.body.username;
+            req.session.passport.canonicalname = canonicalize(req.body.username);
             cb();
         }
     ], function (err) {
@@ -132,6 +132,7 @@ router.get('/logout', function (req, res) {
 });
 
 router.get('/session', function (req, res) {
+    console.log(req.session.passport);
     if (req.session.passport.canonicalname) {
         User.findOne({canonicalname: req.session.passport.canonicalname}, function (err, user) {
             res.status(200).json({

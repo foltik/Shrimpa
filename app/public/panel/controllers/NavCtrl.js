@@ -3,7 +3,7 @@ var angular = require('angular');
 angular.module('NavCtrl', ['AuthSvc']).controller('NavController', ['$scope', '$window', 'AuthService', function($scope, $window, AuthService) {
     $scope.user = {};
     AuthService.currentUser(function(user) {
-        $scope.user = user;
+        $scope.user = username;
     });
 
     $scope.logout = AuthService.logout;
@@ -12,5 +12,4 @@ angular.module('NavCtrl', ['AuthSvc']).controller('NavController', ['$scope', '$
         if (!$scope.user.scope) return false;
         return $scope.user.scope.indexOf(permission) !== -1;
     };
-
 }]);

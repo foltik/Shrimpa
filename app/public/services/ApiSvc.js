@@ -1,6 +1,6 @@
 var angular = require('angular');
 
-angular.module('ApiSvc', []).service('ApiService', ['$http', '$window', function ($http, $window) {
+angular.module('ApiSvc', []).service('ApiService', ['$http', function ($http) {
     this.getKey = function (identifier, cb) {
         $http({
             method: 'GET',
@@ -11,7 +11,7 @@ angular.module('ApiSvc', []).service('ApiService', ['$http', '$window', function
         });
     };
 
-    this.getAll = function (cb) {
+    this.getAllKeys = function (cb) {
         $http({
             method: 'GET',
             url: '/api/keys/get'
@@ -28,7 +28,8 @@ angular.module('ApiSvc', []).service('ApiService', ['$http', '$window', function
             transformRequest: function (obj) {
                 var str = [];
                 for (var p in obj)
-                    str.push(encodeURIComponent(p) + "=" + encodeURIComponent(obj[p]));
+                    if (obj.hasOwnProperty(p))
+                        str.push(encodeURIComponent(p) + "=" + encodeURIComponent(obj[p]));
                 return str.join("&");
             },
             data: {key: key.key}
@@ -45,7 +46,8 @@ angular.module('ApiSvc', []).service('ApiService', ['$http', '$window', function
             transformRequest: function (obj) {
                 var str = [];
                 for (var p in obj)
-                    str.push(encodeURIComponent(p) + "=" + encodeURIComponent(obj[p]));
+                    if (obj.hasOwnProperty(p))
+                        str.push(encodeURIComponent(p) + "=" + encodeURIComponent(obj[p]));
                 return str.join("&");
             },
             data: key

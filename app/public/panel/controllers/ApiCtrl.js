@@ -1,55 +1,46 @@
 var angular = require('angular');
 
 angular.module('ApiCtrl', ['ApiSvc', 'AuthSvc']).controller('ApiController', ['$scope', 'ApiService', 'AuthService', function ($scope, ApiService, AuthService) {
+    // Transforms an array of period-separated properties ex. ["file.upload", "user.view", "user.ban"]
+    // to json ex. { "file": "upload", "user": ["view", "ban"] }
     function splitScope(scope) {
         var res = {};
         for (var i in scope) {
-            var perm = scope[i];
-            var prefix = perm.substr(0, perm.indexOf('.'));
-            var postfix = perm.substr(perm.indexOf('.') + 1);
-            if (!res[prefix]) res[prefix] = [];
-            res[prefix].push({name: postfix});
+            if (scope.hasOwnProperty(i)) {
+                var perm = scope[i];
+                var prefix = perm.substr(0, perm.indexOf('.'));
+                var postfix = perm.substr(perm.indexOf('.') + 1);
+                if (!res[prefix]) res[prefix] = [];
+                res[prefix].push({name: postfix});
+            }
         }
         return res;
     }
 
-    $scope.checkCkPerm = function(prefix, perm) {
-        var index = $scope.scopeObj[prefix].indexOf(perm);
-        if ($scope.scopeObj[prefix][index].isChecked) {
-            $scope.ckScope.push(prefix + '.' + perm.name);
-        } else {
-            var index = $scope.ckScope.indexOf(prefix + '.' + perm.name);
-            $scope.ckScope.splice(index, 1);
-        }
-    };
-
+    // Called on init, retrieves the user's scope from the server.
     $scope.parseScope = function () {
         AuthService.currentUser(function (res) {
             $scope.scopeObj = splitScope(res.scope);
-            $scope.ckScope = [];
+            $scope.currKeyScope = [];
         })
     };
 
+    // Triggered when a checkbox for a permission changes.
+    // Updates the currKeyScope object with the addition or removal.
+    $scope.updateCurrKeyPerm = function(prefix, perm) {
+        var index = $scope.scopeObj[prefix].indexOf(perm);
+        if ($scope.scopeObj[prefix][index].isChecked) {
+            $scope.currKeyScope.push(prefix + '.' + perm.name);
+        } else {
+            index = $scope.currKeyScope.indexOf(prefix + '.' + perm.name);
+            $scope.currKeyScope.splice(index, 1);
+        }
+    };
+
     $scope.getKeys = function () {
-        ApiService.getAll(function (keys) {
+        ApiService.getAllKeys(function (keys) {
             $scope.keys = keys;
         });
-    };
-
-    $scope.hideNewKey = function () {
-        $scope.nModalShow = false;
-    };
-    $scope.showNewKey = function () {
-        $scope.nModalShow = true;
-    };
-
-    $scope.hideKeyInfo = function () {
-        $scope.kModalShow = false;
-    };
-    $scope.showKeyInfo = function (key) {
-        $scope.kModalShow = true;
-        $scope.currKey = key;
-        $scope.currKey.scopeObj = splitScope($scope.currKey.scope);
     };
 
     $scope.deleteKey = function (key) {
@@ -62,17 +53,35 @@ angular.module('ApiCtrl', ['ApiSvc', 'AuthSvc']).controller('ApiController', ['$
     };
 
     $scope.createKey = function () {
-        if ($scope.ckScope.length === 0 || !$scope.ckIdentifier)
+        if ($scope.currKeyScope.length === 0 || !$scope.currKeyIdentifier)
             return;
 
         ApiService.createKey({
-            identifier: $scope.ckIdentifier,
-            scope: JSON.stringify($scope.ckScope)
+            identifier: $scope.currKeyIdentifier,
+            scope: JSON.stringify($scope.currKeyScope)
         }, function (res) {
             if (res.key) {
                 $scope.hideNewKey();
                 $scope.getKeys();
             }
         });
-    }
+    };
+
+    // Hide/show new key modal dialog
+    $scope.hideNewKey = function () {
+        $scope.nModalShow = false;
+    };
+    $scope.showNewKey = function () {
+        $scope.nModalShow = true;
+    };
+
+    // Hide/show key info modal dialog
+    $scope.hideKeyInfo = function () {
+        $scope.kModalShow = false;
+    };
+    $scope.showKeyInfo = function (key) {
+        $scope.kModalShow = true;
+        $scope.currKey = key;
+        $scope.currKey.scopeObj = splitScope($scope.currKey.scope);
+    };
 }]);

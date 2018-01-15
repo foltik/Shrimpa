@@ -7,6 +7,11 @@ var UserSchema = mongoose.Schema({
         unique: true,
         required: true
     },
+    canonicalname: {
+        type: String,
+        unique: true,
+        required: true
+    },
     scope: [String],
     uploadCount: {
         type: Number,
@@ -19,6 +24,6 @@ var UserSchema = mongoose.Schema({
     date: Date
 });
 
-UserSchema.plugin(passportLocalMongoose);
+UserSchema.plugin(passportLocalMongoose, {usernameField: 'canonicalname'});
 
 module.exports = mongoose.model('User', UserSchema);

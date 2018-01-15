@@ -1,0 +1,14 @@
+<div class="inner" ng-controller="InviteController" ng-init="getInvites()">
+    <table class="invites">
+        <tr>
+            <th>Code</th>
+            <th>Scope</th>
+            <th>Expiry</th>
+        </tr>
+        <tr ng-repeat="invite in invites">
+            <td>{{invite.code}}</td>
+            <td>{{invite.scope}}</td>
+            <td>{{invite.expiry}}</td>
+        </tr>
+    </table>
+</div>

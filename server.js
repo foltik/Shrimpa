@@ -50,7 +50,6 @@ app.use(bodyParser.urlencoded({ extended: true }));
 app.use(bodyParser.text());
 app.use(sanitizer());
 app.use(methodOverride('X-HTTP-Method-Override'));
-app.use(passport.initialize());
 
 
 //app.use(favicon(__dirname + '/public/img/favicon.ico'));

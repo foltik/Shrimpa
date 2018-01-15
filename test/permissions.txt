@@ -1,0 +1,11 @@
+users
+    view
+    edit
+    ban
+
+file
+    upload
+
+api
+    create
+    delete

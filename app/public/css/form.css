@@ -58,8 +58,7 @@ fieldset:before {
     border: 1px solid #999;
     width: 226px;
     padding: 12px 12px;
-    margin: auto;
-    margin-bottom: 5px;
+    margin: auto auto 5px;
 }
 
 button {
@@ -70,9 +69,8 @@ button {
     cursor: pointer;
     display: block;
     padding: 10px 30px;
-    margin: auto;
-    margin-top: 20px;
-    transition: background 0.25s;
+    margin: 20px auto auto;
+    transition: background 0.25s, border-color 0.25s;
 }
 
 button:hover {
@@ -80,4 +78,32 @@ button:hover {
     color: #fff;
     text-decoration: none;
     outline: none;
+}
+
+button.shake {
+    background: #ff6666;
+    border-color: #ff6666;
+    color: #fff;
+    animation: shake 0.82s cubic-bezier(.36,.07,.19,.97) both;
+    transform: translate3d(0, 0, 0);
+    backface-visibility: hidden;
+    perspective: 1000px;
+}
+
+@keyframes shake {
+    10%, 90% {
+        transform: translate3d(-1px, 0, 0);
+    }
+
+    20%, 80% {
+        transform: translate3d(2px, 0, 0);
+    }
+
+    30%, 50%, 70% {
+        transform: translate3d(-4px, 0, 0);
+    }
+
+    40%, 60% {
+        transform: translate3d(4px, 0, 0);
+    }
 }

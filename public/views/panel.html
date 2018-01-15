@@ -12,13 +12,13 @@
         <div class="sidebar" ng-controller="NavController">
             <div class="sidebar-title" ng-click="$state.go('home')"><span>Shimapan</span></div>
             <ul class="nav">
-                <li><a ui-sref="dashboard" ng-class="{active: $state.$current.name=='dashboard'}">Dashboard</a></li>
-                <li><a ui-sref="search" ng-class="{active: $state.$current.name=='search'}">Search</a></li>
-                <li><a ui-sref="api" ng-class="{active: $state.$current.name=='api'}">API</a></li>
-                <li><a ui-sref="invites" ng-class="{active: $state.$current.name=='invites'}">Invites</a></li>
-                <li ng-hide="!hasPermission('users.view')"><a ui-sref="users" ng-class="{active: $state.$current.name=='users'}">Users</a></li>
-                <li><a ui-sref="stats" ng-class="{active: $state.$current.name=='stats'}">Statistics</a></li>
-                <li><a ng-click="logout()">Logout</a></li>
+                <li><a draggable="false" ui-sref="dashboard" ng-class="{active: $state.$current.name=='dashboard'}">Dashboard</a></li>
+                <li><a draggable="false" ui-sref="search" ng-class="{active: $state.$current.name=='search'}">Search</a></li>
+                <li><a draggable="false" ui-sref="api" ng-class="{active: $state.$current.name=='api'}">API</a></li>
+                <li><a draggable="false" ui-sref="invites" ng-class="{active: $state.$current.name=='invites'}">Invites</a></li>
+                <li ng-hide="!hasPermission('users.view')"><a draggable="false" ui-sref="users" ng-class="{active: $state.$current.name=='users'}">Users</a></li>
+                <li><a draggable="false" ui-sref="stats" ng-class="{active: $state.$current.name=='stats'}">Statistics</a></li>
+                <li><a draggable="false" ng-click="logout()">Logout</a></li>
             </ul>
         </div>
         <div class="content" ng-class="{isOpen: open}">

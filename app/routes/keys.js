@@ -2,9 +2,22 @@ var express = require('express');
 var router = express.Router();
 var crypto = require('crypto');
 
+var User = require('../models/User.js');
 var Key = require('../models/Key.js');
 
-router.post('/create', function (req, res) {
+var requireScope = function (perm) {
+    return function(req, res, next) {
+        User.findOne({username: req.session.passport.user}, function(err, user) {
+            if (err) throw err;
+            if (user.scope.indexOf(perm) === -1)
+                res.status(400).json({'message': 'No permission.'});
+            else
+                next();
+        });
+    }
+};
+
+router.post('/create', requireScope('api.create'), function (req, res) {
     if (!req.body.identifier || !req.body.scope) {
         res.status(400).json({'message': 'Bad request.'});
         return;
@@ -20,7 +33,7 @@ router.post('/create', function (req, res) {
         try {
             scope = JSON.parse(req.body.scope);
         } catch (e) {
-            res.status(400).json({'message': e.name + ': ' + e.message});
+            res.status(500).json({'message': e.name + ': ' + e.message});
             return;
         }
 
@@ -64,7 +77,7 @@ router.get('/get', function (req, res, next) {
     })
 });
 
-router.post('/delete', function(req, res, next) {
+router.post('/delete', requireScope('api.delete'), function(req, res, next) {
     Key.deleteOne({key: req.body.key}, function(err) {
         if (err) next(err);
         else res.status(200).json({'message': 'Successfully deleted.'});

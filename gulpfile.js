@@ -105,7 +105,9 @@ gulp.task('concatjs', function () {
     var tasks = files.map(function (entry) {
         return gulp.src(entry.src)
             .pipe(concat(entry.name))
-            .pipe(uglify())
+            .pipe(uglify().on('error', function(err) {
+                console.log(err.toString());
+            }))
             .pipe(gulp.dest('public/js'));
     });
 

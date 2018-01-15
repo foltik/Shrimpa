@@ -23,7 +23,7 @@
                 <p>This key can be used with any 3rd party program or service to upload to and manage your account
                     with Shimapan.</p>
                 <p>For example, it can be used in a bash script to upload from the command line:</p>
-                <pre>APIKEY=[Your API Key Here]<br/>URL=$(curl -s -F "apikey=$APIKEY" -F "file=@$1" https://shimapan.rocks/api/upload | grep url | awk '{print $2}')<br/>echo $URL | tr -d '[\\\,"\n]'</pre>
+                <pre>APIKEY=[Your API Key Here]<br/>URL=$(curl -s -F "apikey=$APIKEY" -F "file=@$1" https://shimapan.rocks/api/upload | grep -Po '"'"url"'"\s*:\s*"\K([^"]*)'<br/>echo $URL</pre>
                 <br/>
                 <p>Key Permissions:</p>
                 <table>
@@ -54,14 +54,14 @@
             </div>
             <div class="modal-body">
                 <p>Identifier to describe the purpose/use of this key:</p>
-                <input id="identifier" placeholder="Identifier" class="form-control" type="text" ng-model="ckIdentifier"/>
+                <input id="identifier" placeholder="Identifier" class="form-control" type="text" ng-model="currKeyIdentifier"/>
                 <br/>
                 <p>Permissions the key should have:</p>
                 <table>
                     <tr ng-repeat="(prefix, perms) in scopeObj">
                         <th>{{prefix}}:</th>
                         <td ng-repeat="perm in perms">
-                            <input type="checkbox" name="{{perm.name}}" ng-model="perm.isChecked" ng-change="checkCkPerm(prefix, perm)"/>
+                            <input type="checkbox" title="{{perm.name}}" name="{{perm.name}}" ng-model="perm.isChecked" ng-change="updateCurrKeyPerm(prefix, perm)"/>
                             <label for="{{perm.name}}" ng-bind="perm.name"></label>
                         </td>
                     </tr>

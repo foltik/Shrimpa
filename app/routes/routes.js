@@ -8,6 +8,7 @@ var login = require('./login.js');
 var panel = require('./panel.js');
 var keys = require('./keys.js');
 var invites = require('./invites.js');
+var users = require('./users.js');
 
 var Key = require('../models/Key.js');
 
@@ -50,6 +51,7 @@ module.exports = function (app) {
     app.use('/api/auth', auth);
     app.use('/api/keys', requireLogin, keys);
     app.use('/api/invites', requireLogin, invites);
+    app.use('/api/users', requireLogin, users);
     app.use('/register', register);
     app.use('/login', login);
     app.use('/panel', requireLogin, panel);

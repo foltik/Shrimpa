@@ -1,0 +1,18 @@
+<div class="inner" ng-controller="UserController" ng-init="getUsers()">
+    <table class="users">
+        <tr>
+            <th>Username</th>
+            <th>Scope</th>
+            <th>Upload Count</th>
+            <th>Upload Size</th>
+            <th>Date</th>
+        </tr>
+        <tr ng-repeat="user in users">
+            <td>{{user.username}}</td>
+            <td>{{user.scope}}</td>
+            <td>{{user.uploadCount}}</td>
+            <td>{{user.uploadSize}}</td>
+            <td>{{user.date}}</td>
+        </tr>
+    </table>
+</div>

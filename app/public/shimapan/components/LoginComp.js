@@ -11,7 +11,7 @@ angular.module('LoginComp', ['AuthSvc']).component('loginComponent', {
                 $scope.error = true;
                 $timeout(function() {
                     $scope.error = false;
-                },820);
+                }, 820);
             });
         };
     }]

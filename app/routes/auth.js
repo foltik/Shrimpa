@@ -31,19 +31,32 @@ function checkInvite(code, cb) {
 }
 
 // Validates the username, then registers the user in the database using the given invite.
-function registerUser(username, password, invite, sanitizeFn, cb) {
+function registerUser(username, password, invite, sanitize, cb) {
     async.series([
         function (cb) {
             // Canonicalize and sanitize the username, checking for HTML
             var canonicalName = canonicalize(username);
-            var sanitizedName = sanitizeFn(canonicalName);
+            var sanitizedName = sanitize(canonicalName).replace(/\s/g,'');
 
             if (sanitizedName !== canonicalName)
-                cb('Username failed sanitization check.');
+                cb('Username contains invalid characters.');
             else if (canonicalName.length > 36)
                 cb('Username too long.');
             else
                 cb(null);
+        },
+        function(cb) {
+            async.waterfall([
+                function(cb) {
+                    User.count({canonicalname: canonicalize(username)}, cb);
+                },
+                function(count, cb) {
+                    if (count !== 0)
+                        cb('Username in use.');
+                    else
+                        cb(null);
+                }
+            ], cb);
         },
         function (cb) {
             User.register(new User({

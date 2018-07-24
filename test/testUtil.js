@@ -20,81 +20,61 @@ chai.use(http);
 
 //---------------- DATABASE UTIL ----------------//
 
-var resetDatabase = function(callback) {
-    db.once('open', function() {
-        async.each([
-            User, Invite, Upload,
-        ], function(schema, cb) {
-            schema.remove({}, function(err) {
-                cb(err);
-            });
-        }, function(err) {
-            if (err) console.log(err);
-            callback();
-        });
-    });
+var resetDatabase = function(cb) {
+    async.each(
+        [User, Invite, Upload],
+        (schema, cb) => schema.remove({}, cb),
+    cb);
 };
 
-var createInvites = function(invites, callback) {
-    async.each(invites, function(invite, cb) {
-        if (!invite.scope) {
-            invite.scope = ['test.perm', 'file.upload'];
-        }
-        if (!invite.exp) {
-            var date = new Date();
-            date.setDate(date.getDate() + 7);
-            invite.exp = date;
-        }
-
-        invite.issuer = 'Mocha';
-        invite.issued = new Date();
-
-        Invite.create(invite, function(err) {
-            cb(err);
-        });
-    }, function(err) {
-        if (err) console.log(err);
-        callback();
-    })
+const createInvite = function(invite, done) {
+    if (!invite.code) invite.code = 'code';
+    if (!invite.scope) invite.scope = ['test.perm', 'file.upload'];
+    if (!invite.issuer) invite.issuer = 'Mocha';
+    if (!invite.issued) invite.issued = new Date();
+    Invite.create(invite, done);
 };
 
+const createInvites = function(invites, done) {
+    async.each(invites, createInvite, done);
+};
+
+var createTestInvite = function(done) {
+    createInvite({code: 'code'}, done);
+};
+
+var createTestInvites = function(n, done) {
+    const codes = Array.from(new Array(n), (val, index) => 'code' + index);
+    async.each(codes, (code, cb) => createInvite({code: code}, cb), done);
+};
 
 
 //---------------- REGISTER UTIL ----------------//
 
-var register = function(user, cb) {
+const register = function(user, cb) {
     chai.request(server)
         .post('/api/auth/register')
         .send(user)
         .end(cb);
 };
 
-var verifySuccessfulRegister = function(user, done) {
-    register(user, function (err, res) {
+const verifySuccessfulRegister = function(user, done) {
+    register(user, function(err, res) {
         res.should.have.status(200);
+        res.body.should.be.a('object');
+        res.body.should.have.property('message').eql('Registration successful.');
         done();
     });
 };
 
-var verifyFailedUserRegister = function(user, done) {
-    register(user, function (err, res) {
-        res.should.have.status(401);
+const verifyFailedRegister = function(user, message, status, done) {
+    register(user, function(err, res) {
+        res.should.have.status(status);
         res.body.should.be.a('object');
-        res.body.should.have.property('message').eql('Invalid username.');
-        done();
-    });
-};
-
-var verifyFailedInviteRegister = function(user, done) {
-    register(user, function (err, res) {
-        res.should.have.status(401);
-        res.body.should.be.a('object');
-        res.body.should.have.property('message').eql('Invalid invite code.');
+        res.body.should.have.property('message').eql(message);
         done();
     })
 };
-
-
 
 //---------------- LOGIN UTIL ----------------//
 
@@ -106,14 +86,14 @@ var login = function(user, cb) {
 };
 
 var verifySuccessfulLogin = function(user, done) {
-    login(user, function (err, res) {
+    login(user, function(err, res) {
         res.should.have.status(200);
         done();
     });
 };
 
 var verifyFailedUsernameLogin = function(user, done) {
-    login(user, function (err, res) {
+    login(user, function(err, res) {
         res.should.have.status(401);
         res.body.should.be.a('object');
         res.body.should.have.property('message').eql('Invalid username.');
@@ -122,14 +102,13 @@ var verifyFailedUsernameLogin = function(user, done) {
 };
 
 var verifyFailedPasswordLogin = function(user, done) {
-    login(user, function (err, res) {
+    login(user, function(err, res) {
         res.should.have.status(401);
         res.body.should.be.a('object');
         res.body.should.have.property('message').eql('Invalid password.');
         done();
     });
 };
-
 
 
 //---------------- UPLOAD UTIL ----------------//
@@ -186,7 +165,7 @@ var verifyFailedPermissionUpload = function(user, done) {
 var verifyFailedAuthUpload = function(done) {
     async.parallel([
         function(cb) {
-            upload('bogus', 'test/test.png', function (err, res) {
+            upload('bogus', 'test/test.png', function(err, res) {
                 res.should.have.status(401);
                 res.body.should.be.a('object');
                 res.body.should.have.property('message').eql('UnauthorizedError: jwt malformed');
@@ -204,11 +183,11 @@ var verifyFailedAuthUpload = function(done) {
                 '8JwmEFxO3zRf66tWo',
                 'test/test.png',
                 function(err, res) {
-                res.should.have.status(401);
-                res.body.should.be.a('object');
-                res.body.should.have.property('message').eql('UnauthorizedError: invalid signature');
-                cb();
-            })
+                    res.should.have.status(401);
+                    res.body.should.be.a('object');
+                    res.body.should.have.property('message').eql('UnauthorizedError: invalid signature');
+                    cb();
+                })
         }
     ], function(err, res) {
         if (err) console.log(err);
@@ -217,16 +196,17 @@ var verifyFailedAuthUpload = function(done) {
 };
 
 
-
 module.exports = {
     resetDatabase: resetDatabase,
 
+    createInvite: createInvite,
     createInvites: createInvites,
+    createTestInvite: createTestInvite,
+    createTestInvites: createTestInvites,
 
     register: register,
     verifySuccessfulRegister: verifySuccessfulRegister,
-    verifyFailedUserRegister: verifyFailedUserRegister,
-    verifyFailedInviteRegister: verifyFailedInviteRegister,
+    verifyFailedRegister: verifyFailedRegister,
 
     login: login,
     verifySuccessfulLogin: verifySuccessfulLogin,

@@ -1,28 +1,28 @@
-var express = require('express');
-var bodyParser = require('body-parser');
-var methodOverride = require('method-override');
-var mongoose = require('mongoose');
-var morgan = require('morgan');
-var passport = require('passport');
-var session = require('express-session');
-var sanitizer = require('express-sanitizer');
-var helmet = require('helmet');
+const express = require('express');
+const bodyParser = require('body-parser');
+const methodOverride = require('method-override');
+const mongoose = require('mongoose');
+const morgan = require('morgan');
+const passport = require('passport');
+const session = require('express-session');
+const sanitizer = require('express-sanitizer');
+const helmet = require('helmet');
 
-var app = express();
+const app = express();
 
-var config = require('config');
+const config = require('config');
 if(config.util.getEnv('NODE_ENV') !== 'test') {
     app.use(morgan('combined'));
 }
 
 mongoose.Promise = global.Promise;
 mongoose.connect(config.dbHost, {useMongoClient: true});
-var db = mongoose.connection;
+const db = mongoose.connection;
 db.on('error', function(err) {
     if (err) console.log('MongoDB Connection Error: ', err);
 });
-var MongoStore = require('connect-mongo')(session);
-var mongoStore = new MongoStore({
+const MongoStore = require('connect-mongo')(session);
+const mongoStore = new MongoStore({
     url: config.dbHost
 });
 
@@ -45,7 +45,7 @@ app.use(session({
 app.use(passport.initialize());
 app.use(passport.session());
 app.use(bodyParser.json());
-app.use(bodyParser.json({ type: 'application/*+json' }))
+app.use(bodyParser.json({ type: 'application/*+json' }));
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(bodyParser.text());
 app.use(sanitizer());
@@ -53,6 +53,7 @@ app.use(methodOverride('X-HTTP-Method-Override'));
 
 
 //app.use(favicon(__dirname + '/public/img/favicon.ico'));
+console.log(__dirname + '/public');
 app.use(express.static(__dirname + '/public'));
 
 
@@ -61,9 +62,15 @@ require('./config/passport.js');
 
 
 // Start app
-var port = process.env.PORT || 8080;
-var server = app.listen(port);
+const port = process.env.PORT || 8080;
+const server = app.listen(port);
 console.log('Listening on port ', port, '...');
+
+// Handle sigint
+process.on('SIGINT', () => {
+    console.log('Shutting down...');
+    process.exitCode = 0;
+});
 
 // Expose app
 exports.db = db;

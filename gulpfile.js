@@ -1,22 +1,25 @@
-var gulp = require('gulp');
-var concat = require('gulp-concat');
-var rename = require('gulp-rename');
-var uglify = require('gulp-uglify');
-var source = require('vinyl-source-stream');
-var browserify = require('browserify');
-var evstream = require('event-stream');
-var cleanCSS = require('gulp-clean-css');
-var nodemon = require('gulp-nodemon');
-var path = require('path');
+'use strict';
 
-gulp.task('start', function() {
+const gulp = require('gulp');
+const concat = require('gulp-concat');
+const rename = require('gulp-rename');
+const uglify = require('gulp-uglify');
+const source = require('vinyl-source-stream');
+const browserify = require('browserify');
+const es = require('event-stream');
+const cleanCSS = require('gulp-clean-css');
+const nodemon = require('gulp-nodemon');
+const path = require('path');
+
+gulp.task('start', (done) => {
     nodemon({
         script: 'server.js',
         ignore: '*.*'
     });
-})
+    done();
+});
 
-gulp.task('watch', function () {
+gulp.task('watch', (done) => {
     nodemon({
         script: 'server.js',
         ext: 'js html css',
@@ -28,111 +31,101 @@ gulp.task('watch', function () {
         tasks: function (changedFiles) {
             var tasks = [];
             changedFiles.forEach(function (file) {
-                if (path.extname(file) === '.js' && !~tasks.indexOf('minjs'))
-                    tasks.push('minjs');
-                if (path.extname(file) === '.css' && !~tasks.indexOf('mincss'))
-                    tasks.push('mincss');
+                if (path.extname(file) === '.js' && !~tasks.indexOf('MakeJS'))
+                    tasks.push('MakeJS');
+                if (path.extname(file) === '.css' && !~tasks.indexOf('MakeCSS'))
+                    tasks.push('MakeCSS');
             });
             return tasks;
         }
     }).on('restart?', function () {
-        gulp.start('default');
+        gulp.task('default')();
     });
 });
 
-gulp.task('default', function () {
-    gulp.start('minjs');
-    gulp.start('mincss');
-});
-
-gulp.task('mincss', function () {
-    var files = [
+gulp.task('MinifyCSS', () => {
+    const files = [
         {
             src: 'app/public/css/form.css',
-            name: 'form.min.css'
+            dest: 'form.min.css'
         },
         {
             src: 'app/public/css/home.css',
-            name: 'home.min.css'
+            dest: 'home.min.css'
         },
         {
             src: 'app/public/css/panel.css',
-            name: 'panel.min.css'
+            dest: 'panel.min.css'
         },
         {
             src: 'app/public/css/index.css',
-            name: 'index.min.css'
+            dest: 'index.min.css'
         }
     ];
 
-    var tasks = files.map(function (entry) {
-        return gulp.src(entry.src)
+    const tasks = files.map(file =>
+        gulp.src(file.src)
             .pipe(cleanCSS())
-            .pipe(rename(entry.name))
-            .pipe(gulp.dest('public/css'));
-    });
+            .pipe(rename(file.dest))
+            .pipe(gulp.dest('public/css')));
 
-    return evstream.merge.apply(null, tasks);
-})
-
-gulp.task('minjs', function () {
-    gulp.start('concatjs');
-    gulp.start('browserify');
+    return es.merge(tasks)
+        .pipe(gulp.dest('public/css'));
 });
 
-gulp.task('concatjs', function () {
-    var files = [
+gulp.task('MinifyJS', () => {
+    const files = [
         {
             src: [
                 'app/public/services/*.js',
                 'app/public/panel/**/*.js'
             ],
-            name: 'panel.min.js'
+            dest: 'panel.min.js'
         },
         {
             src: [
                 'app/public/services/*.js',
                 'app/public/shimapan/**/*.js'
             ],
-            name: 'shimapan.min.js'
+            dest: 'shimapan.min.js'
         },
         {
             src: 'app/public/index/*.js',
-            name: 'index.min.js'
+            dest: 'index.min.js'
         }
     ];
 
-    var tasks = files.map(function (entry) {
-        return gulp.src(entry.src)
-            .pipe(concat(entry.name))
-            .pipe(uglify().on('error', function(err) {
-                console.log(err.toString());
-            }))
-            .pipe(gulp.dest('public/js'));
-    });
+    const tasks = files.map(file =>
+        gulp.src(file.src)
+            .pipe(concat(file.dest))
+            .pipe(uglify())
+    );
 
-    return evstream.merge.apply(null, tasks);
-})
+    return es.merge(tasks)
+        .pipe(gulp.dest('public/js'));
+});
 
-gulp.task('browserify', ['concatjs'], function () {
-    var files = [
+gulp.task('BrowserifyJS', () => {
+    const files = [
         {
             src: 'public/js/shimapan.min.js',
-            name: 'shimapan.bundle.js'
-        },
-        {
+            dest: 'shimapan.bundle.js'
+        }, {
             src: 'public/js/panel.min.js',
-            name: 'panel.bundle.js'
+            dest: 'panel.bundle.js'
         }
     ];
 
-    var tasks = files.map(function (entry) {
-        return browserify({entries: [entry.src]})
-            .bundle()
-            .pipe(source(entry.src))
-            .pipe(rename(entry.name))
-            .pipe(gulp.dest('public/js'));
-    });
+    const tasks = files.map(entry =>
+        browserify({entries: [entry.src], debug: true}).bundle()
+            .pipe(source(entry.dest))
+    );
 
-    return evstream.merge.apply(null, tasks);
+    return es.merge(tasks)
+        .pipe(gulp.dest('public/js'));
 });
+
+gulp.task('MakeJS', gulp.series('MinifyJS', 'BrowserifyJS'));
+gulp.task('MakeCSS', gulp.series('MinifyCSS'));
+
+gulp.task('default', gulp.parallel('MakeJS', 'MakeCSS'));

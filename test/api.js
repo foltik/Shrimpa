@@ -1,140 +1,165 @@
 process.env.NODE_ENV = 'test';
 
-var async = require('async');
+const app = require('../server');
+const server = app.server;
 
-var mongoose = require('mongoose');
-var User = require('../app/models/User.js');
-var Invite = require('../app/models/Invite.js');
-var Upload = require('../app/models/Upload.js');
+const User = require('../app/models/User.js');
+const Invite = require('../app/models/Invite.js');
+const Upload = require('../app/models/Upload.js');
 
-var chai = require('chai');
-var should = chai.should();
-var app = require('../server');
-var server = app.server;
-
-var util = require('./testUtil.js');
-
-before(util.resetDatabase);
+const util = require('./testUtil.js');
+const canonicalize = require('../app/util/canonicalize').canonicalize;
 
 describe('Users', function() {
-    describe('/POST register', function() {
-        describe('0 Well Formed Requests', function() {
-            beforeEach((done) => {
-                async.series([
-                    util.resetDatabase,
-                    util.createTestInvite
-                ], done);
-            });
+    beforeEach(async () => util.clearDatabase());
 
-            it('MUST register a valid user with a valid invite', function(done) {
-                util.verifySuccessfulRegister({username: 'user', password: 'pass', invite: 'code'}, done);
-            });
+    describe('/POST register', () => {
+        describe('0 Valid Request', () => {
+            async function verifySuccessfulRegister(user) {
+                await util.createTestInvite();
 
-            it('MUST register a username with unicode symbols and a valid invite', function(done) {
-                util.verifySuccessfulRegister({username: 'ᴮᴵᴳᴮᴵᴿᴰ', password: 'pass', invite: 'code'}, done);
-            })
+                const res = await util.registerUser(user);
+
+                res.should.have.status(200);
+                res.body.should.be.a('object');
+                res.body.should.have.property('message').eql('Registration successful.');
+
+                const userCount = await User.countDocuments({username: user.username});
+                userCount.should.eql(1);
+
+                const inviteCount = await Invite.countDocuments({code: user.invite, recipient: canonicalize(user.username)});
+                inviteCount.should.eql(1);
+            }
+
+            it('MUST register a valid user with a valid invite', async () =>
+                verifySuccessfulRegister({username: 'user', password: 'pass', invite: 'code'})
+            );
+
+            it('MUST register a username with unicode symbols and a valid invite', async () =>
+                verifySuccessfulRegister({username: 'ᴮᴵᴳᴮᴵᴿᴰ', password: 'pass', invite: 'code'})
+            );
         });
 
 
-        describe('1 Invalid Invites', function() {
-            beforeEach(util.resetDatabase);
+        describe('1 Invalid Invites', () => {
+            async function verifyRejectedInvite(invite, message) {
+                const user = {username: 'user', password: 'pass', invite: 'code'};
+                if (invite) {
+                    await util.createInvite(invite);
+                    user.invite = invite.code;
+                }
 
-            const verifyRejectedInvite = function(invite, message, done) {
-                const user = {username: 'user', password: 'pass', invite: invite && invite.code ? invite.code : 'code'};
-                const create = invite ? util.createInvite : (invite, cb) => cb();
-                async.series([
-                    (cb) => create(invite, cb),
-                    (cb) => util.verifyFailedRegister(user, message, 422, cb)
-                ], done);
-            };
+                const res = await(util.registerUser(user));
+                res.should.have.status(422);
+                res.body.should.be.a('object');
+                res.body.should.have.property('message').eql(message);
+            }
 
-            it('MUST NOT register a nonexistant invite', function(done) {
-                verifyRejectedInvite(null, 'Invalid invite code.', done);
-            });
+            it('MUST NOT register a nonexistant invite', async () =>
+                verifyRejectedInvite(null, 'Invalid invite code.')
+            );
 
-            it('MUST NOT register a used invite', function(done) {
-                verifyRejectedInvite({used: new Date()}, 'Invite already used.', done);
-            });
+            it('MUST NOT register a used invite', async () =>
+                verifyRejectedInvite({used: new Date()}, 'Invite already used.')
+            );
 
-            it('MUST NOT register an expired invite', function(done) {
-                verifyRejectedInvite({exp: new Date()}, 'Invite expired.', done);
-            })
+            it('MUST NOT register an expired invite', async () =>
+                verifyRejectedInvite({exp: new Date()}, 'Invite expired.')
+            );
         });
 
 
-        describe('2 Invalid Usernames', function() {
-            beforeEach((done) => {
-                async.series([
-                    util.resetDatabase,
-                    (cb) => util.createTestInvites(3, cb)
-                ], done);
-            });
+        describe('2 Invalid Usernames', () => {
+            async function verifyRejectedUsername(user, message) {
+                const res = await util.registerUser(user);
+                res.should.have.status(422);
+                res.body.should.be.a('object');
+                res.body.should.have.property('message').eql(message);
+            }
 
-            it('MUST NOT register a duplicate username', function(done) {
+            it('MUST NOT register a duplicate username', async () => {
+                await util.createTestInvites(2);
                 const user0 = {username: 'user', password: 'pass', invite: 'code0'};
                 const user1 = {username: 'user', password: 'diff', invite: 'code1'};
-                async.series([
-                    (cb) => util.verifySuccessfulRegister(user0, cb),
-                    (cb) => util.verifyFailedRegister(user1, 'Username in use.', 422, cb)
-                ], done);
+
+                await util.registerUser(user0);
+                return verifyRejectedUsername(user1, 'Username in use.');
             });
 
-            it('MUST NOT register a username with a duplicate canonical name', function(done) {
+            it('MUST NOT register a username with a duplicate canonical name', async () => {
+                await util.createTestInvites(2);
                 const user0 = {username: 'bigbird', password: 'pass', invite: 'code0'};
                 const user1 = {username: 'ᴮᴵᴳᴮᴵᴿᴰ', password: 'diff', invite: 'code1'};
-                async.series([
-                    (cb) => util.verifySuccessfulRegister(user0, cb),
-                    (cb) => util.verifyFailedRegister(user1, 'Username in use.', 422, cb)
-                ], done);
+
+                await util.registerUser(user0);
+                return verifyRejectedUsername(user1, 'Username in use.');
             });
 
-            it('MUST NOT register a username containing whitespace', function(done) {
+            it('MUST NOT register a username containing whitespace', async () => {
+                await util.createTestInvites(3);
                 const users = [
                     {username: 'user name', password: 'pass', invite: 'code0'},
                     {username: 'user　name', password: 'pass', invite: 'code1'},
                     {username: 'user name', password: 'pass', invite: 'code2'}
                 ];
+
                 const failMsg = 'Username contains invalid characters.';
-                async.each(users, (user, cb) => util.verifyFailedRegister(user, failMsg, 422, cb), done);
+                return Promise.all(users.map(user => verifyRejectedUsername(user, failMsg)));
             });
 
-            it('MUST NOT register a username containing HTML', function(done) {
-                const user = {username: 'user<svg/onload=alert("XSS")>', password: 'pass', invite: 'code0'};
-                util.verifyFailedRegister(user, 'Username contains invalid characters.', 422, done);
+            it('MUST NOT register a username containing HTML', async () => {
+                await util.createTestInvite();
+                const user = {username: 'user<svg/onload=alert("XSS")>', password: 'pass', invite: 'code'};
+                return verifyRejectedUsername(user, 'Username contains invalid characters.');
             });
 
-            it('MUST NOT register a username with too many characters', function(done) {
-                const user = {username: '123456789_123456789_123456789_1234567', password: 'pass', invite: 'code0'};
-                util.verifyFailedRegister(user, 'Username too long.', 422, done);
+            it('MUST NOT register a username with too many characters', async () => {
+                await util.createTestInvite();
+                const user = {username: '123456789_123456789_123456789_1234567', password: 'pass', invite: 'code'};
+                return verifyRejectedUsername(user, 'Username too long.');
             })
         });
     });
 
-    describe('/POST login', function() {
-        it('SHOULD accept valid user, valid password', function(done) {
-            util.verifySuccessfulLogin({
-                username: 'TestUser1',
-                password: 'TestPassword'
-            }, done);
+    describe('/POST login', () => {
+        async function verifySuccessfulLogin(credentials) {
+            const res = await util.login(credentials);
+            res.should.have.status(200);
+            res.body.should.be.a('object');
+            res.body.should.have.property('message').eql('Logged in.');
+        }
+
+        async function verifyFailedLogin(credentials) {
+            const res = await util.login(credentials);
+            res.should.have.status(401);
+            res.body.should.be.a('object');
+            res.body.should.have.property('message').eql('Unauthorized.');
+        }
+
+        describe('0 Valid Request', () => {
+            it('SHOULD accept a valid user with a valid password', async () => {
+                await util.createTestUser();
+                return verifySuccessfulLogin({username: 'user', password: 'pass'});
+            });
         });
 
-        it('SHOULD NOT accept valid user, invalid password', function(done) {
-            util.verifyFailedPasswordLogin({
-                username: 'TestUser1',
-                password: 'bogus'
-            }, done);
+
+        describe('1 Invalid Password', () => {
+            it('SHOULD NOT accept an invalid password', async () => {
+                await util.createTestUser();
+                return verifyFailedLogin({username: 'user', password: 'bogus'});
+            });
         });
 
-        it('SHOULD NOT accept invalid user, any password', function(done) {
-            util.verifyFailedUsernameLogin({
-                username: 'BogusTestUser',
-                password: 'bogus'
-            }, done);
+        describe('2 Invalid User', () => {
+            it('SHOULD NOT accept an invalid user', async () =>
+                verifyFailedLogin({username: 'bogus', password: 'bogus'})
+            );
         });
     });
 });
 
-describe('Uploads', function() {
+/*describe('Uploads', function() {
     describe('/POST upload', function() {
         it('SHOULD accept logged in valid upload', function(done) {
             util.verifySuccessfulUpload({
@@ -161,10 +186,6 @@ describe('Uploads', function() {
             }, done);
         })
     });
-});
+});*/
 
-after(function() {
-    server.close(function() {
-        process.exit();
-    });
-});
+after(() => server.close(() => process.exit(0)));

@@ -1,127 +1,72 @@
 process.env.NODE_ENV = 'test';
 
-var async = require('async');
+const User = require('../app/models/User.js');
+const Invite = require('../app/models/Invite.js');
+const Upload = require('../app/models/Upload.js');
 
-var mongoose = require('mongoose');
-var User = require('../app/models/User.js');
-var Invite = require('../app/models/Invite.js');
-var Upload = require('../app/models/Upload.js');
-
-var chai = require('chai');
-var http = require('chai-http');
-var app = require('../server');
-var server = app.server;
-var db = app.db;
-
-var should = chai.should;
-var expect = chai.expect;
-
+const chai = require('chai');
+const http = require('chai-http');
 chai.use(http);
+const should = chai.should();
 
-//TODO: BAD! Move to a util file!
-// Normalizes, decomposes, and lowercases a utf-8 string
-const canonicalizeUsername = username => username.normalize('NFKD').toLowerCase();
+const app = require('../server');
+const server = app.server;
+
+//TODO: REMOVE
+const async = require('async');
+
+const canonicalize = require("../app/util/canonicalize").canonicalize;
+
 
 //---------------- DATABASE UTIL ----------------//
 
-var resetDatabase = function(cb) {
-    async.each(
-        [User, Invite, Upload],
-        (schema, cb) => schema.remove({}, cb),
-    cb);
-};
+exports.clearDatabase = async () =>
+    Promise.all([
+        User.remove({}),
+        Invite.remove({}),
+        Upload.remove({})
+    ]);
 
-const createInvite = function(invite, done) {
+//---------------- API ROUTES ----------------//
+
+exports.login = async (credentials) =>
+    chai.request(server)
+        .post('/api/auth/login')
+        .send(credentials);
+
+exports.createInvite = async (invite) => {
     if (!invite.code) invite.code = 'code';
     if (!invite.scope) invite.scope = ['test.perm', 'file.upload'];
     if (!invite.issuer) invite.issuer = 'Mocha';
     if (!invite.issued) invite.issued = new Date();
-    Invite.create(invite, done);
+    return Invite.create(invite);
 };
 
-const createInvites = function(invites, done) {
-    async.each(invites, createInvite, done);
-};
-
-var createTestInvite = function(done) {
-    createInvite({code: 'code'}, done);
-};
-
-var createTestInvites = function(n, done) {
-    const codes = Array.from(new Array(n), (val, index) => 'code' + index);
-    async.each(codes, (code, cb) => createInvite({code: code}, cb), done);
-};
-
-
-//---------------- REGISTER UTIL ----------------//
-
-const register = function(user, cb) {
-    chai.request(server)
+exports.registerUser = async (user) => {
+    if (!user.username) user.username = 'user';
+    if (!user.password) user.password = 'pass';
+    if (!user.invite) user.invite = 'code';
+    return chai.request(server)
         .post('/api/auth/register')
-        .send(user)
-        .end(cb);
+        .send(user);
 };
 
-const verifySuccessfulRegister = function(user, done) {
-    register(user, function(err, res) {
-        res.should.have.status(200);
-        res.body.should.be.a('object');
-        res.body.should.have.property('message').eql('Registration successful.');
-        User.countDocuments({username: user.username}, function(err, count) {
-            count.should.eql(1);
-            Invite.countDocuments({recipient: canonicalizeUsername(user.username)}, function(err, count) {
-                count.should.eql(1);
-                done();
-            });
-        });
-    });
+//---------------- TEST ENTRY CREATION ----------------//
+
+exports.createTestInvite = async () =>
+    exports.createInvite({});
+
+exports.createTestInvites = async (n) => {
+    const codes = Array.from(new Array(n), (val, index) => 'code' + index);
+    return Promise.all(codes.map(code => exports.createInvite({code: code})));
 };
 
-const verifyFailedRegister = function(user, message, status, done) {
-    register(user, function(err, res) {
-        res.should.have.status(status);
-        res.body.should.be.a('object');
-        res.body.should.have.property('message').eql(message);
-        done();
-    })
+exports.createTestUser = async () => {
+    await exports.createTestInvite();
+    return exports.registerUser({});
 };
 
-//---------------- LOGIN UTIL ----------------//
-
-var login = function(user, cb) {
-    chai.request(server)
-        .post('/api/auth/login')
-        .send(user)
-        .end(cb);
-};
-
-var verifySuccessfulLogin = function(user, done) {
-    login(user, function(err, res) {
-        res.should.have.status(200);
-        done();
-    });
-};
-
-var verifyFailedUsernameLogin = function(user, done) {
-    login(user, function(err, res) {
-        res.should.have.status(401);
-        res.body.should.be.a('object');
-        res.body.should.have.property('message').eql('Invalid username.');
-        done();
-    });
-};
-
-var verifyFailedPasswordLogin = function(user, done) {
-    login(user, function(err, res) {
-        res.should.have.status(401);
-        res.body.should.be.a('object');
-        res.body.should.have.property('message').eql('Invalid password.');
-        done();
-    });
-};
-
-
-//---------------- UPLOAD UTIL ----------------//
+//---------------- UPLOAD API ----------------//
 
 var upload = function(token, file, cb) {
     chai.request(server)
@@ -203,30 +148,4 @@ var verifyFailedAuthUpload = function(done) {
         if (err) console.log(err);
         done();
     });
-};
-
-
-module.exports = {
-    resetDatabase: resetDatabase,
-
-    createInvite: createInvite,
-    createInvites: createInvites,
-    createTestInvite: createTestInvite,
-    createTestInvites: createTestInvites,
-
-    register: register,
-    verifySuccessfulRegister: verifySuccessfulRegister,
-    verifyFailedRegister: verifyFailedRegister,
-
-    login: login,
-    verifySuccessfulLogin: verifySuccessfulLogin,
-    verifyFailedUsernameLogin: verifyFailedUsernameLogin,
-    verifyFailedPasswordLogin: verifyFailedPasswordLogin,
-
-    upload: upload,
-    loginUpload: loginUpload,
-    verifySuccessfulUpload: verifySuccessfulUpload,
-    verifyFailedAuthUpload: verifyFailedAuthUpload,
-    verifyFailedPermissionUpload: verifyFailedPermissionUpload,
-    verifyFailedSizeUpload: verifyFailedSizeUpload
 };

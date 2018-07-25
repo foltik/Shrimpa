@@ -55,6 +55,12 @@ app.use(express.static(__dirname + '/public'));
 require('./app/routes/routes.js')(app);
 require('./config/passport.js');
 
+// Error handler
+app.use((err, req, res, next) => {
+    console.error(err.stack);
+    res.status(500).json({'message': 'Internal server error.'});
+});
+
 // Start app
 const port = process.env.PORT || 8080;
 const server = app.listen(port);
@@ -63,7 +69,7 @@ console.log('Listening on port ' + port + '...\n');
 // Handle sigint
 process.on('SIGINT', () => {
     console.log('Shutting down...');
-    process.exitCode = 0;
+    process.exit(0);
 });
 
 // Expose app

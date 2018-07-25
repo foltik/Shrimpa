@@ -16,7 +16,7 @@ if(config.util.getEnv('NODE_ENV') !== 'test') {
 }
 
 mongoose.Promise = global.Promise;
-mongoose.connect(config.dbHost, {useMongoClient: true});
+mongoose.connect(config.dbHost, {useNewUrlParser: true});
 const db = mongoose.connection;
 db.on('error', function(err) {
     if (err) console.log('MongoDB Connection Error: ', err);
@@ -53,7 +53,6 @@ app.use(methodOverride('X-HTTP-Method-Override'));
 
 
 //app.use(favicon(__dirname + '/public/img/favicon.ico'));
-console.log(__dirname + '/public');
 app.use(express.static(__dirname + '/public'));
 
 
@@ -63,7 +62,7 @@ require('./config/passport.js');
 
 // Start app
 const port = process.env.PORT || 8080;
-const server = app.listen(port);
+var server = app.listen(port);
 console.log('Listening on port ', port, '...');
 
 // Handle sigint

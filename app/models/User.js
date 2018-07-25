@@ -24,6 +24,11 @@ var UserSchema = mongoose.Schema({
     date: Date
 });
 
-UserSchema.plugin(passportLocalMongoose, {usernameField: 'canonicalname'});
+UserSchema.plugin(passportLocalMongoose, {
+    usernameField: 'canonicalname',
+    saltlen: 32,
+    iterations: 10000,
+    limitAttempts: true
+});
 
 module.exports = mongoose.model('User', UserSchema);

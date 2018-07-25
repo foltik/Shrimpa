@@ -14,8 +14,8 @@ var InviteSchema = mongoose.Schema({
     exp: Date
 });
 
-InviteSchema.methods.use = function(canonicalname, cb) {
+/*InviteSchema.methods.use = function(canonicalname, cb) {
     return this.model('Invite').updateOne({code: this.code}, {recipient: canonicalname, used: Date.now()}, cb);
-};
+};*/
 
 module.exports = mongoose.model('Invite', InviteSchema);

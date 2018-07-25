@@ -9,24 +9,18 @@ const sanitizer = require('express-sanitizer');
 const helmet = require('helmet');
 
 const app = express();
-
 const config = require('config');
-if(config.util.getEnv('NODE_ENV') !== 'test') {
-    app.use(morgan('combined'));
-}
 
-mongoose.Promise = global.Promise;
+// MongoDB
 mongoose.connect(config.dbHost, {useNewUrlParser: true});
 const db = mongoose.connection;
-db.on('error', function(err) {
-    if (err) console.log('MongoDB Connection Error: ', err);
-});
 const MongoStore = require('connect-mongo')(session);
-const mongoStore = new MongoStore({
-    url: config.dbHost
-});
+const mongoStore = new MongoStore({url: config.dbHost});
 
+// HTTP Request Logging
+app.use(morgan(config.httpLogLevel));
 
+// Session setup
 app.use(helmet());
 app.set('trust proxy', 1);
 app.use(session({
@@ -42,6 +36,8 @@ app.use(session({
         maxAge: 1000 * 60 * 60
     }
 }));
+
+// Middleware
 app.use(passport.initialize());
 app.use(passport.session());
 app.use(bodyParser.json());
@@ -51,19 +47,18 @@ app.use(bodyParser.text());
 app.use(sanitizer());
 app.use(methodOverride('X-HTTP-Method-Override'));
 
-
+// Static directories and favicon
 //app.use(favicon(__dirname + '/public/img/favicon.ico'));
 app.use(express.static(__dirname + '/public'));
 
-
+// Install routes and configure authentication strategy
 require('./app/routes/routes.js')(app);
 require('./config/passport.js');
 
-
 // Start app
 const port = process.env.PORT || 8080;
-var server = app.listen(port);
-console.log('Listening on port ', port, '...');
+const server = app.listen(port);
+console.log('Listening on port ' + port + '...\n');
 
 // Handle sigint
 process.on('SIGINT', () => {

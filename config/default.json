@@ -1,3 +1,4 @@
 {
-  "dbHost": "mongodb://localhost:27017/shimapan"
+  "dbHost": "mongodb://localhost:27017/shimapan",
+  "httpLogLevel": "combined"
 }

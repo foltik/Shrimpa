@@ -44,7 +44,7 @@ describe('Users', function() {
                 const create = invite ? util.createInvite : (invite, cb) => cb();
                 async.series([
                     (cb) => create(invite, cb),
-                    (cb) => util.verifyFailedRegister(user, message, 401, cb)
+                    (cb) => util.verifyFailedRegister(user, message, 422, cb)
                 ], done);
             };
 
@@ -75,7 +75,7 @@ describe('Users', function() {
                 const user1 = {username: 'user', password: 'diff', invite: 'code1'};
                 async.series([
                     (cb) => util.verifySuccessfulRegister(user0, cb),
-                    (cb) => util.verifyFailedRegister(user1, 'Username in use.', 401, cb)
+                    (cb) => util.verifyFailedRegister(user1, 'Username in use.', 422, cb)
                 ], done);
             });
 
@@ -84,7 +84,7 @@ describe('Users', function() {
                 const user1 = {username: 'ᴮᴵᴳᴮᴵᴿᴰ', password: 'diff', invite: 'code1'};
                 async.series([
                     (cb) => util.verifySuccessfulRegister(user0, cb),
-                    (cb) => util.verifyFailedRegister(user1, 'Username in use.', 401, cb)
+                    (cb) => util.verifyFailedRegister(user1, 'Username in use.', 422, cb)
                 ], done);
             });
 
@@ -95,13 +95,18 @@ describe('Users', function() {
                     {username: 'user name', password: 'pass', invite: 'code2'}
                 ];
                 const failMsg = 'Username contains invalid characters.';
-                async.each(users, (user, cb) => util.verifyFailedRegister(user, failMsg, 401, cb), done);
+                async.each(users, (user, cb) => util.verifyFailedRegister(user, failMsg, 422, cb), done);
             });
 
             it('MUST NOT register a username containing HTML', function(done) {
                 const user = {username: 'user<svg/onload=alert("XSS")>', password: 'pass', invite: 'code0'};
-                util.verifyFailedRegister(user, 'Username contains invalid characters.', 401, done);
+                util.verifyFailedRegister(user, 'Username contains invalid characters.', 422, done);
             });
+
+            it('MUST NOT register a username with too many characters', function(done) {
+                const user = {username: '123456789_123456789_123456789_1234567', password: 'pass', invite: 'code0'};
+                util.verifyFailedRegister(user, 'Username too long.', 422, done);
+            })
         });
     });
 

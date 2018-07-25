@@ -18,6 +18,10 @@ var expect = chai.expect;
 
 chai.use(http);
 
+//TODO: BAD! Move to a util file!
+// Normalizes, decomposes, and lowercases a utf-8 string
+const canonicalizeUsername = username => username.normalize('NFKD').toLowerCase();
+
 //---------------- DATABASE UTIL ----------------//
 
 var resetDatabase = function(cb) {
@@ -63,7 +67,13 @@ const verifySuccessfulRegister = function(user, done) {
         res.should.have.status(200);
         res.body.should.be.a('object');
         res.body.should.have.property('message').eql('Registration successful.');
-        done();
+        User.countDocuments({username: user.username}, function(err, count) {
+            count.should.eql(1);
+            Invite.countDocuments({recipient: canonicalizeUsername(user.username)}, function(err, count) {
+                count.should.eql(1);
+                done();
+            });
+        });
     });
 };
 

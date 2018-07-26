@@ -18,6 +18,7 @@ exports.clearDatabase = async () =>
     Promise.all([
         User.remove({}),
         Invite.remove({}),
+        Key.remove({}),
         Upload.remove({})
     ]);
 

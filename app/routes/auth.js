@@ -8,13 +8,8 @@ const passport = require('passport');
 
 const canonicalizeRequest = require('../util/canonicalize').canonicalizeRequest;
 const requireAuth = require('../util/requireAuth').requireAuth;
+const wrap = require('../util/wrap.js').wrap;
 
-// Wraps an async middleware to catch promise rejection
-function asyncMiddleware(fn) {
-    return (req, res, next) => {
-        Promise.resolve(fn(req, res, next)).catch(next);
-    }
-}
 
 // Wraps passport.authenticate to return a promise
 function authenticate(req, res, next) {
@@ -65,7 +60,7 @@ async function validateInvite(code) {
 }
 
 
-router.post('/register', canonicalizeRequest, asyncMiddleware(async (req, res, next) => {
+router.post('/register', canonicalizeRequest, wrap(async (req, res, next) => {
     // Validate the invite and username
     const [inviteStatus, usernameStatus] =
         await Promise.all([
@@ -93,7 +88,7 @@ router.post('/register', canonicalizeRequest, asyncMiddleware(async (req, res, n
     res.status(200).json({'message': 'Registration successful.'});
 }));
 
-router.post('/login', canonicalizeRequest, asyncMiddleware(async (req, res, next) => {
+router.post('/login', canonicalizeRequest, wrap(async (req, res, next) => {
     // Authenticate
     const user = await authenticate(req, res, next);
     if (!user)
@@ -113,7 +108,11 @@ router.get('/logout', function (req, res) {
     res.status(200).json({'message': 'Logged out.'});
 });
 
-router.get('/session', requireAuth, (req, res, next) => {
+router.get('/ping', requireAuth(), (req, res, next) => {
+    res.status(200).json({'message': 'pong'});
+});
+
+router.get('/session', requireAuth(), (req, res, next) => {
     res.status(200).json({
         username: req.session.passport.username,
         canonicalname: req.session.passport.canonicalname,

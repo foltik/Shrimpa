@@ -1,22 +1,15 @@
 process.env.NODE_ENV = 'test';
 
-const User = require('../app/models/User.js');
-const Invite = require('../app/models/Invite.js');
-const Upload = require('../app/models/Upload.js');
-
-const chai = require('chai');
-const http = require('chai-http');
-chai.use(http);
-const should = chai.should();
-
 const app = require('../server');
 const server = app.server;
 
-//TODO: REMOVE
-const async = require('async');
+const chai = require('chai');
+chai.use(require('chai-http'));
+const should = chai.should();
 
-const canonicalize = require("../app/util/canonicalize").canonicalize;
-
+const User = require('../app/models/User.js');
+const Invite = require('../app/models/Invite.js');
+const Upload = require('../app/models/Upload.js');
 
 //---------------- DATABASE UTIL ----------------//
 
@@ -29,10 +22,11 @@ exports.clearDatabase = async () =>
 
 //---------------- API ROUTES ----------------//
 
-exports.login = async (credentials) =>
-    chai.request(server)
+exports.login = async (credentials, agent) => {
+    return (agent ? agent : chai.request(server))
         .post('/api/auth/login')
         .send(credentials);
+};
 
 exports.createInvite = async (invite) => {
     if (!invite.code) invite.code = 'code';
@@ -50,6 +44,11 @@ exports.registerUser = async (user) => {
         .post('/api/auth/register')
         .send(user);
 };
+
+exports.ping = async (agent) =>
+    (agent ? agent : chai.request(server))
+        .get('/api/auth/ping')
+        .send();
 
 //---------------- TEST ENTRY CREATION ----------------//
 

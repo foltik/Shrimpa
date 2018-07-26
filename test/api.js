@@ -3,6 +3,10 @@ process.env.NODE_ENV = 'test';
 const app = require('../server');
 const server = app.server;
 
+const chai = require('chai');
+chai.use(require('chai-http'));
+const should = chai.should();
+
 const User = require('../app/models/User.js');
 const Invite = require('../app/models/Invite.js');
 const Upload = require('../app/models/Upload.js');
@@ -123,17 +127,25 @@ describe('Users', function() {
 
     describe('/POST login', () => {
         async function verifySuccessfulLogin(credentials) {
-            const res = await util.login(credentials);
+            const agent = chai.request.agent(server);
+
+            const res = await util.login(credentials, agent);
             res.should.have.status(200);
-            res.body.should.be.a('object');
-            res.body.should.have.property('message').eql('Logged in.');
+            res.body.should.have.property('message').equal('Logged in.');
+            res.should.have.cookie('session.id');
+
+            const ping = await util.ping(agent);
+            ping.should.have.status(200);
+            ping.body.should.have.property('message').equal('pong');
+
+            agent.close();
         }
 
         async function verifyFailedLogin(credentials) {
             const res = await util.login(credentials);
             res.should.have.status(401);
             res.body.should.be.a('object');
-            res.body.should.have.property('message').eql('Unauthorized.');
+            res.body.should.have.property('message').equal('Unauthorized.');
         }
 
         describe('0 Valid Request', () => {
@@ -159,32 +171,47 @@ describe('Users', function() {
     });
 });
 
-/*describe('Uploads', function() {
-    describe('/POST upload', function() {
-        it('SHOULD accept logged in valid upload', function(done) {
-            util.verifySuccessfulUpload({
-                username: 'TestUser2',
-                password: 'TestPassword'
-            }, done);
+/*describe('Uploads', () => {
+    describe('/POST upload', () => {
+
+
+        describe('0 Valid Request', () => {
+            it('SHOULD accept logged in valid upload', function(done) {
+                util.verifySuccessfulUpload({
+                    username: 'TestUser2',
+                    password: 'TestPassword'
+                }, done);
+            });
         });
 
-        it('SHOULD NOT accept unauthenticated valid upload', function(done) {
-            util.verifyFailedAuthUpload(done);
+        describe('1 Invalid Authentication', () => {
+            it('SHOULD NOT accept unauthenticated request', function(done) {
+                util.verifyFailedAuthUpload(done);
+            });
         });
 
-        it('SHOULD NOT accept invalid permission, valid upload', function(done) {
-            util.verifyFailedPermissionUpload({
-                username: 'TestUser1',
-                password: 'TestPassword'
-            }, done);
+        describe('2 Invalid Permission', () => {
+            it('SHOULD NOT accept without file.upload permission', function(done) {
+                util.verifyFailedPermissionUpload({
+                    username: 'TestUser1',
+                    password: 'TestPassword'
+                }, done);
+            });
         });
 
-        it('SHOULD NOT accept invalid size upload', function(done) {
-            util.verifyFailedSizeUpload({
-                username: 'TestUser2',
-                password: 'TestPassword'
-            }, done);
-        })
+        describe('3 Invalid File', () => {
+            it('SHOULD NOT accept invalid size', function(done) {
+                util.verifyFailedSizeUpload({
+                    username: 'TestUser2',
+                    password: 'TestPassword'
+                }, done);
+            })
+        });
+
+
+
+
+
     });
 });*/
 

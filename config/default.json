@@ -1,5 +1,24 @@
 {
-  "dbHost": "mongodb://localhost:27017/shimapan",
-  "uploadPath": "uploads",
-  "httpLogLevel": "dev"
+  "Server": {
+    "port": 443,
+    "hostname": "https://shimapan.rocks"
+  },
+  "Database": {
+    "host": "mongodb://localhost:27017/shimapan"
+  },
+  "Upload": {
+    "path": "uploads",
+    "maxSize": 134217728,
+    "charset": "abcdefghijklmnopqrstuvwxyz",
+    "idLength": 6
+  },
+  "User": {
+    "Username": {
+      "maxLength": 36,
+      "restrictedChars": "\\s"
+    }
+  },
+  "Log": {
+    "httpLevel": "combined"
+  }
 }

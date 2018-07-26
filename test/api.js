@@ -12,6 +12,8 @@ const Key = require('../app/models/Key.js');
 const util = require('./testUtil.js');
 const canonicalize = require('../app/util/canonicalize').canonicalize;
 
+const config = require('config');
+
 let app;
 let server;
 let agent;
@@ -225,7 +227,7 @@ describe('Uploads', () => {
         }
 
         async function verifyFailedUpload(file, status, message) {
-            const fileCountBefore = await util.directoryFileCount('uploads');
+            const fileCountBefore = await util.directoryFileCount(config.get('Upload.path'));
             const uploadCountBefore = await Upload.countDocuments({});
 
             const res = await util.upload(file, agent);
@@ -233,7 +235,7 @@ describe('Uploads', () => {
             res.body.should.be.a('object');
             res.body.should.have.property('message').equal(message);
 
-            const fileCountAfter = await util.directoryFileCount('uploads');
+            const fileCountAfter = await util.directoryFileCount(config.get('Upload.path'));
             fileCountAfter.should.equal(fileCountBefore, 'File should not have been written to disk');
 
             const uploadCountAfter = await Upload.countDocuments({});
@@ -281,7 +283,7 @@ describe('Uploads', () => {
             it('SHOULD NOT accept a too large file', async () => {
                 await Promise.all([
                     util.createTestSession(agent),
-                    util.createTestFile(1024 * 1024 * 129, 'large.bin') // 129 MiB, limit is 128 MiB
+                    util.createTestFile(config.get('Upload.maxSize') + 1, 'large.bin')
                 ]);
 
                 await verifyFailedUpload('large.bin', 413, 'File too large.');

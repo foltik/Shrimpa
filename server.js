@@ -12,13 +12,19 @@ const app = express();
 const config = require('config');
 
 // MongoDB
-mongoose.connect(config.dbHost, {useNewUrlParser: true});
-const db = mongoose.connection;
+const dbHost = config.get('Database.host');
+let db;
+mongoose.connect(dbHost, {useNewUrlParser: true})
+    .then(() => {
+        console.log('Connected to mongodb server ' + dbHost);
+        db = mongoose.connection;
+    });
+
 const MongoStore = require('connect-mongo')(session);
-const mongoStore = new MongoStore({url: config.dbHost});
+const mongoStore = new MongoStore({url: dbHost});
 
 // HTTP Request Logging
-app.use(morgan(config.httpLogLevel));
+app.use(morgan(config.get('Log.httpLevel')));
 
 // Session setup
 app.use(helmet());
@@ -62,7 +68,7 @@ app.use((err, req, res, next) => {
 });
 
 // Start app
-const port = process.env.PORT || 8080;
+const port = config.get('Server.port');
 const server = app.listen(port, () => {
     console.log('Listening on port ' + port + '...\n');
 });

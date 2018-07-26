@@ -1,5 +1,15 @@
 {
-  "dbHost": "mongodb://localhost:27017/shimapan-test",
-  "uploadPath": "uploads-test",
-  "httpLogLevel": "dev"
+  "Server": {
+    "port": 8080,
+    "hostname": "http://localhost:8080"
+  },
+  "Database": {
+    "host": "mongodb://localhost:27017/shimapan-test"
+  },
+  "Upload": {
+    "path": "uploads-test"
+  },
+  "Log": {
+    "httpLevel": "dev"
+  }
 }

@@ -5,6 +5,7 @@ const router = express.Router();
 const User = require('../models/User.js');
 const Invite = require('../models/Invite.js');
 const passport = require('passport');
+const config = require('config');
 
 const canonicalizeRequest = require('../util/canonicalize').canonicalizeRequest;
 const requireAuth = require('../util/requireAuth').requireAuth;
@@ -29,10 +30,11 @@ function login(user, req) {
 
 // Check if a canonical name is valid
 async function validateUsername(username, canonicalName, sanitize) {
-    if (canonicalName.length > 36)
+    if (canonicalName.length > config.get('User.Username.maxLength'))
         return {valid: false, message: 'Username too long.'};
 
-    if (canonicalName !== sanitize(canonicalName).replace(/\s/g, ''))
+    const restrictedRegex = new RegExp(config.get('User.Username.restrictedChars'), 'g');
+    if (canonicalName !== sanitize(canonicalName).replace(restrictedRegex, ''))
         return {valid: false, message: 'Username contains invalid characters.'};
 
     const count = await User.countDocuments({canonicalname: canonicalName});

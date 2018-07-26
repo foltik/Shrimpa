@@ -7,7 +7,7 @@ const Upload = require('../models/Upload.js');
 const Key = require('../models/Key.js');
 
 const multer = require('multer');
-const fileUpload = multer({dest: config.uploadPath}).single('file');
+const fileUpload = multer({dest: config.get('Upload.path')}).single('file');
 const fsPromises = require('fs').promises;
 
 const requireAuth = require('../util/requireAuth').requireAuth;
@@ -17,8 +17,8 @@ const generatedIdExists = async id =>
     await Upload.countDocuments({id: id}) === 1;
 
 const generateId = async () => {
-    const charset = "abcdefghijklmnopqrstuvwxyz";
-    const len = 6;
+    const charset = config.get('Upload.charset');
+    const len = config.get('Upload.idLength');
 
     const id = [...Array(len)]
         .map(() => charset.charAt(Math.floor(Math.random() * charset.length)))
@@ -42,8 +42,7 @@ router.post('/', requireAuth('file.upload'), fileUpload, wrap(async (req, res, n
     if (!req.file)
         return res.status(400).json({message: 'No file specified.'});
 
-    // Max file size is 128 MiB
-    if (req.file.size > 1024 * 1024 * 128) {
+    if (req.file.size > config.get('Upload.maxSize')) {
         await fsPromises.unlink(req.file.path);
         return res.status(413).json({message: 'File too large.'});
     }
@@ -63,7 +62,7 @@ router.post('/', requireAuth('file.upload'), fileUpload, wrap(async (req, res, n
 
     res.status(200).json({
         id: upload.id,
-        url: 'https://shimapan.rocks/v/' + upload.id
+        url: config.get('Server.hostname') + '/v/' + upload.id
     });
 }));
 

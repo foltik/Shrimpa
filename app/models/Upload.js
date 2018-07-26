@@ -1,11 +1,6 @@
 var mongoose = require('mongoose');
 
 var UploadSchema = mongoose.Schema({
-    name: {
-        type: String,
-        required: true
-    },
-
     id: {
         type: String,
         unique: true,
@@ -31,12 +26,7 @@ var UploadSchema = mongoose.Schema({
         type: Date,
         default: Date.now
     },
-
-    mime: {
-        type: String,
-        required: true,
-    },
-
+    
     file: {
         type: Object,
         required: true

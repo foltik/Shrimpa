@@ -1,8 +1,5 @@
 process.env.NODE_ENV = 'test';
 
-const app = require('../server');
-const server = app.server;
-
 const chai = require('chai');
 chai.use(require('chai-http'));
 const should = chai.should();
@@ -14,6 +11,21 @@ const Upload = require('../app/models/Upload.js');
 const util = require('./testUtil.js');
 const canonicalize = require('../app/util/canonicalize').canonicalize;
 
+let app;
+let server;
+let agent;
+
+before(() => {
+    const main = require('../server.js');
+    app = main.app;
+    server = main.server;
+    agent = chai.request.agent(app);
+});
+
+after(() => {
+    server.close();
+});
+
 describe('Users', function() {
     beforeEach(async () => util.clearDatabase());
 
@@ -22,7 +34,7 @@ describe('Users', function() {
             async function verifySuccessfulRegister(user) {
                 await util.createTestInvite();
 
-                const res = await util.registerUser(user);
+                const res = await util.registerUser(user, agent);
 
                 res.should.have.status(200);
                 res.body.should.be.a('object');
@@ -49,11 +61,11 @@ describe('Users', function() {
             async function verifyRejectedInvite(invite, message) {
                 const user = {username: 'user', password: 'pass', invite: 'code'};
                 if (invite) {
-                    await util.createInvite(invite);
+                    await util.createInvite(invite, agent);
                     user.invite = invite.code;
                 }
 
-                const res = await(util.registerUser(user));
+                const res = await(util.registerUser(user, agent));
                 res.should.have.status(422);
                 res.body.should.be.a('object');
                 res.body.should.have.property('message').eql(message);
@@ -64,18 +76,18 @@ describe('Users', function() {
             );
 
             it('MUST NOT register a used invite', async () =>
-                verifyRejectedInvite({used: new Date()}, 'Invite already used.')
+                verifyRejectedInvite({code: 'code', used: new Date()}, 'Invite already used.')
             );
 
             it('MUST NOT register an expired invite', async () =>
-                verifyRejectedInvite({exp: new Date()}, 'Invite expired.')
+                verifyRejectedInvite({code: 'code', exp: new Date()}, 'Invite expired.')
             );
         });
 
 
         describe('2 Invalid Usernames', () => {
             async function verifyRejectedUsername(user, message) {
-                const res = await util.registerUser(user);
+                const res = await util.registerUser(user, agent);
                 res.should.have.status(422);
                 res.body.should.be.a('object');
                 res.body.should.have.property('message').eql(message);
@@ -86,7 +98,7 @@ describe('Users', function() {
                 const user0 = {username: 'user', password: 'pass', invite: 'code0'};
                 const user1 = {username: 'user', password: 'diff', invite: 'code1'};
 
-                await util.registerUser(user0);
+                await util.registerUser(user0, agent);
                 return verifyRejectedUsername(user1, 'Username in use.');
             });
 
@@ -95,7 +107,7 @@ describe('Users', function() {
                 const user0 = {username: 'bigbird', password: 'pass', invite: 'code0'};
                 const user1 = {username: 'ᴮᴵᴳᴮᴵᴿᴰ', password: 'diff', invite: 'code1'};
 
-                await util.registerUser(user0);
+                await util.registerUser(user0, agent);
                 return verifyRejectedUsername(user1, 'Username in use.');
             });
 
@@ -127,22 +139,17 @@ describe('Users', function() {
 
     describe('/POST login', () => {
         async function verifySuccessfulLogin(credentials) {
-            const agent = chai.request.agent(server);
-
             const res = await util.login(credentials, agent);
             res.should.have.status(200);
             res.body.should.have.property('message').equal('Logged in.');
             res.should.have.cookie('session.id');
 
-            const ping = await util.ping(agent);
-            ping.should.have.status(200);
-            ping.body.should.have.property('message').equal('pong');
-
-            agent.close();
+            const whoami = await util.whoami(agent);
+            whoami.should.have.status(200);
         }
 
         async function verifyFailedLogin(credentials) {
-            const res = await util.login(credentials);
+            const res = await util.login(credentials, agent);
             res.should.have.status(401);
             res.body.should.be.a('object');
             res.body.should.have.property('message').equal('Unauthorized.');
@@ -150,15 +157,19 @@ describe('Users', function() {
 
         describe('0 Valid Request', () => {
             it('SHOULD accept a valid user with a valid password', async () => {
-                await util.createTestUser();
+                await util.createTestUser(agent);
                 return verifySuccessfulLogin({username: 'user', password: 'pass'});
             });
+
+            it('SHOULD accept any non-normalized variant of a username with a valid password', async () => {
+                await util.create
+            })
         });
 
 
         describe('1 Invalid Password', () => {
             it('SHOULD NOT accept an invalid password', async () => {
-                await util.createTestUser();
+                await util.createTestUser(agent);
                 return verifyFailedLogin({username: 'user', password: 'bogus'});
             });
         });
@@ -171,48 +182,87 @@ describe('Users', function() {
     });
 });
 
-/*describe('Uploads', () => {
-    describe('/POST upload', () => {
+describe('Uploads', () => {
+    beforeEach(async () => util.clearDatabase());
 
+    describe('/POST upload', () => {
+        async function verifySuccessfulUpload(file) {
+            const res = await util.upload(file, agent);
+            res.should.have.status(200);
+            res.body.should.be.a('object');
+            res.body.should.have.property('url');
+            res.body.should.have.property('id').match(/^[a-z]{6}$/);
+        }
+
+        async function verifyFailedUpload(file, status, message) {
+            const res = await util.upload(file, agent);
+            res.should.have.status(status);
+            res.body.should.be.a('object');
+            res.body.should.have.property('message').equal(message);
+        }
 
         describe('0 Valid Request', () => {
-            it('SHOULD accept logged in valid upload', function(done) {
-                util.verifySuccessfulUpload({
-                    username: 'TestUser2',
-                    password: 'TestPassword'
-                }, done);
+            it('SHOULD accept logged in valid upload', async () => {
+                await Promise.all([
+                    util.createTestSession(agent),
+                    util.createTestFile(2048, 'test.bin')
+                ]);
+
+                await verifySuccessfulUpload('test.bin');
+
+                return Promise.all([
+                    util.logout(agent),
+                    util.deleteTestFile('test.bin')
+                ]);
             });
         });
 
         describe('1 Invalid Authentication', () => {
-            it('SHOULD NOT accept unauthenticated request', function(done) {
-                util.verifyFailedAuthUpload(done);
-            });
-        });
+            it('SHOULD NOT accept an unauthenticated request', async () =>
+                verifyFailedUpload(null, 401, 'Unauthorized.')
+            );
 
-        describe('2 Invalid Permission', () => {
-            it('SHOULD NOT accept without file.upload permission', function(done) {
-                util.verifyFailedPermissionUpload({
-                    username: 'TestUser1',
-                    password: 'TestPassword'
-                }, done);
+            it('SHOULD NOT accept a request without file.upload scope', async () => {
+                await util.createInvite({code: 'code', scope: []});
+                await util.registerUser({username: 'user', password: 'pass', invite: 'code'}, agent);
+                await util.login({username: 'user', password: 'pass'}, agent);
+
+                await util.createTestFile(2048, 'test.bin');
+
+                await verifyFailedUpload('test.bin', 403, 'Forbidden.');
+
+                return Promise.all([
+                    util.logout(agent),
+                    util.deleteTestFile('test.bin')
+                ]);
             });
         });
 
         describe('3 Invalid File', () => {
-            it('SHOULD NOT accept invalid size', function(done) {
-                util.verifyFailedSizeUpload({
-                    username: 'TestUser2',
-                    password: 'TestPassword'
-                }, done);
-            })
+            it('SHOULD NOT accept a too large file', async () => {
+                await Promise.all([
+                    util.createTestSession(agent),
+                    util.createTestFile(1024 * 1024 * 129, 'large.bin') // 129 MiB, limit is 128 MiB
+                ]);
+
+                await verifyFailedUpload('large.bin', 413, 'File too large.');
+
+                return Promise.all([
+                    util.logout(agent),
+                    util.deleteTestFile('large.bin')
+                ]);
+            });
         });
 
+        describe('4 Invalid Request', () => {
+            it('SHOULD NOT accept a request with no file attached', async () => {
+                await util.createTestSession(agent);
+                await verifyFailedUpload(null, 400, 'No file specified.');
 
-
-
-
+                return util.logout(agent);
+            })
+        })
     });
-});*/
+});
 
 after(() => server.close(() => process.exit(0)));

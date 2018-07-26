@@ -2,9 +2,10 @@ const express = require('express');
 const router = express.Router();
 const config = require('config');
 
-const User = require('../models/User.js');
-const Upload = require('../models/Upload.js');
-const Key = require('../models/Key.js');
+const ModelPath = '../models/';
+const User = require(ModelPath + 'User.js');
+const Upload = require(ModelPath + 'Upload.js');
+const Key = require(ModelPath + 'Key.js');
 
 const multer = require('multer');
 const fileUpload = multer({dest: config.get('Upload.path')}).single('file');
@@ -38,7 +39,7 @@ const updateStats = async req =>
     ]);
 
 
-router.post('/', requireAuth('file.upload'), fileUpload, wrap(async (req, res, next) => {
+router.post('/', requireAuth('file.upload'), fileUpload, wrap(async (req, res) => {
     if (!req.file)
         return res.status(400).json({message: 'No file specified.'});
 

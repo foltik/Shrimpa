@@ -16,7 +16,7 @@ const dbHost = config.get('Database.host');
 let db;
 mongoose.connect(dbHost, {useNewUrlParser: true})
     .then(() => {
-        console.log('Connected to mongodb server ' + dbHost);
+        console.log('Connected to database ' + dbHost);
         db = mongoose.connection;
     });
 
@@ -44,8 +44,8 @@ app.use(session({
 }));
 
 // Middleware
-app.use(passport.initialize());
-app.use(passport.session());
+app.use(passport.initialize(null));
+app.use(passport.session(null));
 app.use(bodyParser.json());
 app.use(bodyParser.json({ type: 'application/*+json' }));
 app.use(bodyParser.urlencoded({ extended: true }));
@@ -62,7 +62,7 @@ require('./app/routes/routes.js')(app);
 require('./config/passport.js');
 
 // Error handler
-app.use((err, req, res, next) => {
+app.use((err, req, res) => {
     console.error(err.stack);
     res.status(500).json({'message': 'Internal server error.'});
 });

@@ -2,12 +2,12 @@ process.env.NODE_ENV = 'test';
 
 const chai = require('chai');
 chai.use(require('chai-http'));
-const should = chai.should();
 
-const User = require('../app/models/User.js');
-const Invite = require('../app/models/Invite.js');
-const Upload = require('../app/models/Upload.js');
-const Key = require('../app/models/Key.js');
+const ModelPath = '../app/models/';
+const User = require(ModelPath + 'User.js');
+const Upload = require(ModelPath + 'Upload.js');
+const Key = require(ModelPath + 'Key.js');
+const Invite = require(ModelPath + 'Invite.js');
 
 const util = require('./testUtil.js');
 const canonicalize = require('../app/util/canonicalize').canonicalize;
@@ -171,7 +171,7 @@ describe('Accounts', function() {
             });
 
             it('SHOULD accept any non-normalized variant of a username with a valid password', async () => {
-                await util.create
+
             })
         });
 

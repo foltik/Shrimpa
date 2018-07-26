@@ -7,26 +7,36 @@ var UserSchema = mongoose.Schema({
         unique: true,
         required: true
     },
-    canonicalname: {
+
+    displayname: {
         type: String,
         unique: true,
         required: true
     },
-    scope: [String],
+
+    scope: {
+        type: [String],
+        required: true
+    },
+
     uploadCount: {
         type: Number,
         default: 0
     },
+
     uploadSize: {
         type: Number,
         default: 0
     },
-    date: Date
+
+    date: {
+        type: Date,
+        default: Date.now
+    }
 });
 
 UserSchema.plugin(passportLocalMongoose, {
-    usernameField: 'canonicalname',
-    saltlen: 32,
+    saltlen: 64,
     iterations: 10000,
     limitAttempts: true
 });

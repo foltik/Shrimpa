@@ -6,12 +6,36 @@ var InviteSchema = mongoose.Schema({
         unique: true,
         required: true
     },
-    scope: [String],
-    issuer: String,
-    recipient: String,
-    issued: Date,
-    used: Date,
-    exp: Date
+
+    scope: {
+        type: [String],
+        required: true
+    },
+
+    issuer: {
+        type: String,
+        required: true
+    },
+
+    recipient: {
+        type: String,
+        default: null
+    },
+
+    issued: {
+        type: Date,
+        default: Date.now
+    },
+
+    used: {
+        type: Date,
+        default: null
+    },
+
+    exp: {
+        type: Date,
+        default: null
+    }
 });
 
 /*InviteSchema.methods.use = function(canonicalname, cb) {

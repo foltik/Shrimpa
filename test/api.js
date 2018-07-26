@@ -2,6 +2,7 @@ process.env.NODE_ENV = 'test';
 
 const chai = require('chai');
 chai.use(require('chai-http'));
+const should = chai.should();
 
 const ModelPath = '../app/models/';
 const User = require(ModelPath + 'User.js');
@@ -43,26 +44,26 @@ describe('Accounts', function() {
                 res.body.should.be.a('object');
                 res.body.should.have.property('message').eql('Registration successful.');
 
-                const userCount = await User.countDocuments({username: user.username});
+                const userCount = await User.countDocuments({displayname: user.displayname});
                 userCount.should.equal(1);
 
-                const inviteCount = await Invite.countDocuments({code: user.invite, recipient: canonicalize(user.username)});
+                const inviteCount = await Invite.countDocuments({code: user.invite, recipient: canonicalize(user.displayname)});
                 inviteCount.should.equal(1);
             }
 
             it('MUST register a valid user with a valid invite', async () =>
-                verifySuccessfulRegister({username: 'user', password: 'pass', invite: 'code'})
+                verifySuccessfulRegister({displayname: 'user', password: 'pass', invite: 'code'})
             );
 
             it('MUST register a username with unicode symbols and a valid invite', async () =>
-                verifySuccessfulRegister({username: 'ᴮᴵᴳᴮᴵᴿᴰ', password: 'pass', invite: 'code'})
+                verifySuccessfulRegister({displayname: 'ᴮᴵᴳᴮᴵᴿᴰ', password: 'pass', invite: 'code'})
             );
         });
 
 
         describe('1 Invalid Invites', () => {
             async function verifyRejectedInvite(invite, message) {
-                const user = {username: 'user', password: 'pass', invite: 'code'};
+                const user = {displayname: 'user', password: 'pass', invite: 'code'};
                 if (invite) {
                     await util.createInvite(invite, agent);
                     user.invite = invite.code;
@@ -73,7 +74,7 @@ describe('Accounts', function() {
                 res.body.should.be.a('object');
                 res.body.should.have.property('message').eql(message);
 
-                const inviteCount = await Invite.countDocuments({code: user.invite, recipient: canonicalize(user.username)});
+                const inviteCount = await Invite.countDocuments({code: user.invite, recipient: canonicalize(user.displayname)});
                 inviteCount.should.equal(0);
             }
 
@@ -82,30 +83,30 @@ describe('Accounts', function() {
             );
 
             it('MUST NOT register a used invite', async () =>
-                verifyRejectedInvite({code: 'code', used: new Date()}, 'Invite already used.')
+                verifyRejectedInvite({code: 'code', used: new Date(), issuer: 'Mocha'}, 'Invite already used.')
             );
 
             it('MUST NOT register an expired invite', async () =>
-                verifyRejectedInvite({code: 'code', exp: new Date()}, 'Invite expired.')
+                verifyRejectedInvite({code: 'code', exp: new Date(), issuer: 'Mocha'}, 'Invite expired.')
             );
         });
 
 
-        describe('2 Invalid Usernames', () => {
+        describe('2 Invalid Displaynames', () => {
             async function verifyRejectedUsername(user, message) {
                 const res = await util.registerUser(user, agent);
                 res.should.have.status(422);
                 res.body.should.be.a('object');
                 res.body.should.have.property('message').equal(message);
 
-                const inviteCount = await Invite.countDocuments({code: user.invite, recipient: canonicalize(user.username)});
+                const inviteCount = await Invite.countDocuments({code: user.invite, recipient: canonicalize(user.displayname)});
                 inviteCount.should.equal(0);
             }
 
             it('MUST NOT register a duplicate username', async () => {
                 await util.createTestInvites(2);
-                const user0 = {username: 'user', password: 'pass', invite: 'code0'};
-                const user1 = {username: 'user', password: 'diff', invite: 'code1'};
+                const user0 = {displayname: 'user', password: 'pass', invite: 'code0'};
+                const user1 = {displayname: 'user', password: 'diff', invite: 'code1'};
 
                 await util.registerUser(user0, agent);
                 return verifyRejectedUsername(user1, 'Username in use.');
@@ -113,8 +114,8 @@ describe('Accounts', function() {
 
             it('MUST NOT register a username with a duplicate canonical name', async () => {
                 await util.createTestInvites(2);
-                const user0 = {username: 'bigbird', password: 'pass', invite: 'code0'};
-                const user1 = {username: 'ᴮᴵᴳᴮᴵᴿᴰ', password: 'diff', invite: 'code1'};
+                const user0 = {displayname: 'bigbird', password: 'pass', invite: 'code0'};
+                const user1 = {displayname: 'ᴮᴵᴳᴮᴵᴿᴰ', password: 'diff', invite: 'code1'};
 
                 await util.registerUser(user0, agent);
                 return verifyRejectedUsername(user1, 'Username in use.');
@@ -123,9 +124,9 @@ describe('Accounts', function() {
             it('MUST NOT register a username containing whitespace', async () => {
                 await util.createTestInvites(3);
                 const users = [
-                    {username: 'user name', password: 'pass', invite: 'code0'},
-                    {username: 'user　name', password: 'pass', invite: 'code1'},
-                    {username: 'user name', password: 'pass', invite: 'code2'}
+                    {displayname: 'user name', password: 'pass', invite: 'code0'},
+                    {displayname: 'user　name', password: 'pass', invite: 'code1'},
+                    {displayname: 'user name', password: 'pass', invite: 'code2'}
                 ];
 
                 const failMsg = 'Username contains invalid characters.';
@@ -134,13 +135,13 @@ describe('Accounts', function() {
 
             it('MUST NOT register a username containing HTML', async () => {
                 await util.createTestInvite();
-                const user = {username: 'user<svg/onload=alert("XSS")>', password: 'pass', invite: 'code'};
+                const user = {displayname: 'user<svg/onload=alert("XSS")>', password: 'pass', invite: 'code'};
                 return verifyRejectedUsername(user, 'Username contains invalid characters.');
             });
 
             it('MUST NOT register a username with too many characters', async () => {
                 await util.createTestInvite();
-                const user = {username: '123456789_123456789_123456789_1234567', password: 'pass', invite: 'code'};
+                const user = {displayname: '123456789_123456789_123456789_1234567', password: 'pass', invite: 'code'};
                 return verifyRejectedUsername(user, 'Username too long.');
             })
         });
@@ -167,7 +168,7 @@ describe('Accounts', function() {
         describe('0 Valid Request', () => {
             it('SHOULD accept a valid user with a valid password', async () => {
                 await util.createTestUser(agent);
-                return verifySuccessfulLogin({username: 'user', password: 'pass'});
+                return verifySuccessfulLogin({displayname: 'user', password: 'pass'});
             });
 
             it('SHOULD accept any non-normalized variant of a username with a valid password', async () => {
@@ -179,13 +180,13 @@ describe('Accounts', function() {
         describe('1 Invalid Password', () => {
             it('SHOULD NOT accept an invalid password', async () => {
                 await util.createTestUser(agent);
-                return verifyFailedLogin({username: 'user', password: 'bogus'});
+                return verifyFailedLogin({displayname: 'user', password: 'bogus'});
             });
         });
 
         describe('2 Invalid User', () => {
             it('SHOULD NOT accept an invalid user', async () =>
-                verifyFailedLogin({username: 'bogus', password: 'bogus'})
+                verifyFailedLogin({displayname: 'bogus', password: 'bogus'})
             );
         });
     });
@@ -195,12 +196,12 @@ describe('Uploads', () => {
     beforeEach(async () => util.clearDatabase());
 
     describe('/POST upload', () => {
-        async function verifySuccessfulUpload(file, user) {
+        async function verifySuccessfulUpload(file, username) {
             // Get file stats beforehand
             const [fileHash, fileSize] = await Promise.all([util.fileHash(file), util.fileSize(file)]);
 
             // Get the user stats beforehand
-            const userBefore = await User.findOne({canonicalname: user}, {_id: 0, uploadCount: 1, uploadSize: 1});
+            const userBefore = await User.findOne({username: username}, {_id: 0, uploadCount: 1, uploadSize: 1});
 
             // Submit the upload and verify the result
             const res = await util.upload(file, agent);
@@ -221,9 +222,13 @@ describe('Uploads', () => {
             uploadSize.should.equal(fileSize);
 
             // Verify the user's stats have been updated correctly
-            const userAfter = await User.findOne({canonicalname: user}, {_id: 0, uploadCount: 1, uploadSize: 1});
+            const userAfter = await User.findOne({username: username}, {_id: 0, uploadCount: 1, uploadSize: 1});
             userAfter.uploadCount.should.equal(userBefore.uploadCount + 1);
             userAfter.uploadSize.should.equal(userBefore.uploadSize + fileSize);
+        }
+
+        async function verifySuccessfulKeyUpload(key, file) {
+
         }
 
         async function verifyFailedUpload(file, status, message) {
@@ -264,9 +269,9 @@ describe('Uploads', () => {
             );
 
             it('SHOULD NOT accept a request without file.upload scope', async () => {
-                await util.createInvite({code: 'code', scope: []});
-                await util.registerUser({username: 'user', password: 'pass', invite: 'code'}, agent);
-                await util.login({username: 'user', password: 'pass'}, agent);
+                await util.createInvite({code: 'code', scope: [], issuer: 'Mocha'});
+                await util.registerUser({displayname: 'user', password: 'pass', invite: 'code'}, agent);
+                await util.login({displayname: 'user', password: 'pass'}, agent);
 
                 await util.createTestFile(2048, 'test.bin');
 

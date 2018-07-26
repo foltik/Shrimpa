@@ -2,12 +2,12 @@ process.env.NODE_ENV = 'test';
 
 const chai = require('chai');
 chai.use(require('chai-http'));
-const should = chai.should();
 
-const User = require('../app/models/User.js');
-const Invite = require('../app/models/Invite.js');
-const Upload = require('../app/models/Upload.js');
-const Key = require('../app/models/Key.js');
+const ModelPath = '../app/models/';
+const User = require(ModelPath + 'User.js');
+const Upload = require(ModelPath + 'Upload.js');
+const Key = require(ModelPath + 'Key.js');
+const Invite = require(ModelPath + 'Invite.js');
 
 const Buffer = require('buffer').Buffer;
 const crypto = require('crypto');
@@ -51,22 +51,22 @@ exports.whoami = (agent) =>
 //---------------- TEST ENTRY CREATION ----------------//
 
 exports.createTestInvite = () =>
-    exports.createInvite({code: 'code', scope: ['file.upload']});
+    exports.createInvite({code: 'code', scope: ['file.upload'], issuer: 'Mocha'});
 
 exports.createTestInvites = (n) =>
     Promise.all(
         Array.from(new Array(n), (val, index) => 'code' + index)
-            .map(code => exports.createInvite({code: code}))
+            .map(code => exports.createInvite({code: code, scope: ['file.upload'], issuer: 'Mocha'}))
     );
 
 exports.createTestUser = async agent => {
     await exports.createTestInvite();
-    return exports.registerUser({username: 'user', password: 'pass', invite: 'code'}, agent);
+    return exports.registerUser({displayname: 'user', password: 'pass', invite: 'code'}, agent);
 };
 
 exports.createTestSession = async agent => {
     await exports.createTestUser(agent);
-    return exports.login({username: 'user', password: 'pass'}, agent);
+    return exports.login({displayname: 'user', password: 'pass'}, agent);
 };
 
 exports.createTestFile = (size, name) =>

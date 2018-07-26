@@ -32,9 +32,9 @@ const generateId = async () => {
 
 const updateStats = async req =>
     Promise.all([
-        User.updateOne({username: req.authUser}, {$inc: {uploadCount: 1, uploadSize: req.file.size}}),
-        req.authKey
-            ? Key.updateOne({key: req.authKey}, {$inc: {uploadCount: 1, uploadSize: req.file.size}})
+        User.updateOne({username: req.username}, {$inc: {uploadCount: 1, uploadSize: req.file.size}}),
+        req.key
+            ? Key.updateOne({key: req.key}, {$inc: {uploadCount: 1, uploadSize: req.file.size}})
             : Promise.resolve()
     ]);
 
@@ -50,8 +50,8 @@ router.post('/', requireAuth('file.upload'), fileUpload, wrap(async (req, res) =
 
     const upload = {
         id: await generateId(),
-        uploader: req.authUser,
-        uploaderKey: req.authKey,
+        uploader: req.username,
+        uploaderKey: req.key,
         date: Date.now(),
         file: req.file
     };

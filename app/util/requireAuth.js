@@ -12,10 +12,10 @@ exports.requireAuth = scope =>
     wrap(async (req, res, next) => {
         if (req.isAuthenticated()) {
             if (scope ? verifyScope(req.session.passport.scope, scope) : true) {
-                req.authUser = req.session.passport.user;
-                req.authDisplay = req.session.passport.display;
-                req.authScope = req.session.passport.scope;
-                req.authKey = null;
+                req.username = req.session.passport.user;
+                req.displayname = req.session.passport.displayname;
+                req.scope = req.session.passport.scope;
+                req.key = null;
                 next();
             } else {
                 res.status(403).json({message: 'Forbidden.'});
@@ -23,10 +23,10 @@ exports.requireAuth = scope =>
         } else if (req.body.apikey) {
             const key = await Key.findOne({key: apikey});
             if (scope ? verifyScope(key.scope, scope) : true) {
-                req.authUser = key.username;
-                req.authDisplay = key.username;
-                req.authScope = key.scope;
-                req.authKey = key.key;
+                req.username = key.username;
+                req.displayname = key.username;
+                req.scope = key.scope;
+                req.key = key.key;
                 next();
             } else {
                 res.status(403).json({message: 'Forbidden.'});

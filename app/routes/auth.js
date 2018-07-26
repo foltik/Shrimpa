@@ -1,16 +1,16 @@
-'use strict';
-
 const express = require('express');
 const router = express.Router();
-const User = require('../models/User.js');
-const Invite = require('../models/Invite.js');
-const passport = require('passport');
 const config = require('config');
+
+const ModelPath = '../models/';
+const User = require(ModelPath + 'User.js');
+const Invite = require(ModelPath + 'Invite.js');
+
+const passport = require('passport');
 
 const canonicalizeRequest = require('../util/canonicalize').canonicalizeRequest;
 const requireAuth = require('../util/requireAuth').requireAuth;
 const wrap = require('../util/wrap.js').wrap;
-
 
 // Wraps passport.authenticate to return a promise
 function authenticate(req, res, next) {
@@ -28,16 +28,16 @@ function login(user, req) {
     });
 }
 
-// Check if a canonical name is valid
-async function validateUsername(username, canonicalName, sanitize) {
-    if (canonicalName.length > config.get('User.Username.maxLength'))
+// Check if the requested username is valid
+async function validateUsername(username, sanitize) {
+    if (username.length > config.get('User.Username.maxLength'))
         return {valid: false, message: 'Username too long.'};
 
     const restrictedRegex = new RegExp(config.get('User.Username.restrictedChars'), 'g');
-    if (canonicalName !== sanitize(canonicalName).replace(restrictedRegex, ''))
+    if (username !== sanitize(username).replace(restrictedRegex, ''))
         return {valid: false, message: 'Username contains invalid characters.'};
 
-    const count = await User.countDocuments({canonicalname: canonicalName});
+    const count = await User.countDocuments({username: username});
 
     if (count !== 0)
         return {valid: false, message: 'Username in use.'};
@@ -55,19 +55,19 @@ async function validateInvite(code) {
     if (invite.used)
         return {valid: false, message: 'Invite already used.'};
 
-    if (invite.exp < Date.now())
+    if (invite.exp != null && invite.exp < Date.now())
         return {valid: false, message: 'Invite expired.'};
 
     return {valid: true, invite: invite};
 }
 
 
-router.post('/register', canonicalizeRequest, wrap(async (req, res, next) => {
+router.post('/register', canonicalizeRequest, wrap(async (req, res) => {
     // Validate the invite and username
     const [inviteStatus, usernameStatus] =
         await Promise.all([
             validateInvite(req.body.invite),
-            validateUsername(req.body.username, req.body.canonicalname, req.sanitize)
+            validateUsername(req.body.username, req.sanitize)
         ]);
 
     // Error if validation failed
@@ -80,11 +80,11 @@ router.post('/register', canonicalizeRequest, wrap(async (req, res, next) => {
     await Promise.all([
         User.register({
             username: req.body.username,
-            canonicalname: req.body.canonicalname,
+            displayname: req.body.displayname,
             scope: inviteStatus.invite.scope,
             date: Date.now()
         }, req.body.password),
-        Invite.updateOne({code: inviteStatus.invite.code}, {recipient: req.body.canonicalname, used: Date.now()})
+        Invite.updateOne({code: inviteStatus.invite.code}, {recipient: req.body.username, used: Date.now()})
     ]);
 
     res.status(200).json({'message': 'Registration successful.'});
@@ -100,7 +100,7 @@ router.post('/login', canonicalizeRequest, wrap(async (req, res, next) => {
     await login(user, req);
 
     // Set session vars
-    req.session.passport.display = user.username;
+    req.session.passport.displayname = user.displayname;
     req.session.passport.scope = user.scope;
 
     res.status(200).json({'message': 'Logged in.'});
@@ -113,10 +113,10 @@ router.post('/logout', function (req, res) {
 
 router.get('/whoami', requireAuth(), (req, res) => {
     res.status(200).json({
-        user: req.authUser,
-        display: req.authDisplay,
-        scope: req.authScope,
-        key: req.authKey
+        user: req.username,
+        display: req.displayname,
+        scope: req.scope,
+        key: req.key
     });
 });
 

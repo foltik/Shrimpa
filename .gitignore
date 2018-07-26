@@ -7,3 +7,5 @@ public/css
 .awcache/
 
 uploads/
+uploads-test/
+uploads-dev/

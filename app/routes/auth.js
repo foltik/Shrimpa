@@ -97,26 +97,24 @@ router.post('/login', canonicalizeRequest, wrap(async (req, res, next) => {
     // Create session
     await login(user, req);
 
-    // Set scope
+    // Set session vars
+    req.session.passport.display = user.username;
     req.session.passport.scope = user.scope;
 
     res.status(200).json({'message': 'Logged in.'});
 }));
 
-router.get('/logout', function (req, res) {
+router.post('/logout', function (req, res) {
     req.logout();
     res.status(200).json({'message': 'Logged out.'});
 });
 
-router.get('/ping', requireAuth(), (req, res, next) => {
-    res.status(200).json({'message': 'pong'});
-});
-
-router.get('/session', requireAuth(), (req, res, next) => {
+router.get('/whoami', requireAuth(), (req, res) => {
     res.status(200).json({
-        username: req.session.passport.username,
-        canonicalname: req.session.passport.canonicalname,
-        scope: req.session.passport.scope
+        user: req.authUser,
+        display: req.authDisplay,
+        scope: req.authScope,
+        key: req.authKey
     });
 });
 

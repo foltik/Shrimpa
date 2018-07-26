@@ -1,4 +1,5 @@
 {
   "dbHost": "mongodb://localhost:27017/shimapan-test",
+  "uploadPath": "uploads-test",
   "httpLogLevel": "dev"
 }

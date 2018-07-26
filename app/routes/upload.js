@@ -1,16 +1,17 @@
-var express = require('express');
-var router = express.Router();
+const express = require('express');
+const router = express.Router();
+const config = require('config');
 
-var User = require('../models/User.js');
-var Upload = require('../models/Upload.js');
-var Key = require('../models/Key.js');
+const User = require('../models/User.js');
+const Upload = require('../models/Upload.js');
+const Key = require('../models/Key.js');
 
-var multer = require('multer');
-var dest = multer({dest: 'uploads/'});
+const multer = require('multer');
+const fileUpload = multer({dest: config.uploadPath}).single('file');
+const fsPromises = require('fs').promises;
 
 const requireAuth = require('../util/requireAuth').requireAuth;
 const wrap = require('../util/wrap.js').wrap;
-
 
 const generatedIdExists = async id =>
     await Upload.countDocuments({id: id}) === 1;
@@ -37,21 +38,21 @@ const updateStats = async req =>
     ]);
 
 
-router.post('/', requireAuth('file.upload'), dest.single('file'), wrap(async (req, res, next) => {
+router.post('/', requireAuth('file.upload'), fileUpload, wrap(async (req, res, next) => {
     if (!req.file)
         return res.status(400).json({message: 'No file specified.'});
 
     // Max file size is 128 MiB
-    if (req.file.size > 1024 * 1024 * 128)
+    if (req.file.size > 1024 * 1024 * 128) {
+        await fsPromises.unlink(req.file.path);
         return res.status(413).json({message: 'File too large.'});
+    }
 
     const upload = {
-        name: req.file.originalname,
         id: await generateId(),
         uploader: req.authUser,
         uploaderKey: req.authKey,
         date: Date.now(),
-        mime: req.file.mimetype,
         file: req.file
     };
 

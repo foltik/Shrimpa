@@ -11,11 +11,12 @@ const Key = require('../app/models/Key.js');
 
 const Buffer = require('buffer').Buffer;
 const crypto = require('crypto');
-const fs = require('fs').promises;
+const fs = require('fs');
+const fsPromises = fs.promises;
 
 //---------------- DATABASE UTIL ----------------//
 
-exports.clearDatabase = async () =>
+exports.clearDatabase = () =>
     Promise.all([
         User.remove({}),
         Invite.remove({}),
@@ -25,7 +26,7 @@ exports.clearDatabase = async () =>
 
 //---------------- API ROUTES ----------------//
 
-exports.login = async (credentials, agent) =>
+exports.login = (credentials, agent) =>
     agent
         .post('/api/auth/login')
         .send(credentials);
@@ -34,25 +35,25 @@ exports.logout = agent =>
     agent
         .post('/api/auth/logout');
 
-exports.createInvite = async (invite) =>
+exports.createInvite = (invite) =>
     Invite.create(invite);
 
-exports.registerUser = async (user, agent) =>
+exports.registerUser = (user, agent) =>
     agent
         .post('/api/auth/register')
         .send(user);
 
-exports.whoami = async (agent) =>
+exports.whoami = (agent) =>
     agent
         .get('/api/auth/whoami')
         .send();
 
 //---------------- TEST ENTRY CREATION ----------------//
 
-exports.createTestInvite = async () =>
+exports.createTestInvite = () =>
     exports.createInvite({code: 'code', scope: ['file.upload']});
 
-exports.createTestInvites = async (n) =>
+exports.createTestInvites = (n) =>
     Promise.all(
         Array.from(new Array(n), (val, index) => 'code' + index)
             .map(code => exports.createInvite({code: code}))
@@ -65,14 +66,34 @@ exports.createTestUser = async agent => {
 
 exports.createTestSession = async agent => {
     await exports.createTestUser(agent);
-    await exports.login({username: 'user', password: 'pass'}, agent);
+    return exports.login({username: 'user', password: 'pass'}, agent);
 };
 
-exports.createTestFile = async (size, name) =>
-    fs.writeFile(name, Buffer.allocUnsafe(size));
+exports.createTestFile = (size, name) =>
+    fsPromises.writeFile(name, Buffer.allocUnsafe(size));
 
-exports.deleteTestFile = async name =>
-    fs.unlink(name);
+//---------------- FILESYSTEM ----------------//
+
+exports.deleteFile = file =>
+    fsPromises.unlink(file);
+
+exports.fileExists = file =>
+    fsPromises.access(file, fs.constants.R_OK);
+
+exports.fileSize = async file =>
+    (await fsPromises.stat(file)).size;
+
+exports.fileHash = file =>
+    new Promise((resolve, reject) => {
+        const hash = crypto.createHash('MD5');
+        fs.createReadStream(file)
+            .on('error', reject)
+            .on('data', chunk => hash.update(chunk))
+            .on('end', () => resolve(hash.digest('hex')));
+    });
+
+exports.directoryFileCount = async dir =>
+    (await fsPromises.readdir(dir)).length;
 
 //---------------- UPLOADS ----------------//
 

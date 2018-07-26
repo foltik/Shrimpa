@@ -7,6 +7,7 @@ const should = chai.should();
 const User = require('../app/models/User.js');
 const Invite = require('../app/models/Invite.js');
 const Upload = require('../app/models/Upload.js');
+const Key = require('../app/models/Key.js');
 
 const util = require('./testUtil.js');
 const canonicalize = require('../app/util/canonicalize').canonicalize;
@@ -26,7 +27,7 @@ after(() => {
     server.close();
 });
 
-describe('Users', function() {
+describe('Accounts', function() {
     beforeEach(async () => util.clearDatabase());
 
     describe('/POST register', () => {
@@ -41,10 +42,10 @@ describe('Users', function() {
                 res.body.should.have.property('message').eql('Registration successful.');
 
                 const userCount = await User.countDocuments({username: user.username});
-                userCount.should.eql(1);
+                userCount.should.equal(1);
 
                 const inviteCount = await Invite.countDocuments({code: user.invite, recipient: canonicalize(user.username)});
-                inviteCount.should.eql(1);
+                inviteCount.should.equal(1);
             }
 
             it('MUST register a valid user with a valid invite', async () =>
@@ -69,6 +70,9 @@ describe('Users', function() {
                 res.should.have.status(422);
                 res.body.should.be.a('object');
                 res.body.should.have.property('message').eql(message);
+
+                const inviteCount = await Invite.countDocuments({code: user.invite, recipient: canonicalize(user.username)});
+                inviteCount.should.equal(0);
             }
 
             it('MUST NOT register a nonexistant invite', async () =>
@@ -90,7 +94,10 @@ describe('Users', function() {
                 const res = await util.registerUser(user, agent);
                 res.should.have.status(422);
                 res.body.should.be.a('object');
-                res.body.should.have.property('message').eql(message);
+                res.body.should.have.property('message').equal(message);
+
+                const inviteCount = await Invite.countDocuments({code: user.invite, recipient: canonicalize(user.username)});
+                inviteCount.should.equal(0);
             }
 
             it('MUST NOT register a duplicate username', async () => {
@@ -186,19 +193,51 @@ describe('Uploads', () => {
     beforeEach(async () => util.clearDatabase());
 
     describe('/POST upload', () => {
-        async function verifySuccessfulUpload(file) {
+        async function verifySuccessfulUpload(file, user) {
+            // Get file stats beforehand
+            const [fileHash, fileSize] = await Promise.all([util.fileHash(file), util.fileSize(file)]);
+
+            // Get the user stats beforehand
+            const userBefore = await User.findOne({canonicalname: user}, {_id: 0, uploadCount: 1, uploadSize: 1});
+
+            // Submit the upload and verify the result
             const res = await util.upload(file, agent);
             res.should.have.status(200);
             res.body.should.be.a('object');
             res.body.should.have.property('url');
             res.body.should.have.property('id').match(/^[a-z]{6}$/);
+
+            // Find the uploaded file in the database
+            const upload = await Upload.findOne({id: res.body.id}, {_id: 0, id: 1, file: 1});
+            const uploadFile = upload.file.path;
+            upload.should.be.a('object');
+            upload.id.should.equal(res.body.id);
+
+            // Verify the uploaded file is the same as the file now on disk
+            const [uploadHash, uploadSize] = await Promise.all([util.fileHash(uploadFile), util.fileSize(uploadFile)]);
+            uploadHash.should.equal(fileHash);
+            uploadSize.should.equal(fileSize);
+
+            // Verify the user's stats have been updated correctly
+            const userAfter = await User.findOne({canonicalname: user}, {_id: 0, uploadCount: 1, uploadSize: 1});
+            userAfter.uploadCount.should.equal(userBefore.uploadCount + 1);
+            userAfter.uploadSize.should.equal(userBefore.uploadSize + fileSize);
         }
 
         async function verifyFailedUpload(file, status, message) {
+            const fileCountBefore = await util.directoryFileCount('uploads');
+            const uploadCountBefore = await Upload.countDocuments({});
+
             const res = await util.upload(file, agent);
             res.should.have.status(status);
             res.body.should.be.a('object');
             res.body.should.have.property('message').equal(message);
+
+            const fileCountAfter = await util.directoryFileCount('uploads');
+            fileCountAfter.should.equal(fileCountBefore, 'File should not have been written to disk');
+
+            const uploadCountAfter = await Upload.countDocuments({});
+            uploadCountAfter.should.equal(uploadCountBefore, 'No uploads should have been written to the database');
         }
 
         describe('0 Valid Request', () => {
@@ -208,11 +247,11 @@ describe('Uploads', () => {
                     util.createTestFile(2048, 'test.bin')
                 ]);
 
-                await verifySuccessfulUpload('test.bin');
+                await verifySuccessfulUpload('test.bin', 'user');
 
                 return Promise.all([
                     util.logout(agent),
-                    util.deleteTestFile('test.bin')
+                    util.deleteFile('test.bin')
                 ]);
             });
         });
@@ -233,7 +272,7 @@ describe('Uploads', () => {
 
                 return Promise.all([
                     util.logout(agent),
-                    util.deleteTestFile('test.bin')
+                    util.deleteFile('test.bin')
                 ]);
             });
         });
@@ -249,7 +288,7 @@ describe('Uploads', () => {
 
                 return Promise.all([
                     util.logout(agent),
-                    util.deleteTestFile('large.bin')
+                    util.deleteFile('large.bin')
                 ]);
             });
         });

@@ -7,6 +7,7 @@ const should = chai.should();
 const User = require('../app/models/User.js');
 const Invite = require('../app/models/Invite.js');
 const Upload = require('../app/models/Upload.js');
+const Key = require('../app/models/Key.js');
 
 const Buffer = require('buffer').Buffer;
 const crypto = require('crypto');

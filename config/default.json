@@ -12,6 +12,12 @@
     "charset": "abcdefghijklmnopqrstuvwxyz",
     "idLength": 6
   },
+  "View": {
+    "inlineMimeTypes": [
+      "image/*",
+      "text/plain"
+    ]
+  },
   "User": {
     "Username": {
       "maxLength": 36,

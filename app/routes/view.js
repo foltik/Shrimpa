@@ -1,41 +1,43 @@
-var express = require('express');
-var router = express.Router();
-var fs = require('fs');
-var mongoose = require('mongoose');
-var Upload = mongoose.model('Upload');
+const express = require('express');
+const router = express.Router();
+const config = require('config');
 
-function addView(name) {
-    Upload.updateOne({name: name}, { $inc: { views: 1 } }, function(err) {
-        if (err) throw err;
+const ModelPath = '../models/';
+const Upload = require(ModelPath + 'Upload.js');
+
+const wrap = require('../util/wrap.js');
+
+
+const incrementViews = async id =>
+    Upload.updateOne({id: id}, {$inc: {views: 1}});
+
+
+router.get('/:id', wrap(async (req, res) => {
+    const upload = await Upload.findOne({id: req.params.id});
+    if (!upload)
+        return res.status(404).json({message: 'File not found.'});
+
+    // Increment the file's view counter
+    await incrementViews(req.params.id);
+
+    // Whether the file should be an attachment or displayed inline on the page
+    let inline = false;
+
+    const mimetype = upload.file.mimetype.split('/');
+    const inlineMimeTypes = config.get('View.inlineMimeTypes').map(type => type.split('/'));
+
+    for (let type in inlineMimeTypes)
+        if (mimetype[0] === type[0])
+            if (mimetype[1] === type[1] || type[1] === '*')
+                inline = true;
+
+    res.set({
+        'Content-Disposition': inline ? 'inline' : 'attachment; filename="' + upload.file.originalname + '"',
+        'Content-Type': upload.file.mimetype
     });
-}
 
-router.get('/:name', function(req, res, next) {
-    Upload.findOne({
-        name: req.params.name
-    }, function(err, upload) {
-        if (err) {
-            next(err);
-        } else {
-            if (!upload) {
-                res.sendStatus(404);
-            } else {
-                addView(upload.name);
-
-                var disposition;
-                if (upload.file.mimetype.split('/')[0] === 'image')
-                    disposition = 'inline';
-                else
-                    disposition = 'attachment; filename="' + upload.file.originalname + '"';
-
-                res.set({
-                    "Content-Disposition": disposition,
-                    "Content-Type": upload.file.mimetype
-                });
-                fs.createReadStream(upload.file.path).pipe(res);
-            }
-        }
-    });
-});
+    fs.createReadStream(upload.file.path)
+        .pipe(res);
+}));
 
 module.exports = router;

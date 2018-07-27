@@ -62,6 +62,7 @@ router.post('/', requireAuth('file.upload'), fileUpload, wrap(async (req, res) =
     ]);
 
     res.status(200).json({
+        message: 'File uploaded.',
         id: upload.id,
         url: config.get('Server.hostname') + '/v/' + upload.id
     });

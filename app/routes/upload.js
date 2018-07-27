@@ -12,7 +12,7 @@ const fileUpload = multer({dest: config.get('Upload.path')}).single('file');
 const fsPromises = require('fs').promises;
 
 const requireAuth = require('../util/requireAuth').requireAuth;
-const wrap = require('../util/wrap.js').wrap;
+const wrap = require('../util/wrap.js');
 
 const generatedIdExists = async id =>
     await Upload.countDocuments({id: id}) === 1;

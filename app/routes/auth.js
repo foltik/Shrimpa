@@ -10,7 +10,7 @@ const passport = require('passport');
 
 const canonicalizeRequest = require('../util/canonicalize').canonicalizeRequest;
 const requireAuth = require('../util/requireAuth').requireAuth;
-const wrap = require('../util/wrap.js').wrap;
+const wrap = require('../util/wrap.js');
 
 // Wraps passport.authenticate to return a promise
 function authenticate(req, res, next) {

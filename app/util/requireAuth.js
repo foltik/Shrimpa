@@ -1,5 +1,5 @@
 const Key = require('../models/Key.js');
-const wrap = require('./wrap.js').wrap;
+const wrap = require('./wrap.js');
 
 const verifyScope = (scope, requiredScope) => scope.indexOf(requiredScope) !== -1;
 

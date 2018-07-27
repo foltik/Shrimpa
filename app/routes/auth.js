@@ -9,7 +9,7 @@ const Invite = require(ModelPath + 'Invite.js');
 const passport = require('passport');
 
 const canonicalizeRequest = require('../util/canonicalize').canonicalizeRequest;
-const requireAuth = require('../util/requireAuth').requireAuth;
+const requireAuth = require('../util/requireAuth');
 const wrap = require('../util/wrap.js');
 
 // Wraps passport.authenticate to return a promise

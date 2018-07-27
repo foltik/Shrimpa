@@ -8,7 +8,7 @@ const verifyScope = (scope, requiredScope) => scope.indexOf(requiredScope) !== -
 // If the request is authenticated and has the desired scope, continue.
 // If the request is authenticated, but lacks the required scope, return 403 Forbidden.
 // If the request is unauthenticated, return 401 Unauthorized.
-exports.requireAuth = scope =>
+const requireAuth = scope =>
     wrap(async (req, res, next) => {
         if (req.isAuthenticated()) {
             if (scope ? verifyScope(req.session.passport.scope, scope) : true) {
@@ -35,3 +35,5 @@ exports.requireAuth = scope =>
             res.status(401).json({'message': 'Unauthorized.'});
         }
     });
+
+module.exports = requireAuth;

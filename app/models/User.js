@@ -29,11 +29,6 @@ var UserSchema = mongoose.Schema({
         default: 0
     },
 
-    inviteCount: {
-        type: Number,
-        default: 0
-    },
-
     date: {
         type: Date,
         default: Date.now

@@ -30,7 +30,7 @@ after(() => {
     server.close();
 });
 
-describe('Accounts', function() {
+describe('Authentication', function() {
     beforeEach(async () => util.clearDatabase());
 
     describe('/POST register', () => {
@@ -87,7 +87,7 @@ describe('Accounts', function() {
             );
 
             it('MUST NOT register an expired invite', async () =>
-                verifyRejectedInvite({code: 'code', exp: new Date(), issuer: 'Mocha'}, 'Invite expired.')
+                verifyRejectedInvite({code: 'code', expires: new Date(), issuer: 'Mocha'}, 'Invite expired.')
             );
         });
 
@@ -192,7 +192,7 @@ describe('Accounts', function() {
     });
 });
 
-describe('Uploads', () => {
+describe('Uploading', () => {
     beforeEach(async () => util.clearDatabase());
 
     describe('/POST upload', () => {

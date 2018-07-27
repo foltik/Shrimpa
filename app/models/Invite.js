@@ -32,7 +32,7 @@ var InviteSchema = mongoose.Schema({
         default: null
     },
 
-    exp: {
+    expires: {
         type: Date,
         default: null
     }

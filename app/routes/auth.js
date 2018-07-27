@@ -55,7 +55,7 @@ async function validateInvite(code) {
     if (invite.used)
         return {valid: false, message: 'Invite already used.'};
 
-    if (invite.exp != null && invite.exp < Date.now())
+    if (invite.expires != null && invite.expires < Date.now())
         return {valid: false, message: 'Invite expired.'};
 
     return {valid: true, invite: invite};

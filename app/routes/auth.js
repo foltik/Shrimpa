@@ -11,101 +11,83 @@ const passport = require('passport');
 const canonicalizeRequest = require('../util/canonicalize').canonicalizeRequest;
 const requireAuth = require('../util/requireAuth');
 const wrap = require('../util/wrap.js');
+const verifyBody = require('../util/verifyBody');
 
 // Wraps passport.authenticate to return a promise
-function authenticate(req, res, next) {
+const authenticate = (req, res, next) => {
     return new Promise((resolve) => {
         passport.authenticate('local', (err, user) => {
             resolve(user);
         })(req, res, next);
     });
-}
+};
 
 // Wraps passport session creation for async usage
-function login(user, req) {
+const login = (user, req) => {
     return new Promise((resolve) => {
         req.login(user, resolve);
     });
-}
-
-// Check if the requested username is valid
-async function validateUsername(username, sanitize) {
-    if (username.length > config.get('User.Username.maxLength'))
-        return {valid: false, message: 'Username too long.'};
-
-    const restrictedRegex = new RegExp(config.get('User.Username.restrictedChars'), 'g');
-    if (username !== sanitize(username).replace(restrictedRegex, ''))
-        return {valid: false, message: 'Username contains invalid characters.'};
-
-    const count = await User.countDocuments({username: username});
-
-    if (count !== 0)
-        return {valid: false, message: 'Username in use.'};
-
-    return {valid: true};
-}
+};
 
 // Query the database for a valid invite code. An error message property is set if invalid.
-async function validateInvite(code) {
-    const invite = await Invite.findOne({code: code});
+const validateInvite = wrap(async (req, res, next) => {
+    const invite = await Invite.findOne({code: req.body.invite}).catch(next);
 
     if (!invite)
-        return {valid: false, message: 'Invalid invite code.'};
+        return res.status(422).json({message: 'Invalid invite code.'});
 
     if (invite.used)
-        return {valid: false, message: 'Invite already used.'};
+        return res.status(422).json({message: 'Invite already used.'});
 
     if (invite.expires != null && invite.expires < Date.now())
-        return {valid: false, message: 'Invite expired.'};
+        return res.status(422).json({message: 'Invite expired.'});
 
-    return {valid: true, invite: invite};
-}
+    req.invite = invite;
+    next();
+});
 
+// Check if the requested username is valid
+const validateUsername = wrap(async (req, res, next) => {
+    const username = req.body.username;
 
-router.post('/register', canonicalizeRequest, wrap(async (req, res) => {
-    if (!req.body.displayname)
-        return res.status(400).json({message: 'No displayname specified.'});
+    if (username.length > config.get('User.Username.maxLength'))
+        return res.status(422).json({message: 'Username too long.'});
 
-    if (!req.body.password)
-        return res.status(400).json({message: 'No password specified.'});
+    const restrictedRegex = new RegExp(config.get('User.Username.restrictedChars'), 'g');
+    if (username !== req.sanitize(username).replace(restrictedRegex, ''))
+        return res.status(422).json({message: 'Username contains invalid characters.'});
 
-    if (!req.body.invite)
-        return res.status(400).json({message: 'No invite specified.'});
+    const count = await User.countDocuments({username: username}).catch(next);
+    if (count !== 0)
+        return res.status(422).json({message: 'Username in use.'});
 
-    // Validate the invite and username
-    const [inviteStatus, usernameStatus] =
-        await Promise.all([
-            validateInvite(req.body.invite),
-            validateUsername(req.body.username, req.sanitize)
-        ]);
+    next();
+});
 
-    // Error if validation failed
-    if (!inviteStatus.valid)
-        return res.status(422).json({'message': inviteStatus.message});
-    if (!usernameStatus.valid)
-        return res.status(422).json({'message': usernameStatus.message});
-
+const registerProps = [
+    {name: 'displayname', type: 'string'},
+    {name: 'password', type: 'string'},
+    {name: 'invite', type: 'string'}];
+router.post('/register',
+    canonicalizeRequest, verifyBody(registerProps),
+    validateInvite, validateUsername,
+    wrap(async (req, res, next) => {
     // Update the database
     await Promise.all([
         User.register({
             username: req.body.username,
             displayname: req.body.displayname,
-            scope: inviteStatus.invite.scope,
+            scope: req.invite.scope,
             date: Date.now()
-        }, req.body.password),
-        Invite.updateOne({code: inviteStatus.invite.code}, {recipient: req.body.username, used: Date.now()})
+        }, req.body.password).catch(next),
+        Invite.updateOne({code: req.invite.code}, {recipient: req.body.username, used: Date.now()}).catch(next)
     ]);
 
     res.status(200).json({'message': 'Registration successful.'});
 }));
 
-router.post('/login', canonicalizeRequest, wrap(async (req, res, next) => {
-    if (!req.body.username)
-        return res.status(400).json({message: 'No username specified.'});
-
-    if (!req.body.password)
-        return res.status(400).json({message: 'No password specified.'});
-
+const loginProps = [{name: 'username', type: 'string'}, {name: 'password', type: 'string'}];
+router.post('/login', canonicalizeRequest, verifyBody(loginProps), wrap(async (req, res, next) => {
     // Authenticate
     const user = await authenticate(req, res, next);
     if (!user)

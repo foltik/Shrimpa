@@ -73,8 +73,7 @@ exports.createTestInvites = (n) =>
 
 exports.createTestUser = async agent => {
     await exports.createTestInvite();
-    exports.registerUser({displayname: 'user', password: 'pass', invite: 'code'}, agent);
-    await Invite.deleteOne({code: 'code'});
+    return exports.registerUser({displayname: 'user', password: 'pass', invite: 'code'}, agent);
 };
 
 exports.createTestSession = async agent => {

@@ -2,22 +2,24 @@ const express = require('express');
 const router = express.Router();
 const config = require('config');
 
+const fsPromises = require('fs').promises;
+
 const ModelPath = '../models/';
 const User = require(ModelPath + 'User.js');
 const Upload = require(ModelPath + 'Upload.js');
 const Key = require(ModelPath + 'Key.js');
 
+const verifyScope = require('../util/verifyScope.js');
+
 const multer = require('multer');
 const fileUpload = multer({dest: config.get('Upload.path')}).single('file');
-const fsPromises = require('fs').promises;
 
-const requireAuth = require('../util/requireAuth');
 const wrap = require('../util/wrap.js');
 
 const generatedIdExists = async id =>
     await Upload.countDocuments({id: id}) === 1;
 
-const generateId = async () => {
+const generateId = async() => {
     const charset = config.get('Upload.charset');
     const len = config.get('Upload.idLength');
 
@@ -39,7 +41,37 @@ const updateStats = async req =>
     ]);
 
 
-router.post('/', requireAuth('file.upload'), fileUpload, wrap(async (req, res) => {
+router.post('/', fileUpload, wrap(async(req, res) => {
+    // We need to authenticate in place because the form data needs to be processed by multer first
+    const deleteAndError = async (code, message) => {
+        if (req.file)
+            await fsPromises.unlink(req.file.path);
+        res.status(code).json({message: message});
+    };
+
+    if (req.isAuthenticated()) {
+        if (verifyScope(req.session.passport.scope, 'file.upload')) {
+            req.username = req.session.passport.user;
+            req.displayname = req.session.passport.displayname;
+            req.scope = req.session.passport.scope;
+            req.key = null;
+        } else {
+            return await deleteAndError(403, 'Forbidden.');
+        }
+    } else if (req.body.key) {
+        const key = await Key.findOne({key: req.body.key});
+        if (verifyScope(key.scope, 'file.upload')) {
+            req.username = key.issuer;
+            req.displayname = key.issuer;
+            req.scope = key.scope;
+            req.key = key.key;
+        } else {
+            return await deleteAndError(403, 'Forbidden.');
+        }
+    } else {
+        return await deleteAndError(401, 'Unauthorized.');
+    }
+
     if (!req.file)
         return res.status(400).json({message: 'No file specified.'});
 

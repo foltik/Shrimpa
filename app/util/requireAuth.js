@@ -1,7 +1,7 @@
 const Key = require('../models/Key.js');
 const wrap = require('./wrap.js');
 
-const verifyScope = (scope, requiredScope) => scope.indexOf(requiredScope) !== -1;
+const verifyScope = require('./verifyScope.js');
 
 // Checks for authentication by either API Key or Session
 // Sets body.authUser and body.authKey if check passed
@@ -20,11 +20,11 @@ const requireAuth = scope =>
             } else {
                 res.status(403).json({message: 'Forbidden.'});
             }
-        } else if (req.body.apikey) {
-            const key = await Key.findOne({key: apikey});
+        } else if (req.body.key) {
+            const key = await Key.findOne({key: key});
             if (scope ? verifyScope(key.scope, scope) : true) {
-                req.username = key.username;
-                req.displayname = key.username;
+                req.username = key.issuer;
+                req.displayname = key.issuer;
                 req.scope = key.scope;
                 req.key = key.key;
                 next();

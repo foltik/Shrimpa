@@ -63,6 +63,15 @@ async function validateInvite(code) {
 
 
 router.post('/register', canonicalizeRequest, wrap(async (req, res) => {
+    if (!req.body.displayname)
+        return res.status(400).json({message: 'No displayname specified.'});
+
+    if (!req.body.password)
+        return res.status(400).json({message: 'No password specified.'});
+
+    if (!req.body.invite)
+        return res.status(400).json({message: 'No invite specified.'});
+
     // Validate the invite and username
     const [inviteStatus, usernameStatus] =
         await Promise.all([
@@ -91,6 +100,12 @@ router.post('/register', canonicalizeRequest, wrap(async (req, res) => {
 }));
 
 router.post('/login', canonicalizeRequest, wrap(async (req, res, next) => {
+    if (!req.body.username)
+        return res.status(400).json({message: 'No username specified.'});
+
+    if (!req.body.password)
+        return res.status(400).json({message: 'No password specified.'});
+
     // Authenticate
     const user = await authenticate(req, res, next);
     if (!user)
@@ -107,6 +122,9 @@ router.post('/login', canonicalizeRequest, wrap(async (req, res, next) => {
 }));
 
 router.post('/logout', function (req, res) {
+    if (!req.isAuthenticated())
+        return res.status(400).json({message: 'Not logged in.'});
+
     req.logout();
     res.status(200).json({'message': 'Logged out.'});
 });

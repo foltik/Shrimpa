@@ -3,6 +3,9 @@ exports.canonicalize = displayname => displayname.normalize('NFKD').toLowerCase(
 
 exports.canonicalizeRequest =
     (req, res, next) => {
-        req.body.username = req.body.displayname ? exports.canonicalize(req.body.displayname) : undefined;
+        if (req.body.displayname)
+            req.body.username = exports.canonicalize(req.body.displayname);
+        else if (req.body.username)
+            req.body.username = exports.canonicalize(req.body.username);
         next();
     };

@@ -11,10 +11,10 @@ const verifyBody = expectedProps =>
             if (!expected.optional && !prop)
                 return res.status(400).json({message: expected.name + ' not specified.'});
 
-            if (expected.type && typeof prop !== expected.type)
+            if (prop && expected.type && typeof prop !== expected.type)
                 return res.status(400).json({message: expected.name + ' malformed.'});
 
-            if (expected.instance && !(prop instanceof expected.instance))
+            if (prop && expected.instance && !(prop instanceof expected.instance))
                 return res.status(400).json({message: expected.name + ' malformed.'});
         }
         next();

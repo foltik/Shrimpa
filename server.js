@@ -11,12 +11,17 @@ const helmet = require('helmet');
 const app = express();
 const config = require('config');
 
+process.on('uncaughtException', function (err) {
+    console.log('FATAL UNCAUGHT EXCEPTION:');
+    console.log(err.stack);
+});
+
 // MongoDB
 const dbHost = config.get('Database.host');
 let db;
 mongoose.connect(dbHost, {useNewUrlParser: true})
     .then(() => {
-        console.log('Connected to database ' + dbHost);
+        console.log('Connected to database ' + dbHost + '\n');
         db = mongoose.connection;
     });
 

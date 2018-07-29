@@ -14,7 +14,6 @@ const util = require('./testUtil.js');
 const canonicalize = require('../app/util/canonicalize').canonicalize;
 
 const config = require('config');
-
 let app;
 let server;
 let agent;
@@ -30,25 +29,22 @@ after(() => {
     server.close();
 });
 
-describe('Authentication', function() {
-    beforeEach(async () => util.clearDatabase());
+beforeEach(() => util.clearDatabase());
 
+describe('Authentication', function() {
     describe('/POST register', () => {
         describe('0 Valid Request', () => {
             async function verifySuccessfulRegister(user) {
                 await util.createTestInvite();
 
                 const res = await util.registerUser(user, agent);
-
-                res.should.have.status(200);
-                res.body.should.be.a('object');
-                res.body.should.have.property('message').eql('Registration successful.');
+                util.verifyResponse(res, 200, 'Registration successful.');
 
                 const userCount = await User.countDocuments({displayname: user.displayname});
-                userCount.should.equal(1);
+                userCount.should.equal(1, 'The user should have be created in the database');
 
                 const inviteCount = await Invite.countDocuments({code: user.invite, recipient: canonicalize(user.displayname)});
-                inviteCount.should.equal(1);
+                inviteCount.should.equal(1, 'The invite should be marked as used by the user');
             }
 
             it('MUST register a valid user with a valid invite', async () =>
@@ -70,12 +66,10 @@ describe('Authentication', function() {
                 }
 
                 const res = await(util.registerUser(user, agent));
-                res.should.have.status(422);
-                res.body.should.be.a('object');
-                res.body.should.have.property('message').eql(message);
+                util.verifyResponse(res, 422, message);
 
                 const inviteCount = await Invite.countDocuments({code: user.invite, recipient: canonicalize(user.displayname)});
-                inviteCount.should.equal(0);
+                inviteCount.should.equal(0, 'Invite should not be marked as used or received by the user');
             }
 
             it('MUST NOT register a nonexistant invite', async () =>
@@ -95,12 +89,10 @@ describe('Authentication', function() {
         describe('2 Invalid Displaynames', () => {
             async function verifyRejectedUsername(user, message) {
                 const res = await util.registerUser(user, agent);
-                res.should.have.status(422);
-                res.body.should.be.a('object');
-                res.body.should.have.property('message').equal(message);
+                util.verifyResponse(res, 422, message);
 
                 const inviteCount = await Invite.countDocuments({code: user.invite, recipient: canonicalize(user.displayname)});
-                inviteCount.should.equal(0);
+                inviteCount.should.equal(0, 'The invite should not be inserted into the database after rejection');
             }
 
             it('MUST NOT register a duplicate username', async () => {
@@ -145,24 +137,55 @@ describe('Authentication', function() {
                 return verifyRejectedUsername(user, 'Username too long.');
             })
         });
+
+        describe('3 Malformed Request', () => {
+            it('SHOULD return an error with displayname missing', async () => {
+                const res = await util.registerUser({password: 'pass', invite: 'code'}, agent);
+                util.verifyResponse(res, 400, 'displayname not specified.');
+            });
+
+            it('SHOULD return an error with displayname not a string', async () => {
+                const res = await util.registerUser({displayname: {rof: 'lol'}, password: 'pass', invite: 'code'}, agent);
+                util.verifyResponse(res, 400, 'displayname malformed.');
+            });
+
+            it('SHOULD return an error with password missing', async () => {
+                const res = await util.registerUser({displayname: 'user', invite: 'code'}, agent);
+                util.verifyResponse(res, 400, 'password not specified.');
+            });
+
+            it('SHOULD return an error with password not a string', async () => {
+                const res = await util.registerUser({displayname: 'user', password: {rof: 'lol'}, invite: 'code'}, agent);
+                util.verifyResponse(res, 400, 'password malformed.');
+            });
+
+            it('SHOULD return an error with invite missing', async () => {
+                const res = await util.registerUser({displayname: 'user', password: 'pass'}, agent);
+                util.verifyResponse(res, 400, 'invite not specified.');
+            });
+
+            it('SHOULD return an error with invite not a string', async () => {
+                const res = await util.registerUser({displayname: 'user', password: 'pass', invite: {rof: 'lol'}}, agent);
+                util.verifyResponse(res, 400, 'invite malformed.');
+            });
+        });
     });
 
     describe('/POST login', () => {
         async function verifySuccessfulLogin(credentials) {
+            // Login with the agent
             const res = await util.login(credentials, agent);
-            res.should.have.status(200);
-            res.body.should.have.property('message').equal('Logged in.');
+            util.verifyResponse(res, 200, 'Logged in.');
             res.should.have.cookie('session.id');
 
+            // Get /api/auth/whoami, which can only be viewed when logged in
             const whoami = await util.whoami(agent);
             whoami.should.have.status(200);
         }
 
         async function verifyFailedLogin(credentials) {
             const res = await util.login(credentials, agent);
-            res.should.have.status(401);
-            res.body.should.be.a('object');
-            res.body.should.have.property('message').equal('Unauthorized.');
+            util.verifyResponse(res, 401, 'Unauthorized.');
         }
 
         describe('0 Valid Request', () => {
@@ -171,9 +194,16 @@ describe('Authentication', function() {
                 return verifySuccessfulLogin({displayname: 'user', password: 'pass'});
             });
 
-            it('SHOULD accept any non-normalized variant of a username with a valid password', async () => {
+            it('SHOULD accept a username instead of a displayname', async () => {
+                await util.createTestUser(agent);
+                return verifySuccessfulLogin({username: 'user', password: 'pass'});
+            });
 
-            })
+            it('SHOULD accept any non-normalized variant of a username with a valid password', async () => {
+                await util.createTestInvite();
+                await util.registerUser({displayname: 'ᴮᴵᴳᴮᴵᴿᴰ', password: 'pass', invite: 'code'}, agent);
+                return verifySuccessfulLogin({displayname: 'BiGbIrD', password: 'pass'});
+            });
         });
 
 
@@ -189,60 +219,80 @@ describe('Authentication', function() {
                 verifyFailedLogin({displayname: 'bogus', password: 'bogus'})
             );
         });
+
+        describe('3 Malformed Request', () => {
+            it('SHOULD return an error when displayname is not a string', async () => {
+                const res = await util.login({displayname: {rof: 'lol'}, password: 'pass'}, agent);
+                util.verifyResponse(res, 400, 'displayname malformed.');
+            });
+
+            it('SHOULD return an error when username is not a string', async () => {
+                const res = await util.login({username: {rof: 'lol'}, password: 'pass'}, agent);
+                util.verifyResponse(res, 400, 'username malformed.');
+            });
+
+            it('SHOULD return an error when password is missing', async () => {
+                const res = await util.login({displayname: 'user'}, agent);
+                util.verifyResponse(res, 400, 'password not specified.');
+            });
+
+            it('SHOULD return an error when password is not a string', async () => {
+                const res = await util.login({displayname: 'user', password: {rof: 'lol'}}, agent);
+                util.verifyResponse(res, 400, 'password malformed.');
+            });
+        })
     });
 });
 
 describe('Uploading', () => {
-    beforeEach(async () => util.clearDatabase());
-
     describe('/POST upload', () => {
         async function verifySuccessfulUpload(file, key) {
             // Get file stats beforehand
-            const [fileHash, fileSize] = await Promise.all([util.fileHash(file), util.fileSize(file)]);
+            const fileHash = await util.fileHash(file);
 
             // Submit the upload and verify the result
             const res = await util.upload(file, agent, key);
             res.should.have.status(200);
             res.body.should.be.a('object');
             res.body.should.have.property('url');
-            res.body.should.have.property('id').match(/^[a-z]{6}$/);
+            const idLength = config.get('Upload.idLength');
+            res.body.should.have.property('id').length(idLength, 'The ID should be a ' + idLength + ' letter lowercase string.');
 
             // Find the uploaded file in the database
             const upload = await Upload.findOne({id: res.body.id}, {_id: 0, id: 1, file: 1});
             const uploadFile = upload.file.path;
             upload.should.be.a('object');
-            upload.id.should.equal(res.body.id);
+            upload.id.should.equal(res.body.id, 'The uploaded file in the database should exist and match the reponse ID.');
 
             // Verify the uploaded file is the same as the file now on disk
-            const [uploadHash, uploadSize] = await Promise.all([util.fileHash(uploadFile), util.fileSize(uploadFile)]);
-            uploadHash.should.equal(fileHash);
-            uploadSize.should.equal(fileSize);
-
-            return fileSize;
+            const uploadHash = await util.fileHash(uploadFile);
+            uploadHash.should.equal(fileHash, 'The uploaded file and the file on disk should have matching hashes.');
         }
 
         async function verifySuccessfulUserUpload(file, username) {
             // Get the user's stats beforehand
             const userBefore = await User.findOne({username: username}, {_id: 0, uploadCount: 1, uploadSize: 1});
 
-            const fileSize = await verifySuccessfulUpload(file);
+            await verifySuccessfulUpload(file);
 
             // Verify the user's stats have been updated correctly
             const userAfter = await User.findOne({username: username}, {_id: 0, uploadCount: 1, uploadSize: 1});
-            userAfter.uploadCount.should.equal(userBefore.uploadCount + 1);
-            userAfter.uploadSize.should.equal(userBefore.uploadSize + fileSize);
+            const fileSize = await util.fileSize(file);
+            userAfter.uploadCount.should.equal(userBefore.uploadCount + 1, 'The users upload count should be incremented.');
+            userAfter.uploadSize.should.equal(userBefore.uploadSize + fileSize, 'The users upload size should be properly increased.');
         }
 
         async function verifySuccessfulKeyUpload(file, key) {
             // Get the key's stats beforehand
             const keyBefore = await Key.findOne({key: key}, {_id: 0, uploadCount: 1, uploadSize: 1});
 
-            const fileSize = await verifySuccessfulUpload(file, key);
+            await verifySuccessfulUpload(file, key);
 
             // Verify the key's stats have been updated correctly
             const keyAfter = await Key.findOne({key: key}, {_id: 0, uploadCount: 1, uploadSize: 1});
-            keyAfter.uploadCount.should.equal(keyBefore.uploadCount + 1);
-            keyAfter.uploadSize.should.equal(keyBefore.uploadSize + fileSize);
+            const fileSize = await util.fileSize(file);
+            keyAfter.uploadCount.should.equal(keyBefore.uploadCount + 1, 'The keys upload count should be incremented.');
+            keyAfter.uploadSize.should.equal(keyBefore.uploadSize + fileSize, 'The keys upload size should be properly increased');
         }
 
         async function verifyFailedUpload(file, status, message, key) {
@@ -250,15 +300,13 @@ describe('Uploading', () => {
             const uploadCountBefore = await Upload.countDocuments({});
 
             const res = await util.upload(file, agent, key);
-            res.should.have.status(status);
-            res.body.should.be.a('object');
-            res.body.should.have.property('message').equal(message);
+            util.verifyResponse(res, status, message);
 
             const fileCountAfter = await util.directoryFileCount(config.get('Upload.path'));
-            fileCountAfter.should.equal(fileCountBefore, 'File should not have been written to disk');
+            fileCountAfter.should.equal(fileCountBefore, 'File should not be written to disk');
 
             const uploadCountAfter = await Upload.countDocuments({});
-            uploadCountAfter.should.equal(uploadCountBefore, 'No uploads should have been written to the database');
+            uploadCountAfter.should.equal(uploadCountBefore, 'No uploads should be written to the database');
         }
 
         describe('0 Valid Request', () => {
@@ -340,7 +388,7 @@ describe('Uploading', () => {
             });
         });
 
-        describe('4 Invalid Request', () => {
+        describe('4 Malformed Request', () => {
             it('SHOULD NOT accept a request with no file attached', async () => {
                 await util.createTestSession(agent);
                 await verifyFailedUpload(null, 400, 'No file specified.');
@@ -352,47 +400,18 @@ describe('Uploading', () => {
 });
 
 describe('Invites', () => {
-    beforeEach(async () => util.clearDatabase());
-
-    async function verifyCreatedInvite(invite) {
-        const res = await util.createInvite(invite, agent);
-        util.verifyResponse(res, 200, 'Invite created.');
-        res.body.should.have.property('code').match(/^[A-Fa-f0-9]+$/);
-
-        const dbInvite = await Invite.findOne({code: res.body.code});
-        dbInvite.should.not.equal(null);
-        dbInvite.scope.should.deep.equal(invite.scope);
-        dbInvite.issuer.should.equal('user');
-    }
-
-    async function verifyDeletedInvite(code) {
-        const res = await util.deleteInvite(code, agent);
-        util.verifyResponse(res, 200, 'Invite deleted.');
-
-        const inviteCount = await Invite.countDocuments({code: code});
-        inviteCount.should.equal(0, 'The invite should have been removed from the database');
-    }
-
-    async function verifyInviteSearch(codes) {
-        const res = await util.getInvites({}, agent);
-        res.should.have.status(200);
-        res.body.should.be.a('Array');
-
-        codes.sort();
-        const resCodes = res.body.map(invite => invite.code).sort();
-
-        resCodes.should.deep.equal(codes, 'All invites should be present in result');
-    }
-
-    async function verifySingleSearch(code) {
-        const res = await util.getInvites({code: code}, agent);
-        res.should.have.status(200);
-        res.body.should.be.a('Array');
-        res.body.should.have.length(1);
-        res.body[0].code.should.equal(code);
-    }
-
     describe('/POST create', () => {
+        async function verifyCreatedInvite(invite) {
+            const res = await util.createInvite(invite, agent);
+            util.verifyResponse(res, 200, 'Invite created.');
+            res.body.should.have.property('code').match(/^[A-Fa-f0-9]+$/, 'The invite should be a hex string.');
+
+            const dbInvite = await Invite.findOne({code: res.body.code});
+            dbInvite.should.not.equal(null);
+            dbInvite.scope.should.deep.equal(invite.scope, 'The created invites scope should match the request.');
+            dbInvite.issuer.should.equal('user');
+        }
+
         describe('0 Valid Request', () => {
             it('SHOULD create an invite with valid scope from a valid session', async () => {
                 await util.createSession(agent, ['invite.create', 'file.upload']);
@@ -430,6 +449,14 @@ describe('Invites', () => {
     });
 
     describe('/POST delete', () => {
+        async function verifyDeletedInvite(code) {
+            const res = await util.deleteInvite(code, agent);
+            util.verifyResponse(res, 200, 'Invite deleted.');
+
+            const inviteCount = await Invite.countDocuments({code: code});
+            inviteCount.should.equal(0, 'The invite should be removed from the database.');
+        }
+
         describe('0 Valid Request', () => {
             it('SHOULD delete an invite with valid permission from a valid session', async () => {
                 await util.createSession(agent, ['invite.create', 'invite.delete', 'file.upload']);
@@ -508,6 +535,25 @@ describe('Invites', () => {
     });
 
     describe('/POST get', () => {
+        async function verifyInviteSearch(codes) {
+            const res = await util.getInvites({}, agent);
+            res.should.have.status(200);
+            res.body.should.be.a('Array');
+
+            codes.sort();
+            const resCodes = res.body.map(invite => invite.code).sort();
+
+            resCodes.should.deep.equal(codes, 'All invites should be present in result.');
+        }
+
+        async function verifySingleSearch(code) {
+            const res = await util.getInvites({code: code}, agent);
+            res.should.have.status(200);
+            res.body.should.be.a('Array');
+            res.body.should.have.length(1, 'Only one invite should be in the array');
+            res.body[0].code.should.equal(code, 'The found invite should match the request code');
+        }
+
         describe('0 Valid Request', () => {
             it('SHOULD get multiple invites from a valid session', async () => {
                 await util.createSession(agent, ['invite.create', 'invite.get', 'file.upload']);
@@ -550,7 +596,7 @@ describe('Invites', () => {
                 const res = await util.getInvites({code: invite.body.code}, agent);
                 res.should.have.status(200);
                 res.body.should.be.a('Array');
-                res.body.should.have.length(0);
+                res.body.should.have.length(0, 'No invites should be found.');
             });
         });
 

@@ -7,7 +7,7 @@ const Invite = require(ModelPath + 'Invite.js');
 const User = require(ModelPath + 'User.js');
 
 const wrap = require('../util/wrap.js');
-const requireAuth = require('../util/requireAuth');
+const requireAuth = require('../util/auth').requireAuth;
 const verifyScope = require('../util/verifyScope');
 const verifyBody = require('../util/verifyBody');
 

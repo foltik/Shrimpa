@@ -86,7 +86,10 @@ router.post('/register',
     res.status(200).json({'message': 'Registration successful.'});
 }));
 
-const loginProps = [{name: 'username', type: 'string'}, {name: 'password', type: 'string'}];
+const loginProps = [
+    {name: 'username', type: 'string', optional: true},
+    {name: 'displayname', type: 'string', optional: true},
+    {name: 'password', type: 'string'}];
 router.post('/login', verifyBody(loginProps), canonicalizeRequest, wrap(async (req, res, next) => {
     // Authenticate
     const user = await authenticate(req, res, next);

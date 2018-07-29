@@ -11,5 +11,11 @@
   },
   "Log": {
     "httpLevel": "dev"
+  },
+  "User": {
+    "Password": {
+      "saltLength": 8,
+      "hashIterations": 1
+    }
   }
 }

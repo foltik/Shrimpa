@@ -22,6 +22,10 @@
     "Username": {
       "maxLength": 36,
       "restrictedChars": "\\s"
+    },
+    "Password": {
+      "saltLength": 64,
+      "hashIterations": 25000
     }
   },
   "Log": {

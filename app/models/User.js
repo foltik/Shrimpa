@@ -1,7 +1,8 @@
-var mongoose = require('mongoose');
-var passportLocalMongoose = require('passport-local-mongoose');
+const mongoose = require('mongoose');
+const passportLocalMongoose = require('passport-local-mongoose');
+const config = require('config');
 
-var UserSchema = mongoose.Schema({
+const UserSchema = mongoose.Schema({
     username: {
         type: String,
         unique: true,
@@ -36,8 +37,8 @@ var UserSchema = mongoose.Schema({
 });
 
 UserSchema.plugin(passportLocalMongoose, {
-    saltlen: 64,
-    iterations: 10000,
+    saltlen: config.get('User.Password.saltLength'),
+    iterations: config.get('User.Password.hashIterations'),
     limitAttempts: true
 });
 

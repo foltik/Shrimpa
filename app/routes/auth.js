@@ -69,7 +69,7 @@ const registerProps = [
     {name: 'password', type: 'string'},
     {name: 'invite', type: 'string'}];
 router.post('/register',
-    canonicalizeRequest, verifyBody(registerProps),
+    verifyBody(registerProps), canonicalizeRequest,
     validateInvite, validateUsername,
     wrap(async (req, res, next) => {
     // Update the database
@@ -87,7 +87,7 @@ router.post('/register',
 }));
 
 const loginProps = [{name: 'username', type: 'string'}, {name: 'password', type: 'string'}];
-router.post('/login', canonicalizeRequest, verifyBody(loginProps), wrap(async (req, res, next) => {
+router.post('/login', verifyBody(loginProps), canonicalizeRequest, wrap(async (req, res, next) => {
     // Authenticate
     const user = await authenticate(req, res, next);
     if (!user)

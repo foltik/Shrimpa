@@ -245,6 +245,8 @@ describe('Authentication', function() {
 });
 
 describe('Uploading', () => {
+    after(async () => util.clearDirectory(config.get('Upload.path')));
+
     describe('/POST upload', () => {
         async function verifySuccessfulUpload(file, key) {
             // Get file stats beforehand
@@ -340,7 +342,7 @@ describe('Uploading', () => {
             it('SHOULD NOT accept an unauthenticated request', async () => {
                 await util.createTestFile(2048, 'test.bin');
 
-                await verifyFailedUpload(null, 401, 'Unauthorized.');
+                await verifyFailedUpload('test.bin', 401, 'Unauthorized.');
 
                 return util.deleteFile('test.bin');
             });
@@ -373,28 +375,42 @@ describe('Uploading', () => {
         });
 
         describe('3 Invalid File', () => {
+            before(() => util.createTestFile(config.get('Upload.maxSize') + 1024, 'large.bin'));
+            after(() => util.deleteFile('large.bin'));
+
             it('SHOULD NOT accept a too large file', async () => {
-                await Promise.all([
-                    util.createTestSession(agent),
-                    util.createTestFile(config.get('Upload.maxSize') + 1, 'large.bin')
-                ]);
-
+                await util.createTestSession(agent);
                 await verifyFailedUpload('large.bin', 413, 'File too large.');
-
-                return Promise.all([
-                    util.logout(agent),
-                    util.deleteFile('large.bin')
-                ]);
+                return util.logout(agent);
             });
         });
 
         describe('4 Malformed Request', () => {
             it('SHOULD NOT accept a request with no file attached', async () => {
                 await util.createTestSession(agent);
-                await verifyFailedUpload(null, 400, 'No file specified.');
+                await verifyFailedUpload(null, 400, 'Bad request.');
 
                 return util.logout(agent);
             });
+
+            it('SHOULD NOT accept a request with multiple files attached', async () => {
+                await Promise.all([
+                    util.createTestFile(2048, 'test1.bin'),
+                    util.createTestFile(2048, 'test2.bin'),
+                    util.createTestSession(agent)
+                ]);
+
+                const res = await agent.post('/api/upload')
+                    .attach('file', 'test1.bin', 'test1.bin')
+                    .attach('file1', 'test2.bin', 'test2.bin');
+
+                util.verifyResponse(res, 400, 'Bad request.');
+
+                return Promise.all([
+                    util.deleteFile('test1.bin'),
+                    util.deleteFile('test2.bin')
+                ]);
+            })
         })
     });
 });

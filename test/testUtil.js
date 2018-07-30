@@ -13,6 +13,7 @@ const Buffer = require('buffer').Buffer;
 const crypto = require('crypto');
 const fs = require('fs');
 const fsPromises = fs.promises;
+const path = require('path');
 
 //---------------- RESPONSE VERIFICATION ----------------//
 
@@ -116,6 +117,12 @@ exports.fileHash = file =>
 
 exports.directoryFileCount = async dir =>
     (await fsPromises.readdir(dir)).length;
+
+exports.clearDirectory = async dir => {
+    const files = await fsPromises.readdir(dir);
+    const promises = files.map(file => fsPromises.unlink(path.join(dir, file)));
+    return Promise.all(promises);
+};
 
 //---------------- UPLOADS ----------------//
 

@@ -1,87 +1,78 @@
-var express = require('express');
-var router = express.Router();
-var crypto = require('crypto');
+const express = require('express');
+const router = express.Router();
+const config = require('config');
+const crypto = require('crypto');
 
-var User = require('../../models/User.js');
-var Key = require('../../models/Key.js');
+const ModelPath = '../../models/';
+const Key = require(ModelPath + 'Key.js');
 
-var requireScope = function (perm) {
-    return function(req, res, next) {
-        User.findOne({username: req.session.passport.user}, function(err, user) {
-            if (err) throw err;
-            if (user.scope.indexOf(perm) === -1)
-                res.status(400).json({'message': 'No permission.'});
-            else
-                next();
-        });
-    }
-};
+const wrap = require('../../util/wrap');
+const bodyVerifier = require('../../util/verifyBody').bodyVerifier;
+const verifyScope = require('../../util/verifyScope');
+const requireAuth = require('../../util/auth').requireAuth;
 
-router.post('/create', requireScope('api.create'), function (req, res) {
-    if (!req.body.identifier || !req.body.scope) {
-        res.status(400).json({'message': 'Bad request.'});
-        return;
-    }
+const createParams = [
+    {name: 'identifier', type: 'string', sanitize: true},
+    {name: 'scope', instance: Array}];
+router.post('/create', requireAuth('key.create'), bodyVerifier(createParams), wrap(async (req, res) => {
+    const keyCount = await Key.countDocuments({username: req.username});
+    if (keyCount >= config.get('Key.limit'))
+        return res.status(403).json({message: 'Key limit reached.'});
 
-    Key.count({'username': req.session.passport.user}, function (err, count) {
-        if (count >= 10) {
-            res.status(403).json({'message': 'Key limit reached.'});
-            return;
-        }
+    const scope = req.body.scope;
+    if (!scope.every(scope => verifyScope(req.scope, scope)))
+        return res.status(403).json({message: 'Requested scope exceeds own scope.'});
 
-        var scope;
-        try {
-            scope = JSON.parse(req.body.scope);
-        } catch (e) {
-            res.status(500).json({'message': e.name + ': ' + e.message});
-            return;
-        }
+    const key = {
+        key: await crypto.randomBytes(32).toString('hex'),
+        identifier: req.body.identifier,
+        scope: scope,
+        issuer: req.username,
+        date: Date.now()
+    };
 
-        var id = req.sanitize(req.body.identifier);
-        if (id.length === 0) id = "err";
+    await Key.create(key);
 
-        var entry = {
-            key: crypto.randomBytes(32).toString('hex'),
-            identifier: id,
-            scope: scope,
-            username: req.session.passport.user,
-            date: Date.now()
-        };
+    res.status(200).json({
+        message: 'Key created.',
+        key: key.key
+    });
+}));
 
-        Key.create(entry, function (err) {
-            if (err) {
-                throw err;
-            } else {
-                res.status(200).json({
-                    key: entry.key,
-                    identifier: entry.identifier,
-                    scope: entry.scope
-                });
-            }
-        })
-    })
-});
-
-router.get('/get', function (req, res, next) {
-    var query = {username: req.session.passport.user};
+const getProps = [
+    {name: 'identifier', type: 'string', optional: true},
+    {name: 'issuer', type: 'string', optional: true}];
+router.get('/get', requireAuth('key.get'), bodyVerifier(getProps), wrap(async (req, res) => {
+    let query = {};
 
     if (req.body.identifier)
         query.identifier = req.body.identifier;
 
-    Key.find(query, function (err, keys) {
-        if (err) {
-            next(err);
-        } else {
-            res.status(200).json(keys);
-        }
-    })
-});
+    if (!verifyScope(req.scope, 'key.get.others'))
+        query.issuer = req.username;
+    else if (req.body.issuer)
+        query.issuer = req.body.issuer;
 
-router.post('/delete', requireScope('api.delete'), function(req, res, next) {
-    Key.deleteOne({key: req.body.key}, function(err) {
-        if (err) next(err);
-        else res.status(200).json({'message': 'Successfully deleted.'});
-    });
-});
+    const keys = await Key.find(query);
+
+    res.status(200).json(keys);
+}));
+
+const deleteProps = [{name: 'key', type: 'string'}, {name: 'issuer', type: 'string', optional: true}];
+router.post('/delete', requireAuth('key.delete'), bodyVerifier(deleteProps), wrap(async (req, res) => {
+    let query = {key : req.body.key};
+
+    if (!verifyScope(req.scope, 'key.delete.others'))
+        query.issuer = req.username;
+    else if (req.body.issuer)
+        query.issuer = req.body.issuer;
+
+    const key = await Key.findOne(query);
+    if (!key)
+        return res.status(422).json({message: 'Key not found.'});
+
+    await Key.deleteOne({_id: key._id});
+    res.status(200).json({message: 'Key deleted.'});
+}));
 
 module.exports = router;

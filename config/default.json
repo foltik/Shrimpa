@@ -28,6 +28,9 @@
       "hashIterations": 25000
     }
   },
+  "Key": {
+    "limit": 5
+  },
   "Log": {
     "httpLevel": "combined"
   }

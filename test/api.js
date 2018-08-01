@@ -32,7 +32,7 @@ after(() => {
 
 beforeEach(() => util.clearDatabase());
 
-describe('Authentication', function() {
+describe('Authentication', () => {
     describe('/POST register', () => {
         describe('0 Valid Request', () => {
             async function verifySuccessfulRegister(user) {
@@ -56,7 +56,6 @@ describe('Authentication', function() {
                 verifySuccessfulRegister({displayname: 'ᴮᴵᴳᴮᴵᴿᴰ', password: 'pass', invite: 'code'})
             );
         });
-
 
         describe('1 Invalid Invites', () => {
             async function verifyRejectedInvite(invite, message) {
@@ -85,7 +84,6 @@ describe('Authentication', function() {
                 verifyRejectedInvite({code: 'code', expires: new Date(), issuer: 'Mocha'}, 'Invite expired.')
             );
         });
-
 
         describe('2 Invalid Displaynames', () => {
             async function verifyRejectedUsername(user, code, message) {
@@ -136,38 +134,6 @@ describe('Authentication', function() {
                 await util.createTestInvite();
                 const user = {displayname: '123456789_123456789_123456789_1234567', password: 'pass', invite: 'code'};
                 return verifyRejectedUsername(user, 400, 'displayname too long.');
-            })
-        });
-
-        describe('3 Malformed Request', () => {
-            it('SHOULD return an error with displayname missing', async () => {
-                const res = await util.registerUser({password: 'pass', invite: 'code'}, agent);
-                util.verifyResponse(res, 400, 'displayname not specified.');
-            });
-
-            it('SHOULD return an error with displayname not a string', async () => {
-                const res = await util.registerUser({displayname: {rof: 'lol'}, password: 'pass', invite: 'code'}, agent);
-                util.verifyResponse(res, 400, 'displayname malformed.');
-            });
-
-            it('SHOULD return an error with password missing', async () => {
-                const res = await util.registerUser({displayname: 'user', invite: 'code'}, agent);
-                util.verifyResponse(res, 400, 'password not specified.');
-            });
-
-            it('SHOULD return an error with password not a string', async () => {
-                const res = await util.registerUser({displayname: 'user', password: {rof: 'lol'}, invite: 'code'}, agent);
-                util.verifyResponse(res, 400, 'password malformed.');
-            });
-
-            it('SHOULD return an error with invite missing', async () => {
-                const res = await util.registerUser({displayname: 'user', password: 'pass'}, agent);
-                util.verifyResponse(res, 400, 'invite not specified.');
-            });
-
-            it('SHOULD return an error with invite not a string', async () => {
-                const res = await util.registerUser({displayname: 'user', password: 'pass', invite: {rof: 'lol'}}, agent);
-                util.verifyResponse(res, 400, 'invite malformed.');
             });
         });
     });
@@ -207,7 +173,6 @@ describe('Authentication', function() {
             });
         });
 
-
         describe('1 Invalid Password', () => {
             it('SHOULD NOT accept an invalid password', async () => {
                 await util.createTestUser(agent);
@@ -220,28 +185,6 @@ describe('Authentication', function() {
                 verifyFailedLogin({displayname: 'bogus', password: 'bogus'})
             );
         });
-
-        describe('3 Malformed Request', () => {
-            it('SHOULD return an error when displayname is not a string', async () => {
-                const res = await util.login({displayname: {rof: 'lol'}, password: 'pass'}, agent);
-                util.verifyResponse(res, 400, 'displayname malformed.');
-            });
-
-            it('SHOULD return an error when username is not a string', async () => {
-                const res = await util.login({username: {rof: 'lol'}, password: 'pass'}, agent);
-                util.verifyResponse(res, 400, 'username malformed.');
-            });
-
-            it('SHOULD return an error when password is missing', async () => {
-                const res = await util.login({displayname: 'user'}, agent);
-                util.verifyResponse(res, 400, 'password not specified.');
-            });
-
-            it('SHOULD return an error when password is not a string', async () => {
-                const res = await util.login({displayname: 'user', password: {rof: 'lol'}}, agent);
-                util.verifyResponse(res, 400, 'password malformed.');
-            });
-        })
     });
 });
 
@@ -449,20 +392,6 @@ describe('Invites', () => {
                 util.verifyResponse(res, 403, 'Requested scope exceeds own scope.');
             });
         });
-
-        describe('2 Malformed Request', () => {
-            it('SHOULD return an error when scope is not specified.', async () => {
-                await util.createSession(agent, ['invite.create']);
-                const res = await util.createInvite(null, agent);
-                util.verifyResponse(res, 400, 'scope not specified.');
-            });
-
-            it('SHOULD return an error when scope is not an array', async () => {
-                await util.createSession(agent, ['invite.create']);
-                const res = await util.createInvite({scope: {broken: 'object'}}, agent);
-                util.verifyResponse(res, 400, 'scope malformed.');
-            });
-        })
     });
 
     describe('/POST delete', () => {
@@ -535,20 +464,6 @@ describe('Invites', () => {
                 util.verifyResponse(res, 422, 'Invite not found.');
             });
         });
-
-        describe('3 Malformed Request', () => {
-            it('SHOULD return an error when no code was specified', async () => {
-                await util.createSession(agent, ['invite.delete']);
-                const res = await util.deleteInvite(null, agent);
-                util.verifyResponse(res, 400, 'code not specified.');
-            });
-
-            it('SHOULD return an error when the code is not a string', async () => {
-                await util.createSession(agent, ['invite.delete']);
-                const res = await util.deleteInvite({break: 'everything'}, agent);
-                util.verifyResponse(res, 400, 'code malformed.');
-            });
-        });
     });
 
     describe('/POST get', () => {
@@ -614,14 +529,6 @@ describe('Invites', () => {
                 res.should.have.status(200);
                 res.body.should.be.a('Array');
                 res.body.should.have.length(0, 'No invites should be found.');
-            });
-        });
-
-        describe('2 Malformed Request', () => {
-            it('SHOULD return an error when code is not a string', async () => {
-                await util.createSession(agent, ['invite.get']);
-                const res = await util.getInvites({code: {what: 'even'}}, agent);
-                util.verifyResponse(res, 400, 'code malformed.');
             });
         });
     });

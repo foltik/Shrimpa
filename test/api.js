@@ -121,20 +121,20 @@ describe('Authentication', function() {
                     {displayname: 'user name', password: 'pass', invite: 'code2'}
                 ];
 
-                const failMsg = 'Username contains invalid characters.';
+                const failMsg = 'displayname contains invalid characters.';
                 return Promise.all(users.map(user => verifyRejectedUsername(user, failMsg)));
             });
 
             it('MUST NOT register a username containing HTML', async () => {
                 await util.createTestInvite();
                 const user = {displayname: 'user<svg/onload=alert("XSS")>', password: 'pass', invite: 'code'};
-                return verifyRejectedUsername(user, 'Username contains invalid characters.');
+                return verifyRejectedUsername(user, 'displayname contains invalid characters.');
             });
 
             it('MUST NOT register a username with too many characters', async () => {
                 await util.createTestInvite();
                 const user = {displayname: '123456789_123456789_123456789_1234567', password: 'pass', invite: 'code'};
-                return verifyRejectedUsername(user, 'Username too long.');
+                return verifyRejectedUsername(user, 'displayname too long.');
             })
         });
 

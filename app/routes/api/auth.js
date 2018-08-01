@@ -50,13 +50,6 @@ const validateInvite = wrap(async (req, res, next) => {
 const validateUsername = wrap(async (req, res, next) => {
     const username = req.body.username;
 
-    if (username.length > config.get('User.Username.maxLength'))
-        return res.status(422).json({message: 'Username too long.'});
-
-    const restrictedRegex = new RegExp(config.get('User.Username.restrictedChars'), 'g');
-    if (username !== req.sanitize(username).replace(restrictedRegex, ''))
-        return res.status(422).json({message: 'Username contains invalid characters.'});
-
     const count = await User.countDocuments({username: username}).catch(next);
     if (count !== 0)
         return res.status(422).json({message: 'Username in use.'});
@@ -65,7 +58,13 @@ const validateUsername = wrap(async (req, res, next) => {
 });
 
 const registerProps = [
-    {name: 'displayname', type: 'string'},
+    {
+        name: 'displayname',
+        type: 'string',
+        maxLength: config.get('User.Username.maxLength'),
+        sanitize: true,
+        restrict: new RegExp(config.get('User.Username.restrictedChars')),
+    },
     {name: 'password', type: 'string'},
     {name: 'invite', type: 'string'}];
 router.post('/register',

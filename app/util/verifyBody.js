@@ -1,32 +1,36 @@
+// Verifies a single property is well formed
+const verifyProp = (req, expected) => new Promise((resolve, reject) => {
+    const prop = req.body[expected.name];
 
-// Verifies the request body is well formed
+    if (!expected.optional && !prop)
+        return reject({code: 400, message: expected.name + ' not specified.'});
+
+    if (prop && expected.type && typeof prop !== expected.type)
+        return reject({code: 400, message: expected.name + ' malformed.'});
+
+    if (prop && expected.instance && !(prop instanceof expected.instance))
+        return reject({code: 400, message: expected.name + ' malformed.'});
+
+    if (prop && expected.maxLength && prop.length > expected.maxLength)
+        return reject({code: 422, message: expected.name + ' too long.'});
+
+    if (prop && expected.sanitize && req.sanitize(prop) !== prop)
+        return reject({code: 422, message: expected.name + ' contains invalid characters.'});
+
+    if (prop && expected.restrict && prop.replace(expected.restrict, '') !== prop)
+        return reject({code: 422, message: expected.name + ' contains invalid characters.'});
+
+    resolve();
+});
+
+// Verifies the entire request body is well formed
 // expectedProps follows the format:
 // [{name: 'myList', instance: 'Array'}, {name: 'myVar', type: 'string', optional: true}, etc.]
 const verifyBody = expectedProps =>
     (req, res, next) => {
-        for (let i = 0; i < expectedProps.length; i++) {
-            const expected = expectedProps[i];
-            const prop = req.body[expected.name];
-
-            if (!expected.optional && !prop)
-                return res.status(400).json({message: expected.name + ' not specified.'});
-
-            if (prop && expected.type && typeof prop !== expected.type)
-                return res.status(400).json({message: expected.name + ' malformed.'});
-
-            if (prop && expected.instance && !(prop instanceof expected.instance))
-                return res.status(400).json({message: expected.name + ' malformed.'});
-
-            if (prop && expected.maxLength && prop.length > expected.maxLength)
-                return res.status(422).json({message: expected.name + ' too long.'});
-
-            if (prop && expected.sanitize && req.sanitize(prop) !== prop)
-                return res.status(422).json({message: expected.name + ' contains invalid characters.'});
-
-            if (prop && expected.restrict && prop.replace(expected.restrict, '') !== prop)
-                return res.status(422).json({message: expected.name + ' contains invalid characters.'});
-        }
-        next();
+        Promise.all(expectedProps.map(expected => verifyProp(req, expected)))
+            .then(() => next())
+            .catch(err => res.status(err.code).json({message: err.message}));
     };
 
 module.exports = verifyBody;

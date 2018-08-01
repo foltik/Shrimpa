@@ -36,7 +36,7 @@ const checkKey = async (req, scope, status) => {
 // Middleware that checks for authentication by either API key or session
 // sets req.username, req.displayname, req.scope, and req.key if authenticated properly,
 // otherwise throws an error code
-const auth = scope =>
+const requireAuth = scope =>
     wrap(async (req, res, next) => {
         const status = {
             authenticated: false,
@@ -59,4 +59,4 @@ const auth = scope =>
 
 module.exports.checkSession = checkSession;
 module.exports.checkKey = checkKey;
-module.exports.requireAuth = auth;
+module.exports.requireAuth = requireAuth;

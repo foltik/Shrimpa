@@ -3,6 +3,7 @@ process.env.NODE_ENV = 'test';
 const chai = require('chai');
 chai.use(require('chai-http'));
 const should = chai.should();
+const describe = require('mocha').describe;
 
 const ModelPath = '../app/models/';
 const User = require(ModelPath + 'User.js');
@@ -87,9 +88,9 @@ describe('Authentication', function() {
 
 
         describe('2 Invalid Displaynames', () => {
-            async function verifyRejectedUsername(user, message) {
+            async function verifyRejectedUsername(user, code, message) {
                 const res = await util.registerUser(user, agent);
-                util.verifyResponse(res, 422, message);
+                util.verifyResponse(res, code, message);
 
                 const inviteCount = await Invite.countDocuments({code: user.invite, recipient: canonicalize(user.displayname)});
                 inviteCount.should.equal(0, 'The invite should not be inserted into the database after rejection');
@@ -101,7 +102,7 @@ describe('Authentication', function() {
                 const user1 = {displayname: 'user', password: 'diff', invite: 'code1'};
 
                 await util.registerUser(user0, agent);
-                return verifyRejectedUsername(user1, 'Username in use.');
+                return verifyRejectedUsername(user1, 422, 'Username in use.');
             });
 
             it('MUST NOT register a username with a duplicate canonical name', async () => {
@@ -110,7 +111,7 @@ describe('Authentication', function() {
                 const user1 = {displayname: 'ᴮᴵᴳᴮᴵᴿᴰ', password: 'diff', invite: 'code1'};
 
                 await util.registerUser(user0, agent);
-                return verifyRejectedUsername(user1, 'Username in use.');
+                return verifyRejectedUsername(user1, 422, 'Username in use.');
             });
 
             it('MUST NOT register a username containing whitespace', async () => {
@@ -122,19 +123,19 @@ describe('Authentication', function() {
                 ];
 
                 const failMsg = 'displayname contains invalid characters.';
-                return Promise.all(users.map(user => verifyRejectedUsername(user, failMsg)));
+                return Promise.all(users.map(user => verifyRejectedUsername(user, 400, failMsg)));
             });
 
             it('MUST NOT register a username containing HTML', async () => {
                 await util.createTestInvite();
                 const user = {displayname: 'user<svg/onload=alert("XSS")>', password: 'pass', invite: 'code'};
-                return verifyRejectedUsername(user, 'displayname contains invalid characters.');
+                return verifyRejectedUsername(user, 400, 'displayname contains invalid characters.');
             });
 
             it('MUST NOT register a username with too many characters', async () => {
                 await util.createTestInvite();
                 const user = {displayname: '123456789_123456789_123456789_1234567', password: 'pass', invite: 'code'};
-                return verifyRejectedUsername(user, 'displayname too long.');
+                return verifyRejectedUsername(user, 400, 'displayname too long.');
             })
         });
 
@@ -513,7 +514,7 @@ describe('Invites', () => {
 
                 await util.createSession(agent, ['invite.create', 'invite.delete'], 'eve');
                 const res = await util.deleteInvite(invite.body.code, agent);
-                util.verifyResponse(res, 404, 'Invite not found.');
+                util.verifyResponse(res, 422, 'Invite not found.');
             });
 
             it('SHOULD NOT delete a used invite without invite.delete.used scope', async () => {
@@ -531,7 +532,7 @@ describe('Invites', () => {
             it('SHOULD return an error when the invite is not found', async () => {
                 await util.createSession(agent, ['invite.delete']);
                 const res = await util.deleteInvite('bogus', agent);
-                util.verifyResponse(res, 404, 'Invite not found.');
+                util.verifyResponse(res, 422, 'Invite not found.');
             });
         });
 
@@ -621,6 +622,72 @@ describe('Invites', () => {
                 await util.createSession(agent, ['invite.get']);
                 const res = await util.getInvites({code: {what: 'even'}}, agent);
                 util.verifyResponse(res, 400, 'code malformed.');
+            });
+        });
+    });
+});
+
+describe('Keys', () => {
+    describe('/POST create', () => {
+        describe('0 Valid Request', () => {
+            it('SHOULD create a key with valid scope from a valid session', async () => {
+                
+            });
+        });
+
+        describe('1 Invalid Scope', () => {
+            it('SHOULD NOT create a key without key.create scope', async () => {
+                
+            });
+            
+            it('SHOULD NOT create a key with scope exceeding the requesters', async () => {
+                
+            });
+        });
+    });
+
+    describe('/POST delete', () => {
+        describe('0 Valid Request', () => {
+            it('SHOULD delete a key with valid scope from a valid session', async () => {
+
+            });
+
+            it('SHOULD delete another users key with key.delete.others scope', async () => {
+
+            });
+        });
+
+        describe('1 Invalid Scope', () => {
+            it('SHOULD NOT delete another users key without key.delete.others scope', async () => {
+
+            });
+        });
+
+        describe('2 Invalid Key', () => {
+            it('SHOULD return an error when the key was not found', async () => {
+
+            });
+        });
+    });
+
+    describe('/POST get', () => {
+        describe('0 Valid Request', () => {
+            it('SHOULD get multiple keys from a valid session', async () => {
+
+            });
+
+            it('SHOULD get a key by identifier from a valid session', async () => {
+
+            });
+
+            it('SHOULD get another users key with key.get.others scope', async () => {
+
+            });
+        });
+
+        describe('1 Invalid Scope', () => {
+            it('SHOULD NOT get another users key without key.get.others scope', () => {
+
             });
         });
     });

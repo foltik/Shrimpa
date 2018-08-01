@@ -9,13 +9,12 @@ const User = require(ModelPath + 'User.js');
 const wrap = require('../../util/wrap.js');
 const requireAuth = require('../../util/auth').requireAuth;
 const verifyScope = require('../../util/verifyScope');
-const verifyBody = require('../../util/verifyBody');
+const bodyVerifier = require('../../util/verifyBody').bodyVerifier;
 
 const createParams = [{name: 'scope', instance: Array}];
-router.post('/create', requireAuth('invite.create'), verifyBody(createParams), wrap(async (req, res, next) => {
+router.post('/create', requireAuth('invite.create'), bodyVerifier(createParams), wrap(async (req, res, next) => {
     const scope = req.body.scope;
-    const hasPermission = scope.every(scope => verifyScope(req.scope, scope));
-    if (!hasPermission)
+    if (!scope.every(scope => verifyScope(req.scope, scope)))
         return res.status(403).json({message: 'Requested scope exceeds own scope.'});
 
     const invite = {
@@ -38,7 +37,7 @@ router.post('/create', requireAuth('invite.create'), verifyBody(createParams), w
 }));
 
 const deleteParams = [{name: 'code', type: 'string'}];
-router.post('/delete', requireAuth('invite.delete'), verifyBody(deleteParams), wrap(async (req, res, next) => {
+router.post('/delete', requireAuth('invite.delete'), bodyVerifier(deleteParams), wrap(async (req, res, next) => {
     let query = {code: req.body.code};
 
     // Users need a permission to delete invites other than their own
@@ -48,7 +47,7 @@ router.post('/delete', requireAuth('invite.delete'), verifyBody(deleteParams), w
     // Find the invite
     const invite = await Invite.findOne(query).catch(next);
     if (!invite)
-        return res.status(404).json({message: 'Invite not found.'});
+        return res.status(422).json({message: 'Invite not found.'});
 
     // Users need a permission to delete invites that have been used
     if (!verifyScope(req.scope, 'invite.delete.used') && invite.used != null && invite.recipient != null)
@@ -58,13 +57,15 @@ router.post('/delete', requireAuth('invite.delete'), verifyBody(deleteParams), w
     res.status(200).json({message: 'Invite deleted.'});
 }));
 
-const getParams = [{name: 'code', type: 'string', optional: true}];
-router.get('/get', requireAuth('invite.get'), verifyBody(getParams), wrap(async (req, res, next) => {
+const getParams = [{name: 'code', type: 'string', optional: true}, {name: 'issuer', type: 'string', optional: true}];
+router.get('/get', requireAuth('invite.get'), bodyVerifier(getParams), wrap(async (req, res, next) => {
     let query = {};
 
     // Users need a permission to list invites other than their own
     if (!verifyScope(req.scope, 'invite.get.others'))
         query.issuer = req.username;
+    else if (req.body.issuer)
+        query.issuer = req.body.issuer;
 
     // Narrow down the query by code if specified
     if (req.body.code)

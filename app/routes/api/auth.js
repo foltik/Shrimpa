@@ -11,7 +11,7 @@ const passport = require('passport');
 const canonicalizeRequest = require('../../util/canonicalize').canonicalizeRequest;
 const requireAuth = require('../../util/auth').requireAuth;
 const wrap = require('../../util/wrap.js');
-const verifyBody = require('../../util/verifyBody');
+const bodyVerifier = require('../../util/verifyBody').bodyVerifier;
 
 // Wraps passport.authenticate to return a promise
 const authenticate = (req, res, next) => {
@@ -68,7 +68,7 @@ const registerProps = [
     {name: 'password', type: 'string'},
     {name: 'invite', type: 'string'}];
 router.post('/register',
-    verifyBody(registerProps), canonicalizeRequest,
+    bodyVerifier(registerProps), canonicalizeRequest,
     validateInvite, validateUsername,
     wrap(async (req, res, next) => {
     // Update the database
@@ -89,7 +89,7 @@ const loginProps = [
     {name: 'username', type: 'string', optional: true},
     {name: 'displayname', type: 'string', optional: true},
     {name: 'password', type: 'string'}];
-router.post('/login', verifyBody(loginProps), canonicalizeRequest, wrap(async (req, res, next) => {
+router.post('/login', bodyVerifier(loginProps), canonicalizeRequest, wrap(async (req, res, next) => {
     // Authenticate
     const user = await authenticate(req, res, next);
     if (!user)

@@ -1,7 +1,7 @@
 var express = require('express');
 var router = express.Router();
 
-var User = require('../models/User.js');
+var User = require('../../models/User.js');
 
 var requireScope = function (perm) {
     return function(req, res, next) {

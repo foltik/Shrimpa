@@ -2,14 +2,14 @@ const express = require('express');
 const router = express.Router();
 const crypto = require('crypto');
 
-const ModelPath = '../models/';
+const ModelPath = '../../models/';
 const Invite = require(ModelPath + 'Invite.js');
 const User = require(ModelPath + 'User.js');
 
-const wrap = require('../util/wrap.js');
-const requireAuth = require('../util/auth').requireAuth;
-const verifyScope = require('../util/verifyScope');
-const verifyBody = require('../util/verifyBody');
+const wrap = require('../../util/wrap.js');
+const requireAuth = require('../../util/auth').requireAuth;
+const verifyScope = require('../../util/verifyScope');
+const verifyBody = require('../../util/verifyBody');
 
 
 const updateInviteCount = async (req, next) =>

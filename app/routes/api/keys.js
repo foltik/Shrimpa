@@ -2,8 +2,8 @@ var express = require('express');
 var router = express.Router();
 var crypto = require('crypto');
 
-var User = require('../models/User.js');
-var Key = require('../models/Key.js');
+var User = require('../../models/User.js');
+var Key = require('../../models/Key.js');
 
 var requireScope = function (perm) {
     return function(req, res, next) {

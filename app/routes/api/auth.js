@@ -2,16 +2,16 @@ const express = require('express');
 const router = express.Router();
 const config = require('config');
 
-const ModelPath = '../models/';
+const ModelPath = '../../models/';
 const User = require(ModelPath + 'User.js');
 const Invite = require(ModelPath + 'Invite.js');
 
 const passport = require('passport');
 
-const canonicalizeRequest = require('../util/canonicalize').canonicalizeRequest;
-const requireAuth = require('../util/auth').requireAuth;
-const wrap = require('../util/wrap.js');
-const verifyBody = require('../util/verifyBody');
+const canonicalizeRequest = require('../../util/canonicalize').canonicalizeRequest;
+const requireAuth = require('../../util/auth').requireAuth;
+const wrap = require('../../util/wrap.js');
+const verifyBody = require('../../util/verifyBody');
 
 // Wraps passport.authenticate to return a promise
 const authenticate = (req, res, next) => {

@@ -2,13 +2,13 @@ const express = require('express');
 const router = express.Router();
 const config = require('config');
 
-const ModelPath = '../models/';
+const ModelPath = '../../models/';
 const Upload = require(ModelPath + 'Upload.js');
 
-const uploadMultipart = require('../util/upload/multipart');
-const updateStats = require('../util/upload/stats');
+const uploadMultipart = require('../../util/upload/multipart');
+const updateStats = require('../../util/upload/stats');
 
-const wrap = require('../util/wrap.js');
+const wrap = require('../../util/wrap.js');
 
 router.post('/', uploadMultipart, wrap(async (req, res) => {
     const upload = {

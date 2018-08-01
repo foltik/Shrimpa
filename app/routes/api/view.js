@@ -2,10 +2,10 @@ const express = require('express');
 const router = express.Router();
 const config = require('config');
 
-const ModelPath = '../models/';
+const ModelPath = '../../models/';
 const Upload = require(ModelPath + 'Upload.js');
 
-const wrap = require('../util/wrap.js');
+const wrap = require('../../util/wrap.js');
 
 
 const incrementViews = async id =>

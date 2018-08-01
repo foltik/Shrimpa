@@ -11,17 +11,10 @@ const requireAuth = require('../../util/auth').requireAuth;
 const verifyScope = require('../../util/verifyScope');
 const verifyBody = require('../../util/verifyBody');
 
-
-const updateInviteCount = async (req, next) =>
-    User.updateOne({username: req.username}, {$inc: {inviteCount: 1}}).catch(next);
-
-const verifyUserHasScope = userScope =>
-    scope => verifyScope(userScope, scope);
-
 const createParams = [{name: 'scope', instance: Array}];
 router.post('/create', requireAuth('invite.create'), verifyBody(createParams), wrap(async (req, res, next) => {
     const scope = req.body.scope;
-    const hasPermission = scope.every(verifyUserHasScope(req.scope));
+    const hasPermission = scope.every(scope => verifyScope(req.scope, scope));
     if (!hasPermission)
         return res.status(403).json({message: 'Requested scope exceeds own scope.'});
 
@@ -35,7 +28,7 @@ router.post('/create', requireAuth('invite.create'), verifyBody(createParams), w
 
     await Promise.all([
         Invite.create(invite).catch(next),
-        updateInviteCount(req, next)
+        User.updateOne({username: req.username}, {$inc: {inviteCount: 1}})
     ]);
 
     res.status(200).json({

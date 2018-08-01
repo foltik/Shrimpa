@@ -148,3 +148,17 @@ exports.deleteInvite = (code, agent) =>
 exports.getInvites = (query, agent) =>
     agent.get('/api/invites/get')
         .send(query);
+
+//---------------- Invites ----------------//
+
+exports.createKey = (key, agent) =>
+    agent.post('/api/keys/create')
+        .send(key);
+
+exports.deleteKey = (key, agent) =>
+    agent.post('/api/keys/delete')
+        .send({key: key});
+
+exports.getKeys = (query, agent) =>
+    agent.get('/api/keys/get')
+        .send(query);

@@ -629,65 +629,145 @@ describe('Invites', () => {
 
 describe('Keys', () => {
     describe('/POST create', () => {
+        async function verifyCreatedKey(key) {
+            const res = await util.createKey(key, agent);
+            util.verifyResponse(res, 200, 'Key created.');
+            res.body.should.have.property('key').match(/^[A-Fa-f0-9]+$/, 'The key should be a hex string');
+
+            const dbKey = await Key.findOne({key: res.body.key});
+            dbKey.should.not.equal(null);
+            dbKey.scope.should.deep.equal(key.scope, 'The created keys scope should match the request.');
+            dbKey.issuer.should.equal('user');
+        }
+
         describe('0 Valid Request', () => {
             it('SHOULD create a key with valid scope from a valid session', async () => {
-                
+                await util.createSession(agent, ['key.create', 'file.upload']);
+                return verifyCreatedKey({identifier: 'key', scope: ['file.upload']});
             });
         });
 
         describe('1 Invalid Scope', () => {
             it('SHOULD NOT create a key without key.create scope', async () => {
-                
+                await util.createSession(agent, ['file.upload']);
+                const res = await util.createKey({identifier: 'key', scope: ['file.upload']}, agent);
+                util.verifyResponse(res, 403, 'Forbidden.');
             });
             
             it('SHOULD NOT create a key with scope exceeding the requesters', async () => {
-                
+                await util.createSession(agent, ['key.create']);
+                const res = await util.createKey({identifier: 'key', scope: ['file.upload']}, agent);
+                util.verifyResponse(res, 403, 'Requested scope exceeds own scope.');
             });
         });
     });
 
     describe('/POST delete', () => {
+        async function verifyDeletedKey(key) {
+            const res = await util.deleteKey(key, agent);
+            util.verifyResponse(res, 200, 'Key deleted.');
+
+            const keyCount = await Key.countDocuments({key: key});
+            keyCount.should.equal(0, 'The key should be removed from the database.');
+        }
+
+
         describe('0 Valid Request', () => {
             it('SHOULD delete a key with valid scope from a valid session', async () => {
-
+                await util.createSession(agent, ['key.create', 'key.delete', 'file.upload']);
+                const key = await util.createKey({identifier: 'key', scope: ['file.upload']}, agent);
+                return verifyDeletedKey(key.body.key);
             });
 
             it('SHOULD delete another users key with key.delete.others scope', async () => {
-
+                await util.createSession(agent, ['key.create', 'file.upload'], 'alice');
+                const key = await util.createKey({identifier: 'key', scope: ['file.upload']}, agent);
+                await util.logout(agent);
+                await util.createSession(agent, ['key.delete', 'key.delete.others'], 'eve');
+                return verifyDeletedKey(key.body.key);
             });
         });
 
         describe('1 Invalid Scope', () => {
             it('SHOULD NOT delete another users key without key.delete.others scope', async () => {
-
+                await util.createSession(agent, ['key.create', 'file.upload'], 'bob');
+                const key = await util.createKey({identifier: 'key', scope: ['file.upload']}, agent);
+                await util.logout(agent);
+                await util.createSession(agent, ['key.delete'], 'eve');
+                const res = await util.deleteKey(key.body.key, agent);
+                util.verifyResponse(res, 422, 'Key not found.');
             });
         });
 
         describe('2 Invalid Key', () => {
             it('SHOULD return an error when the key was not found', async () => {
-
+                await util.createSession(agent, ['key.delete']);
+                const res = await util.deleteKey('bogus', agent);
+                util.verifyResponse(res, 422, 'Key not found.');
             });
         });
     });
 
     describe('/POST get', () => {
+        async function verifyKeySearch(keys, query = {}) {
+            const res = await util.getKeys(query, agent);
+            res.should.have.status(200);
+            res.body.should.be.a('Array');
+
+            keys.sort();
+            const resKeys = res.body.map(key => key.key).sort();
+
+            resKeys.should.deep.equal(keys, 'All keys should be present in the result.');
+        }
+
+        async function verifySingleSearch(key, query = {}) {
+            const res = await util.getKeys(query, agent);
+            res.should.have.status(200);
+            res.body.should.be.a('Array');
+            res.body.should.have.length(1, 'Only one key should be in the array');
+            res.body[0].key.should.equal(key, 'The found key should match the request code');
+        }
+
         describe('0 Valid Request', () => {
             it('SHOULD get multiple keys from a valid session', async () => {
-
+                await util.createSession(agent, ['key.create', 'key.get', 'file.upload']);
+                const keys = await Promise.all([
+                    util.createKey({identifier: 'key1', scope: ['file.upload']}, agent),
+                    util.createKey({identifier: 'key2', scope: ['file.upload']}, agent)
+                ]);
+                return verifyKeySearch(keys.map(res => res.body.key));
             });
 
             it('SHOULD get a key by identifier from a valid session', async () => {
-
+                await util.createSession(agent, ['key.create', 'key.get', 'file.upload']);
+                const keys = await Promise.all([
+                    util.createKey({identifier: 'key1', scope: ['file.upload']}, agent),
+                    util.createKey({identifier: 'key2', scope: ['file.upload']}, agent)
+                ]);
+                return verifySingleSearch(keys[1].body.key, {identifier: 'key2'});
             });
 
             it('SHOULD get another users key with key.get.others scope', async () => {
-
+                await util.createSession(agent, ['key.create', 'file.upload'], 'bob');
+                const key1 = await util.createKey({identifier: 'key', scope: ['file.upload']}, agent);
+                await util.logout(agent);
+                await util.createSession(agent, ['key.create', 'key.get', 'key.get.others', 'file.upload']);
+                const key2 = await util.createKey({identifier: 'key', scope: ['file.upload']}, agent);
+                return verifyKeySearch([key1.body.key, key2.body.key]);
             });
         });
 
         describe('1 Invalid Scope', () => {
-            it('SHOULD NOT get another users key without key.get.others scope', () => {
+            it('SHOULD NOT get another users key without key.get.others scope', async () => {
+                await util.createSession(agent, ['key.create', 'file.upload'], 'alice');
+                await util.createInvite({identifier: 'private_key', scope: ['file.upload']}, agent);
+                await util.logout(agent);
 
+                await util.createSession(agent, ['key.get'], 'eve');
+                const res = await util.getKeys({identifier: 'private_key'}, agent);
+                res.should.have.status(200);
+                res.body.should.be.a('Array');
+                res.body.should.have.length(0, 'No invites should be found.');
             });
         });
     });

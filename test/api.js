@@ -385,7 +385,8 @@ describe('Viewing', () => {
             util.createTestFile(2048, 'test.bin')
         ]);
         const upload = await util.upload('test.bin', agent);
-        return verifyView('test.bin', upload.body.id, 'attachment; filename="test.bin"');
+        await verifyView('test.bin', upload.body.id, 'attachment; filename="test.bin"');
+        return util.deleteFile('test.bin');
     });
 
     it('must return an uploaded image file inline', async () => {
@@ -394,7 +395,8 @@ describe('Viewing', () => {
             util.createTestFile(2048, 'test.jpg')
         ]);
         const upload = await util.upload('test.jpg', agent);
-        return verifyView('test.jpg', upload.body.id, 'inline');
+        await verifyView('test.jpg', upload.body.id, 'inline');
+        return util.deleteFile('test.jpg');
     });
 
     it('must return an error when file not found', async () => {

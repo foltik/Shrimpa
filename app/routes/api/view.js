@@ -1,6 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const config = require('config');
+const fs = require('fs');
 
 const ModelPath = '../../models/';
 const Upload = require(ModelPath + 'Upload.js');
@@ -21,19 +22,16 @@ router.get('/:id', wrap(async (req, res) => {
     await incrementViews(req.params.id);
 
     // Whether the file should be an attachment or displayed inline on the page
-    let inline = false;
-
-    const mimetype = upload.file.mimetype.split('/');
+    const mimetype = upload.file.mime.split('/');
     const inlineMimeTypes = config.get('View.inlineMimeTypes').map(type => type.split('/'));
+    let inline = inlineMimeTypes.some(type =>
+        (mimetype[0] === type[0] || type[0] === '*') &&
+        (mimetype[1] === type[1] || type[1] === '*'));
 
-    for (let type in inlineMimeTypes)
-        if (mimetype[0] === type[0])
-            if (mimetype[1] === type[1] || type[1] === '*')
-                inline = true;
-
+    res.status(200);
     res.set({
-        'Content-Disposition': inline ? 'inline' : 'attachment; filename="' + upload.file.originalname + '"',
-        'Content-Type': upload.file.mimetype
+        'Content-Disposition': inline ? 'inline' : 'attachment; filename="' + upload.file.originalName + '"',
+        'Content-Type': upload.file.mime
     });
 
     fs.createReadStream(upload.file.path)

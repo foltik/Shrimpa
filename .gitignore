@@ -9,3 +9,5 @@ public/css
 uploads/
 uploads-test/
 uploads-dev/
+
+.nyc_output/

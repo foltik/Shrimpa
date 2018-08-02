@@ -359,6 +359,50 @@ describe('Uploading', () => {
     });
 });
 
+describe('Viewing', () => {
+    async function verifyView(file, id, disposition) {
+        const viewsBefore = (await Upload.findOne({id: id})).views;
+
+        const res = await util.view(id, agent)
+            .parse(util.binaryFileParser);
+
+        res.should.have.status(200);
+        res.should.have.header('content-disposition', disposition);
+
+        const [uploadHash, downloadHash] = await Promise.all([
+            util.fileHash(file),
+            util.bufferHash(res.body)
+        ]);
+        downloadHash.should.equal(uploadHash, 'Uploaded file and downloaded hash should match');
+
+        const viewsAfter = (await Upload.findOne({id: id})).views;
+        viewsAfter.should.equal(viewsBefore + 1, 'The files views should be incremented.');
+    }
+
+    it('must return an uploaded binary file', async () => {
+        await Promise.all([
+            util.createTestSession(agent),
+            util.createTestFile(2048, 'test.bin')
+        ]);
+        const upload = await util.upload('test.bin', agent);
+        return verifyView('test.bin', upload.body.id, 'attachment; filename="test.bin"');
+    });
+
+    it('must return an uploaded image file inline', async () => {
+        await Promise.all([
+            util.createTestSession(agent),
+            util.createTestFile(2048, 'test.jpg')
+        ]);
+        const upload = await util.upload('test.jpg', agent);
+        return verifyView('test.jpg', upload.body.id, 'inline');
+    });
+
+    it('must return an error when file not found', async () => {
+        const res = await util.view('abcdef', agent);
+        util.verifyResponse(res, 404, 'File not found.');
+    });
+});
+
 describe('Invites', () => {
     describe('/POST create', () => {
         async function verifyCreatedInvite(invite) {

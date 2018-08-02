@@ -115,6 +115,11 @@ exports.fileHash = file =>
             .on('end', () => resolve(hash.digest('hex')));
     });
 
+exports.bufferHash = buffer =>
+    crypto.createHash('MD5')
+        .update(buffer)
+        .digest('hex');
+
 exports.directoryFileCount = async dir =>
     (await fsPromises.readdir(dir)).length;
 
@@ -149,7 +154,7 @@ exports.getInvites = (query, agent) =>
     agent.get('/api/invites/get')
         .send(query);
 
-//---------------- Invites ----------------//
+//---------------- Keys ----------------//
 
 exports.createKey = (key, agent) =>
     agent.post('/api/keys/create')
@@ -162,3 +167,20 @@ exports.deleteKey = (key, agent) =>
 exports.getKeys = (query, agent) =>
     agent.get('/api/keys/get')
         .send(query);
+
+//---------------- Viewing ----------------//
+
+exports.binaryFileParser = (res, cb) => {
+    res.setEncoding('binary');
+    res.data = '';
+    res.on("data", function (chunk) {
+        res.data += chunk;
+    });
+    res.on('end', function () {
+        cb(null, Buffer.from(res.data, 'binary'));
+    });
+};
+
+exports.view = (id, agent) =>
+    agent.get('/v/' + id)
+        .buffer();

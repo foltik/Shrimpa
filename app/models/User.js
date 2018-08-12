@@ -33,6 +33,15 @@ const UserSchema = mongoose.Schema({
     date: {
         type: Date,
         default: Date.now
+    },
+
+    banned: {
+        type: Boolean,
+        default: false,
+        expires: {
+            type: Date,
+            default: null
+        }
     }
 });
 

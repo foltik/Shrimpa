@@ -186,6 +186,56 @@ describe('Authentication', () => {
             );
         });
     });
+
+    describe('/POST whoami', () => {
+        function verifyWhoami(res, username, displayname, scope, key) {
+            res.should.have.status(200);
+            res.body.should.be.a('object');
+            res.body.should.have.property('username').equal(username);
+            res.body.should.have.property('displayname').equal(displayname);
+            res.body.should.have.property('scope').deep.equal(scope);
+            res.body.should.have.property('key').equal(key);
+        }
+
+        describe('0 Valid Request', () => {
+            it('must respond with a valid session', async () => {
+                await util.createTestSession(agent);
+                const res = await util.whoami(agent);
+                verifyWhoami(res, 'user', 'user', ['file.upload'], null);
+                return util.logout(agent);
+            });
+
+            it('must respond with a valid api key', async () => {
+                await util.createTestKey(['file.upload']);
+                const res = await util.whoami(agent, 'key');
+                verifyWhoami(res, 'Mocha', 'Mocha', ['file.upload'], 'key');
+            });
+        });
+
+        describe('1 Invalid Auth', () => {
+            it('must not respond with an invalid session', async () => {
+                const res = await util.whoami(agent);
+                util.verifyResponse(res, 401, 'Unauthorized.');
+            });
+
+            it('must not respond with a banned user with a valid session', async () => {
+                await util.createTestSession(agent);
+                await util.setBanned('user', true);
+                const res = await util.whoami(agent);
+                util.verifyResponse(res, 403, 'Forbidden.');
+            });
+
+            it('must not respond with a banned users api key', async () => {
+                await util.createTestUser(agent);
+                await Promise.all([
+                    util.setBanned('user', true),
+                    util.insertKey({key: 'key', identifier: 'test', scope: ['file.upload'], issuer: 'user'})
+                ]);
+                const res = await util.whoami(agent, 'key');
+                util.verifyResponse(res, 403, 'Forbidden.');
+            });
+        });
+    });
 });
 
 describe('Uploading', () => {

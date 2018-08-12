@@ -44,6 +44,9 @@ exports.insertInvite = invite =>
 exports.insertKey = key =>
     Key.create(key);
 
+exports.setBanned = (username, banned) =>
+    User.updateOne({username: username}, {banned: banned});
+
 //---------------- API ROUTES ----------------//
 
 exports.login = (credentials, agent) =>
@@ -57,9 +60,9 @@ exports.registerUser = (user, agent) =>
     agent.post('/api/auth/register')
         .send(user);
 
-exports.whoami = (agent) =>
+exports.whoami = (agent, key) =>
     agent.get('/api/auth/whoami')
-        .send();
+        .send({key: key});
 
 //---------------- TEST ENTRY CREATION ----------------//
 

@@ -115,8 +115,8 @@ router.post('/logout', function (req, res) {
 
 router.get('/whoami', requireAuth(), (req, res) => {
     res.status(200).json({
-        user: req.username,
-        display: req.displayname,
+        username: req.username,
+        displayname: req.displayname,
         scope: req.scope,
         key: req.key
     });

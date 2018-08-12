@@ -1,5 +1,6 @@
 const ModelPath = '../models/';
 const Key = require(ModelPath + 'Key.js');
+const User = require(ModelPath + 'User.js');
 
 const wrap = require('./wrap.js');
 const verifyScope = require('./verifyScope.js');
@@ -35,7 +36,8 @@ const checkKey = async (req, scope, status) => {
 
 // Middleware that checks for authentication by either API key or session
 // sets req.username, req.displayname, req.scope, and req.key if authenticated properly,
-// otherwise throws an error code
+// otherwise throws an error code.
+// If the user is banned, also throw an error.
 const requireAuth = scope =>
     wrap(async (req, res, next) => {
         const status = {
@@ -53,8 +55,13 @@ const requireAuth = scope =>
             return res.status(401).json({message: 'Unauthorized.'});
         else if (!status.permission)
             return res.status(403).json({message: 'Forbidden.'});
-        else
-            next();
+
+        // Check if the user is banned
+        const user = await User.findOne({username: req.username});
+        if(user && user.banned)
+            return res.status(403).json({message: 'Forbidden.'});
+
+        next();
     });
 
 module.exports.checkSession = checkSession;

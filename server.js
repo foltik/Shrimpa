@@ -11,11 +11,6 @@ const helmet = require('helmet');
 const app = express();
 const config = require('config');
 
-process.on('uncaughtException', function (err) {
-    console.log('FATAL UNCAUGHT EXCEPTION:');
-    console.log(err.stack);
-});
-
 // MongoDB
 const dbHost = config.get('Database.host');
 let db;

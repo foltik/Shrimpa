@@ -1,0 +1,21 @@
+{
+  "Server": {
+    "port": 8080,
+    "hostname": "http://localhost:8080"
+  },
+  "Database": {
+    "host": "mongodb://localhost:27017/shimapan"
+  },
+  "Upload": {
+    "path": "uploads"
+  },
+  "Log": {
+    "httpLevel": "dev"
+  },
+  "User": {
+    "Password": {
+      "saltLength": 8,
+      "hashIterations": 1
+    }
+  }
+}

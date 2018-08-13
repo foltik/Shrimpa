@@ -1,33 +1,59 @@
-var express = require('express');
-var router = express.Router();
+const express = require('express');
+const router = express.Router();
 
-var User = require('../../models/User.js');
+const ModelPath = '../../models/';
+const User = require(ModelPath + 'User.js');
 
-var requireScope = function (perm) {
-    return function(req, res, next) {
-        User.findOne({username: req.session.passport.user}, function(err, user) {
-            if (err) throw err;
-            if (user.scope.indexOf(perm) === -1)
-                res.status(400).json({'message': 'No permission.'});
-            else
-                next();
-        });
-    }
-};
+const wrap = require('../../util/wrap');
+const bodyVerifier = require('../../util/verifyBody').bodyVerifier;
+const requireAuth = require('../../util/auth').requireAuth;
 
-router.get('/get', requireScope('users.view'), function (req, res, next) {
-    var query = {};
+const getParams = [
+    {name: 'username', type: 'string', optional: true},
+    {name: 'displayname', type: 'string', optional: true}];
+router.get('/get', requireAuth('user.get'), bodyVerifier(getParams), wrap(async (req, res) => {
+    let query = {};
 
     if (req.body.username)
         query.username = req.body.username;
 
-    User.find(query, function (err, users) {
-        if (err) {
-            next(err)
-        } else {
-            res.status(200).json(users);
-        }
-    })
-});
+    if (req.body.displayname)
+        query.displayname = req.body.displayname;
+
+    //const users = User.find(query, 'username displayname scope uploadCount uploadSize date banned');
+    const users = await User.find(query);
+
+    res.status(200).json(users);
+}));
+
+const banParams = [{name: 'username', type: 'string'}];
+router.post('/ban', requireAuth('user.ban'), bodyVerifier(banParams), wrap(async (req, res) => {
+    const user = await User.findOne({username: req.body.username});
+    if (!user)
+        return res.status(422).json({message: 'User not found.'});
+
+    if (user.banned)
+        return res.status(422).json({message: 'User already banned.'});
+
+    user.banned = true;
+    await user.save();
+
+    res.status(200).json({message: 'User banned.'});
+}));
+
+const unbanParams = [{name: 'username', type: 'string'}];
+router.post('/unban', requireAuth('user.unban'), bodyVerifier(unbanParams), wrap(async (req, res) => {
+    const user = await User.findOne({username: req.body.username});
+    if (!user)
+        return res.status(422).json({message: 'User not found.'});
+
+    if (!user.banned)
+        return res.status(422).json({message: 'User not banned.'});
+
+    user.banned = false;
+    await user.save();
+
+    res.status(200).json({message: 'User unbanned.'});
+}));
 
 module.exports = router;

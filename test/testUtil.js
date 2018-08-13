@@ -187,3 +187,17 @@ exports.binaryFileParser = (res, cb) => {
 exports.view = (id, agent) =>
     agent.get('/v/' + id)
         .buffer();
+
+//---------------- Users ----------------//
+
+exports.getUsers = (query, agent) =>
+    agent.get('/api/users/get')
+        .send(query);
+
+exports.ban = (username, agent) =>
+    agent.post('/api/users/ban')
+        .send({username: username});
+
+exports.unban = (username, agent) =>
+    agent.post('/api/users/unban')
+        .send({username: username});

@@ -776,4 +776,95 @@ describe('Keys', () => {
     });
 });
 
+describe('Users', () => {
+    describe('/GET get', () => {
+        beforeEach(() => Promise.all([
+            Promise.all([
+                util.insertInvite({code: 'test1', scope: ['file.upload'], issuer: 'Mocha'}),
+                util.insertInvite({code: 'test2', scope: ['file.upload'], issuer: 'Mocha'})
+            ]),
+            Promise.all([
+                util.registerUser({displayname: 'user1', password: 'pass', invite: 'test1'}, agent),
+                util.registerUser({displayname: 'user2', password: 'pass', invite: 'test2'}, agent)
+            ])
+        ]));
+
+        async function verifyGetUsers(res, users) {
+            res.should.have.status(200);
+            res.body.should.be.a('Array');
+            res.body.map(user => user.username).sort().should.deep.equal(users.sort());
+        }
+
+        describe('0 Valid Request', () => {
+            it('must get all users with an empty query', async () => {
+                await util.createSession(agent, ['user.get'], 'admin');
+                const res = await util.getUsers({}, agent);
+                return verifyGetUsers(res, ['user1', 'user2', 'admin']);
+            });
+
+            it('must filter users by username', async () => {
+                await util.createSession(agent, ['user.get'], 'admin');
+                const res = await util.getUsers({username: 'user1'}, agent);
+                return verifyGetUsers(res, ['user1']);
+            });
+
+            it('must filter users by displayname', async () => {
+                await util.createSession(agent, ['user.get'], 'admin');
+                const res = await util.getUsers({displayname: 'user1'}, agent);
+                return verifyGetUsers(res, ['user1']);
+            });
+
+            it('must return an empty array when no users were found', async () => {
+                await util.createSession(agent, ['user.get'], 'admin');
+                const res = await util.getUsers({username: 'abc'}, agent);
+                return verifyGetUsers(res, []);
+            });
+        });
+    });
+
+    describe('/POST ban/unban', () => {
+        beforeEach(async () => {
+            await util.insertInvite({code: 'test1', scope: ['file.upload'], issuer: 'Mocha'});
+            await util.registerUser({displayname: 'user', password: 'pass', invite: 'test1'}, agent);
+        });
+
+        async function verifyBanned(res, statusCode, message, username, banStatus) {
+            util.verifyResponse(res, statusCode, message);
+            const user = await User.findOne({username: username});
+            user.should.exist;
+            user.should.have.property('banned').equal(banStatus, 'The user should have banned status ' + banStatus);
+        }
+
+        describe('0 Valid Request', () => {
+            it('must ban a not banned user', async () => {
+                await util.createSession(agent, ['user.ban'], 'admin');
+                const res = await util.ban('user', agent);
+                return verifyBanned(res, 200, 'User banned.', 'user', true);
+            });
+
+            it('must unban a banned user', async () => {
+                await util.setBanned('user', true);
+                await util.createSession(agent, ['user.unban'], 'admin');
+                const res = await util.unban('user', agent);
+                return verifyBanned(res, 200, 'User unbanned.', 'user', false);
+            });
+        });
+
+        describe('1 Already Requested Ban Status', () => {
+            it('must not ban an already banned user', async () => {
+                await util.setBanned('user', true);
+                await util.createSession(agent, ['user.ban'], 'admin');
+                const res = await util.ban('user', agent);
+                return verifyBanned(res, 422, 'User already banned.', 'user', true);
+            });
+
+            it('must not unban a not banned user', async () => {
+                await util.createSession(agent, ['user.unban'], 'admin');
+                const res = await util.unban('user', agent);
+                return verifyBanned(res, 422, 'User not banned.', 'user', false);
+            });
+        });
+    });
+});
+
 after(() => server.close(() => process.exit(0)));

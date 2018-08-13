@@ -8,8 +8,7 @@ cache:
   directories:
     - "node_modules"
 install:
-  - npm install -g codecov
-  - npm install -g istanbul
+  - npm install -g npx
 script:
-  - istanbul cover ./node_modules/mocha/bin/_mocha --report lcovonly -- -R spec
-  - codecov
+  - npx istanbul cover ./node_modules/mocha/bin/_mocha --report lcovonly -- -R spec
+  - npx codecov

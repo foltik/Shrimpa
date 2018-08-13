@@ -1,11 +1,15 @@
-language: node_js
+language: 
+  node_js
 node_js:
     - "node"
 services:
   - mongodb
-env:
-  global:
-    - NODE_ENV=travisci
 cache:
   directories:
     - "node_modules"
+install:
+  - npm install -g codecov
+  - npm install -g istanbul
+script:
+  - istanbul cover ./node_modules/mocha/bin/_mocha --reporter lcovonly -- -R spec
+  - codecov

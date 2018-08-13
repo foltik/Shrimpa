@@ -8,6 +8,7 @@ cache:
   directories:
     - "node_modules"
 install:
+  - npm ci
   - npm install -g npx
 script:
   - npx istanbul cover ./node_modules/mocha/bin/_mocha --report lcovonly -- -R spec

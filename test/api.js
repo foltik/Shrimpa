@@ -187,6 +187,30 @@ describe('Authentication', () => {
         });
     });
 
+    describe('/POST logout', () => {
+        async function verifyNoSession() {
+            const res = await util.whoami(agent);
+            util.verifyResponse(res, 401, 'Unauthorized.');
+        }
+
+        describe('0 Valid Request', () => {
+            it('must logout a user with a session', async () => {
+                await util.createTestSession(agent);
+                const res = await util.logout(agent);
+                util.verifyResponse(res, 200, 'Logged out.');
+                return verifyNoSession();
+            });
+        });
+
+        describe('1 Invalid Session', () => {
+            it('must not logout a user without a session', async () => {
+                const res = await util.logout(agent);
+                util.verifyResponse(res, 400, 'Not logged in.');
+                return verifyNoSession();
+            });
+        });
+    });
+
     describe('/POST whoami', () => {
         function verifyWhoami(res, username, displayname, scope, key) {
             res.should.have.status(200);

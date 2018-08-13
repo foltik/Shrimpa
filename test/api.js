@@ -903,6 +903,20 @@ describe('Users', () => {
                 return verifyBanned(res, 422, 'User not banned.', 'user', false);
             });
         });
+
+        describe('2 Not Found', () => {
+            it('must not ban a nonexistant user', async () => {
+                await util.createSession(agent, ['user.ban'], 'admin');
+                const res = await util.ban('abc', agent);
+                util.verifyResponse(res, 422, 'User not found.');
+            });
+
+            it('must not unban a nonexistant user', async () => {
+                await util.createSession(agent, ['user.unban'], 'admin');
+                const res = await util.unban('abc', agent);
+                util.verifyResponse(res, 422, 'User not found.');
+            });
+        });
     });
 });
 

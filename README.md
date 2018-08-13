@@ -32,5 +32,5 @@ In order to contribute, please read the [Contributing](CONTRIBUTING.md) file.
 [build-image]: https://travis-ci.com/Foltik/Shimapan.svg?branch=master
 [build-url]: https://travis-ci.com/Foltik/Shimapan
 
-[coverage-image]: https://codecov.io/gh/Foltik/Shimapan/branch/master/graph/badge.svg
+[coverage-image]: https://img.shields.io/codecov/c/github/Foltik/shimapan/master.svg
 [coverage-url]: https://codecov.io/gh/Foltik/Shimapan

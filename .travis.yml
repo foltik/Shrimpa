@@ -1,10 +1,8 @@
 language: node_js
 node_js:
-  - "0.10"
+    - "node"
 services:
   - mongodb
 env:
   global:
     - NODE_ENV=travisci
-before_script:
-  - npm install

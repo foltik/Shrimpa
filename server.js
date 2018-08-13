@@ -29,7 +29,8 @@ const MongoStore = require('connect-mongo')(session);
 const mongoStore = new MongoStore({url: dbHost});
 
 // HTTP Request Logging
-app.use(morgan(config.get('Log.httpLevel')));
+if (config.get('Log.http'))
+    app.use(morgan(config.get('Log.httpLevel')));
 
 // Session setup
 app.use(helmet());

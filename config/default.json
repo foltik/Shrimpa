@@ -32,6 +32,7 @@
     "limit": 5
   },
   "Log": {
+    "http": true,
     "httpLevel": "combined"
   }
 }

@@ -10,7 +10,7 @@
     "path": "uploads"
   },
   "Log": {
-    "httpLevel": "dev"
+    "http": false
   },
   "User": {
     "Password": {

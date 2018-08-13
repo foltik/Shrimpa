@@ -6,3 +6,6 @@ services:
 env:
   global:
     - NODE_ENV=travisci
+cache:
+  directories:
+    - "node_modules"

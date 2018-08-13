@@ -687,6 +687,21 @@ describe('Keys', () => {
                 util.verifyResponse(res, 403, 'Requested scope exceeds own scope.');
             });
         });
+
+        describe('2 Key Limit', () => {
+            it('must not create additional keys beyond the limit', async () => {
+                await util.createSession(agent, ['key.create', 'file.upload']);
+                const limit = config.get('Key.limit');
+
+                // Create keys upto the limit (key0, key1, key2, ...)
+                await Promise.all(
+                    [...Array(limit)]
+                        .map(idx => util.createKey({identifier: 'key' + idx, scope: ['file.upload']}, agent)));
+
+                const res = await util.createKey({identifier: 'toomany', scope: ['file.upload']}, agent);
+                util.verifyResponse(res, 403, 'Key limit reached.');
+            });
+        });
     });
 
     describe('/POST delete', () => {

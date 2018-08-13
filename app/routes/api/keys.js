@@ -15,7 +15,7 @@ const createParams = [
     {name: 'identifier', type: 'string', sanitize: true},
     {name: 'scope', instance: Array}];
 router.post('/create', requireAuth('key.create'), bodyVerifier(createParams), wrap(async (req, res) => {
-    const keyCount = await Key.countDocuments({username: req.username});
+    const keyCount = await Key.countDocuments({issuer: req.username});
     if (keyCount >= config.get('Key.limit'))
         return res.status(403).json({message: 'Key limit reached.'});
 

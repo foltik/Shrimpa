@@ -5,29 +5,47 @@
     <base href="/panel"/>
     <title>Panel</title>
     <link rel="stylesheet" href="/css/panel.min.css"/>
+    <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.2.0/css/all.css"
+          integrity="sha384-hWVjflwFxL6sNzntih27bfxkr27PmbbK/iSvJ+a4+0owXq79v+lsFkW54bOGbiDQ" crossorigin="anonymous">
     <script src="/js/panel.bundle.js"></script>
 </head>
 <body ng-app="shimapan-panel">
-    <div class="container">
-        <div class="sidebar" ng-controller="NavController">
-            <div class="sidebar-title" ng-click="$state.go('home')"><span>Shimapan</span></div>
-            <ul class="nav">
-                <li><a draggable="false" ui-sref="dashboard" ng-class="{active: $state.$current.name=='dashboard'}">Dashboard</a></li>
-                <li><a draggable="false" ui-sref="search" ng-class="{active: $state.$current.name=='search'}">Search</a></li>
-                <li><a draggable="false" ui-sref="keys" ng-class="{active: $state.$current.name=='keys'}">Keys</a></li>
-                <li><a draggable="false" ui-sref="invites" ng-class="{active: $state.$current.name=='invites'}">Invites</a></li>
-                <li ng-hide="!hasPermission('user.get')"><a draggable="false" ui-sref="users" ng-class="{active: $state.$current.name=='users'}">Users</a></li>
-                <li><a draggable="false" ui-sref="stats" ng-class="{active: $state.$current.name=='stats'}">Statistics</a></li>
-                <li><a draggable="false" ng-click="logout()">Logout</a></li>
-            </ul>
-        </div>
-        <div class="content" ng-class="{isOpen: open}">
-            <div class="button" ng-class="{isOpen: open}" ng-init="open = false" ng-click="open = !open">
-                <div class="button-inner"></div>
-                <span class="button-label">Menu</span>
-            </div>
-            <div class="view" ui-view></div>
-        </div>
+<div class="container">
+    <div class="sidebar-title" ng-click="$state.go('home')"><span>Shimapan</span></div>
+    <div class="sidebar" ng-controller="NavController">
+        <ul class="nav">
+            <li>
+                <span class="nav-icon"><i class="fa fa-tachometer-alt"></i></span>
+                <a draggable="false" ui-sref="dashboard" ng-class="{active: $state.$current.name=='dashboard'}">Dashboard</a>
+            </li>
+            <li>
+                <span class="nav-icon"><i class="fa fa-search"></i></span>
+                <a draggable="false" ui-sref="search" ng-class="{active: $state.$current.name=='search'}">Search</a>
+            </li>
+            <li>
+                <span class="nav-icon"><i class="fa fa-key"></i></span>
+                <a draggable="false" ui-sref="keys" ng-class="{active: $state.$current.name=='keys'}">Keys</a>
+            </li>
+            <li>
+                <span class="nav-icon"><i class="fa fa-envelope"></i></span>
+                <a draggable="false" ui-sref="invites" ng-class="{active: $state.$current.name=='invites'}">Invites</a>
+            </li>
+            <li ng-hide="!hasPermission('user.get')">
+                <span class="nav-icon"><i class="fa fa-users"></i></span>
+                <a draggable="false" ui-sref="users" ng-class="{active: $state.$current.name=='users'}">Users</a>
+            </li>
+            <li>
+                <span class="nav-icon"><i class="fa fa-signal"></i></span>
+                <a draggable="false" ui-sref="stats" ng-class="{active: $state.$current.name=='stats'}">Statistics</a>
+            </li>
+            <li>
+                <span class="nav-icon"><i class="fa fa-sign-out-alt"></i></span>
+                <a draggable="false" ng-click="logout()">Logout</a>
+            </li>
+        </ul>
     </div>
+    <div class="view" ui-view>
+    </div>
+</div>
 </body>
 </html>

@@ -1,6 +1,6 @@
 var angular = require('angular');
 
-angular.module('KeyCtrl', ['KeySvc', 'AuthSvc']).controller('ApiController', ['$scope', 'KeyService', 'AuthService', function ($scope, KeyService, AuthService) {
+angular.module('KeyCtrl', ['KeySvc', 'AuthSvc']).controller('KeyController', ['$scope', 'KeyService', 'AuthService', function ($scope, KeyService, AuthService) {
     // Transforms an array of period-separated properties ex. ["file.upload", "user.view", "user.ban"]
     // to json ex. { "file": "upload", "user": ["view", "ban"] }
     function splitScope(scope) {
@@ -44,7 +44,7 @@ angular.module('KeyCtrl', ['KeySvc', 'AuthSvc']).controller('ApiController', ['$
     };
 
     $scope.deleteKey = function (key) {
-        KeyService.deleteKey(key, function () {
+        KeyService.deleteKey(key.key, function () {
             var index = $scope.keys.indexOf(key);
             $scope.keys.splice(index, 1);
             $scope.hideKeyInfo();

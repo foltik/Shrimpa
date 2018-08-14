@@ -181,6 +181,7 @@ body {
     justify-content: flex-start;
     flex-direction: row;
     transition: box-shadow 0.2s;
+    overflow: hidden;
 }
 
 .key:hover {
@@ -268,6 +269,7 @@ pre {
     padding: 20px 40px;
     background: #000;
     color: #ffffff;
+    overflow: hidden;
 }
 
 .modal-body {

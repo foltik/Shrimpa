@@ -1,6 +1,6 @@
 var angular = require('angular');
 
-angular.module('ApiCtrl', ['ApiSvc', 'AuthSvc']).controller('ApiController', ['$scope', 'ApiService', 'AuthService', function ($scope, ApiService, AuthService) {
+angular.module('KeyCtrl', ['KeySvc', 'AuthSvc']).controller('ApiController', ['$scope', 'KeyService', 'AuthService', function ($scope, KeyService, AuthService) {
     // Transforms an array of period-separated properties ex. ["file.upload", "user.view", "user.ban"]
     // to json ex. { "file": "upload", "user": ["view", "ban"] }
     function splitScope(scope) {
@@ -19,7 +19,7 @@ angular.module('ApiCtrl', ['ApiSvc', 'AuthSvc']).controller('ApiController', ['$
 
     // Called on init, retrieves the user's scope from the server.
     $scope.parseScope = function () {
-        AuthService.currentUser(function (res) {
+        AuthService.whoami(function (res) {
             $scope.scopeObj = splitScope(res.scope);
             $scope.currKeyScope = [];
         })
@@ -38,13 +38,13 @@ angular.module('ApiCtrl', ['ApiSvc', 'AuthSvc']).controller('ApiController', ['$
     };
 
     $scope.getKeys = function () {
-        ApiService.getAllKeys(function (keys) {
+        KeyService.getAllKeys(function (keys) {
             $scope.keys = keys;
         });
     };
 
     $scope.deleteKey = function (key) {
-        ApiService.deleteKey(key, function () {
+        KeyService.deleteKey(key, function () {
             var index = $scope.keys.indexOf(key);
             $scope.keys.splice(index, 1);
             $scope.hideKeyInfo();
@@ -56,10 +56,8 @@ angular.module('ApiCtrl', ['ApiSvc', 'AuthSvc']).controller('ApiController', ['$
         if ($scope.currKeyScope.length === 0 || !$scope.currKeyIdentifier)
             return;
 
-        ApiService.createKey({
-            identifier: $scope.currKeyIdentifier,
-            scope: JSON.stringify($scope.currKeyScope)
-        }, function (res) {
+        KeyService.createKey($scope.currKeyIdentifier, $scope.currKeyScope,
+            function (res) {
             if (res.key) {
                 $scope.hideNewKey();
                 $scope.getKeys();

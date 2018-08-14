@@ -12,9 +12,9 @@ angular.module('PanelRoutes', ['ui.router']).config(['$stateProvider', '$urlRout
         }).state('search', {
             url: '/panel/search',
             templateUrl: '/views/panel/search.html'
-        }).state('api', {
-            url: '/panel/api',
-            templateUrl: '/views/panel/api.html'
+        }).state('keys', {
+            url: '/panel/keys',
+            templateUrl: '/views/panel/keys.html'
         }).state('invites', {
             url: '/panel/invites',
             templateUrl: '/views/panel/invites.html'

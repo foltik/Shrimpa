@@ -1,3 +1,4 @@
+[![Build Status][build-image]][build-url] [![Coverage Status][coverage-image]][coverage-url]
 # Shimapan
 Shimapan is an easy to use file sharing website. It's easy to integrate shimapan into
 most 3rd party utilities with the use of its RESTful API. The web panel gives users the
@@ -27,3 +28,9 @@ $ npm run watch
 
 ## Other Notes
 In order to contribute, please read the [Contributing](CONTRIBUTING.md) file.
+
+[build-image]: https://travis-ci.com/Foltik/Shimapan.svg?branch=master
+[build-url]: https://travis-ci.com/Foltik/Shimapan
+
+[coverage-image]: https://img.shields.io/codecov/c/github/Foltik/shimapan/master.svg
+[coverage-url]: https://codecov.io/gh/Foltik/Shimapan

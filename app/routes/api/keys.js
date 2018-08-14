@@ -58,7 +58,9 @@ router.get('/get', requireAuth('key.get'), bodyVerifier(getProps), wrap(async (r
     res.status(200).json(keys);
 }));
 
-const deleteProps = [{name: 'key', type: 'string'}, {name: 'issuer', type: 'string', optional: true}];
+const deleteProps = [
+    {name: 'key', type: 'string'},
+    {name: 'issuer', type: 'string', optional: true}];
 router.post('/delete', requireAuth('key.delete'), bodyVerifier(deleteProps), wrap(async (req, res) => {
     let query = {key : req.body.key};
 

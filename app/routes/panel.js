@@ -1,8 +1,9 @@
-var express = require('express');
-var router = express.Router();
-var path = require('path');
+const express = require('express');
+const router = express.Router();
+const path = require('path');
+const requireAuth = require('../util/auth').requireAuth;
 
-router.get('/', function(req, res) {
+router.get('/', requireAuth(), function(req, res) {
     res.sendFile(path.join(__dirname, '../../public/views', 'panel.html'));
 });
 

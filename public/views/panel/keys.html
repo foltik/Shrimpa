@@ -1,15 +1,15 @@
-<div class="inner" ng-controller="ApiController" ng-init="getKeys();parseScope()">
+<div class="inner" ng-controller="KeyController" ng-init="init()">
     <div class="keys">
-        <div class="key" ng-repeat="key in keys" ng-click="$parent.showKeyInfo(key)">
+        <div class="key" ng-repeat="key in keys" ng-click="showKeyInfo(key)">
             <i class="fa fa-key"></i>
             <span>{{key.identifier}}</span>
         </div>
-        <div class="key add-key" ng-hide="keys.length >= 10" ng-click="showNewKey()">
+        <div class="key add-key" ng-hide="keys.length >= 5" ng-click="showNewKey()">
             <i class="fa fa-plus"></i>
             <span>Create</span>
         </div>
     </div>
-    <div class="modal" style="{{kModalShow?'display:block':'display:none'}}">
+    <div class="modal" ng-style="infoModalStyle">
         <div class="modal-sandbox" ng-click="hideKeyInfo()"></div>
         <div class="modal-box">
             <div class="modal-header">
@@ -22,12 +22,14 @@
                 <br/>
                 <p>This key can be used with any 3rd party program or service to upload to and manage your account
                     with Shimapan.</p>
-                <p>For example, it can be used in a bash script to upload from the command line:</p>
-                <pre>APIKEY=[Your API Key Here]<br/>URL=$(curl -s -F "apikey=$APIKEY" -F "file=@$1" https://shimapan.rocks/api/upload | grep -Po '"'"url"'"\s*:\s*"\K([^"]*)'<br/>echo $URL</pre>
+                <br/>
+                <p>Download the <a href="" ng-click="downloadBash()">bash script</a> to upload files from the command line.</p>
+                <br/>
+                <p>Download the ShareX <a href="" ng-click="downloadSharex()">custom uploader</a> to upload files with hotkeys.</p>
                 <br/>
                 <p>Key Permissions:</p>
                 <table>
-                    <tr ng-repeat="(prefix, perms) in currKey.scopeObj">
+                    <tr ng-repeat="(prefix, perms) in currKey.scope">
                         <th>{{prefix}}:</th>
                         <td ng-repeat="perm in perms">
                             <span ng-bind="perm.name"></span>
@@ -45,7 +47,7 @@
             </div>
         </div>
     </div>
-    <div class="modal" style="{{nModalShow?'display:block':'display:none'}}">
+    <div class="modal" ng-style="newModalStyle">
         <div class="modal-sandbox" ng-click="hideNewKey()"></div>
         <div class="modal-box" id="createKey">
             <div class="modal-header">
@@ -53,15 +55,15 @@
                 <div class="close-modal" ng-click="hideNewKey()"><i class="fa fa-times"></i></div>
             </div>
             <div class="modal-body">
-                <p>Identifier to describe the purpose/use of this key:</p>
-                <input id="identifier" placeholder="Identifier" class="form-control" type="text" ng-model="currKeyIdentifier"/>
+                <p>Identifier to describe the name or use of this key:</p>
+                <input id="identifier" placeholder="Identifier" class="form-control" type="text" ng-model="newIdentifier"/>
                 <br/>
-                <p>Permissions the key should have:</p>
+                <p>Permissions granted to the key:</p>
                 <table>
-                    <tr ng-repeat="(prefix, perms) in scopeObj">
+                    <tr ng-repeat="(prefix, perms) in scope">
                         <th>{{prefix}}:</th>
                         <td ng-repeat="perm in perms">
-                            <input type="checkbox" title="{{perm.name}}" name="{{perm.name}}" ng-model="perm.isChecked" ng-change="updateCurrKeyPerm(prefix, perm)"/>
+                            <input type="checkbox" title="{{perm.name}}" name="{{perm.name}}" ng-model="perm.isChecked" ng-change="updateNewScope(prefix, perm)"/>
                             <label for="{{perm.name}}" ng-bind="perm.name"></label>
                         </td>
                     </tr>

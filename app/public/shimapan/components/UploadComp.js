@@ -30,9 +30,9 @@ angular.module('UploadComp', ['ngFileUpload', 'AuthSvc']).component('uploadCompo
                     function (response) {
                         if (response.status !== 200) {
                             if (response.status === 401) {
-                                file.$error = "Invalid authorization token";
+                                file.$error = "Unauthorized.";
                             } else if (response.status === 403) {
-                                file.$error = "Forbidden";
+                                file.$error = "Forbidden.";
                             } else {
                                 file.$error = "Unknown error " + response.status;
                             }

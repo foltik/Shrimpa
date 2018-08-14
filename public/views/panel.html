@@ -14,9 +14,9 @@
             <ul class="nav">
                 <li><a draggable="false" ui-sref="dashboard" ng-class="{active: $state.$current.name=='dashboard'}">Dashboard</a></li>
                 <li><a draggable="false" ui-sref="search" ng-class="{active: $state.$current.name=='search'}">Search</a></li>
-                <li><a draggable="false" ui-sref="api" ng-class="{active: $state.$current.name=='api'}">API</a></li>
+                <li><a draggable="false" ui-sref="keys" ng-class="{active: $state.$current.name=='keys'}">Keys</a></li>
                 <li><a draggable="false" ui-sref="invites" ng-class="{active: $state.$current.name=='invites'}">Invites</a></li>
-                <li ng-hide="!hasPermission('users.view')"><a draggable="false" ui-sref="users" ng-class="{active: $state.$current.name=='users'}">Users</a></li>
+                <li ng-hide="!hasPermission('user.get')"><a draggable="false" ui-sref="users" ng-class="{active: $state.$current.name=='users'}">Users</a></li>
                 <li><a draggable="false" ui-sref="stats" ng-class="{active: $state.$current.name=='stats'}">Statistics</a></li>
                 <li><a draggable="false" ng-click="logout()">Logout</a></li>
             </ul>

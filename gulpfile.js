@@ -3,7 +3,10 @@
 const gulp = require('gulp');
 const concat = require('gulp-concat');
 const rename = require('gulp-rename');
-const uglify = require('gulp-uglify');
+//const uglify = require('gulp-uglify');
+const uglifyes = require('uglify-es');
+const composer = require('gulp-uglify/composer');
+const uglify = composer(uglifyes, console);
 const source = require('vinyl-source-stream');
 const browserify = require('browserify');
 const es = require('event-stream');

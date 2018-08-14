@@ -6,7 +6,7 @@
   "Database": {
     "host": "mongodb://localhost:27017/shimapan-dev"
   },
-  "Uploads": {
+  "Upload": {
     "path": "uploads-dev"
   },
   "Log": {

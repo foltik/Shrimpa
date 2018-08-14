@@ -411,18 +411,28 @@ describe('Uploading', () => {
                 return util.logout(agent);
             });
 
-            it('SHOULD NOT accept a request with multiple files attached', async () => {
+            it('must only accept one file from a request with multiple files attached', async () => {
                 await Promise.all([
                     util.createTestFile(2048, 'test1.bin'),
                     util.createTestFile(2048, 'test2.bin'),
                     util.createTestSession(agent)
                 ]);
 
+
+                const fileCountBefore = await util.directoryFileCount(config.get('Upload.path'));
+                const uploadCountBefore = await Upload.countDocuments({});
+
                 const res = await agent.post('/api/upload')
                     .attach('file', 'test1.bin', 'test1.bin')
                     .attach('file1', 'test2.bin', 'test2.bin');
 
-                util.verifyResponse(res, 400, 'Bad request.');
+                util.verifyResponse(res, 200, 'File uploaded.');
+
+                const fileCountAfter = await util.directoryFileCount(config.get('Upload.path'));
+                fileCountAfter.should.equal(fileCountBefore + 1, 'Only one file should be written to the disk');
+
+                const uploadCountAfter = await Upload.countDocuments({});
+                uploadCountAfter.should.equal(uploadCountBefore + 1, 'Only one upload should be written to the database');
 
                 return Promise.all([
                     util.deleteFile('test1.bin'),

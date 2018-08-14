@@ -58,13 +58,12 @@ const uploadMultipart = wrap(async (req, res, next) => {
         req.body[fieldName] = value;
     });
 
-    let fileCount = 0;
-    let file;
+    let fileReceived = false;
     busboy.on('file', async (fieldName, stream, name, encoding, mime) => {
-        // Only process one file
-        fileCount++;
-        if (fileCount > 1)
-            return res.status(400).json({message: 'Bad request.'});
+        // Only process one file, discard everything after that
+        if (fileReceived)
+            return req.unpipe(busboy);
+        fileReceived = true;
 
         // If a key was encountered and we are not authenticated, try to authenticate with it before the final check
         if (req.body.key && !authStatus.authenticated)

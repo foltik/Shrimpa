@@ -63,7 +63,7 @@ require('./app/routes/routes.js')(app);
 require('./config/passport.js');
 
 // Error handler
-app.use((err, req, res) => {
+app.use((err, req, res, next) => {
     console.error(err.stack);
     res.status(500).json({'message': 'Internal server error.'});
 });

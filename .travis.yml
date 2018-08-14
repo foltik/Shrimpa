@@ -11,5 +11,6 @@ install:
   - npm ci
   - npm install -g npx
 script:
+  - npx gulp
   - npx istanbul cover ./node_modules/mocha/bin/_mocha --report lcovonly -- -R spec
   - npx codecov

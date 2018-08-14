@@ -1,15 +1,15 @@
 var angular = require('angular');
 
-angular.module('KeyCtrl', ['KeySvc', 'AuthSvc']).controller('KeyController', ['$scope', 'KeyService', 'AuthService', function ($scope, KeyService, AuthService) {
+angular.module('KeyCtrl', ['KeySvc', 'AuthSvc']).controller('KeyController', ['$scope', 'KeyService', 'AuthService', function($scope, KeyService, AuthService) {
     // Transforms an array of period-separated properties ex. ["file.upload", "user.view", "user.ban"]
-    // to json ex. { "file": "upload", "user": ["view", "ban"] }
-    function splitScope(scope) {
-        var res = {};
-        for (var i in scope) {
-            if (scope.hasOwnProperty(i)) {
-                var perm = scope[i];
-                var prefix = perm.substr(0, perm.indexOf('.'));
-                var postfix = perm.substr(perm.indexOf('.') + 1);
+    // to json ex. {"file": "upload", "user": ["view", "ban"]}
+    function scopeToObj(scope) {
+        const res = {};
+        for(const prop in scope) {
+            if (scope.hasOwnProperty(prop)) {
+                const perm = scope[prop];
+                const prefix = perm.substr(0, perm.indexOf('.'));
+                const postfix = perm.substr(perm.indexOf('.') + 1);
                 if (!res[prefix]) res[prefix] = [];
                 res[prefix].push({name: postfix});
             }
@@ -17,69 +17,94 @@ angular.module('KeyCtrl', ['KeySvc', 'AuthSvc']).controller('KeyController', ['$
         return res;
     }
 
-    // Called on init, retrieves the user's scope from the server.
-    $scope.parseScope = function () {
-        AuthService.whoami(function (res) {
-            $scope.scopeObj = splitScope(res.scope);
-            $scope.currKeyScope = [];
-        })
-    };
-
-    // Triggered when a checkbox for a permission changes.
-    // Updates the currKeyScope object with the addition or removal.
-    $scope.updateCurrKeyPerm = function(prefix, perm) {
-        var index = $scope.scopeObj[prefix].indexOf(perm);
-        if ($scope.scopeObj[prefix][index].isChecked) {
-            $scope.currKeyScope.push(prefix + '.' + perm.name);
-        } else {
-            index = $scope.currKeyScope.indexOf(prefix + '.' + perm.name);
-            $scope.currKeyScope.splice(index, 1);
-        }
-    };
-
-    $scope.getKeys = function () {
-        KeyService.getAllKeys(function (keys) {
-            $scope.keys = keys;
+    $scope.init = () => {
+        AuthService.whoami(res => {
+            $scope.scope = scopeToObj(res.scope);
+            $scope.displayname = res.displayname;
         });
+        $scope.getAllKeys();
+        $scope.newScope = [];
     };
 
-    $scope.deleteKey = function (key) {
-        KeyService.deleteKey(key.key, function () {
-            var index = $scope.keys.indexOf(key);
-            $scope.keys.splice(index, 1);
+
+    // ------------ Keys ------------ ///
+    class Key {
+        constructor(identifier, scope, key) {
+            this.identifier = identifier;
+            this.scope = scopeToObj(scope);
+            this.key = key;
+        }
+    }
+    $scope.getAllKeys = () =>
+        KeyService.getAllKeys((err, res) =>
+            $scope.keys = res.map(key => new Key(key.identifier, key.scope, key.key)));
+    $scope.createKey = () =>
+        KeyService.createKey($scope.newIdentifier, $scope.newScope, (err, res) => {
+            if (err) return;
+            $scope.hideNewKey();
+            $scope.getAllKeys();
+        });
+    $scope.deleteKey = key =>
+        KeyService.deleteKey(key.key, (err, res) => {
+            if (err) return;
+            $scope.keys.splice($scope.keys.indexOf(key), 1);
             $scope.hideKeyInfo();
             $scope.currKey = {};
         });
-    };
 
-    $scope.createKey = function () {
-        if ($scope.currKeyScope.length === 0 || !$scope.currKeyIdentifier)
-            return;
-
-        KeyService.createKey($scope.currKeyIdentifier, $scope.currKeyScope,
-            function (res) {
-            if (res.key) {
-                $scope.hideNewKey();
-                $scope.getKeys();
-            }
-        });
+    // Triggered when a checkbox for a permission changes.
+    // Updates the currKeyScope object with the addition or removal.
+    $scope.updateNewScope = function(prefix, perm) {
+        // If the checkbox was checked
+        if ($scope.scope[prefix][$scope.scope[prefix].indexOf(perm)].isChecked) {
+            $scope.newScope.push(prefix + '.' + perm.name);
+        } else {
+            // Otherwise it was unchecked, remove it
+            $scope.newScope.splice($scope.newScope.indexOf(prefix + '.' + perm.name), 1);
+        }
     };
 
     // Hide/show new key modal dialog
-    $scope.hideNewKey = function () {
-        $scope.nModalShow = false;
-    };
-    $scope.showNewKey = function () {
-        $scope.nModalShow = true;
-    };
+    $scope.hideNewKey = () => $scope.newModalStyle = {};
+    $scope.showNewKey = () => $scope.newModalStyle = {display: 'block'};
 
     // Hide/show key info modal dialog
-    $scope.hideKeyInfo = function () {
-        $scope.kModalShow = false;
-    };
-    $scope.showKeyInfo = function (key) {
-        $scope.kModalShow = true;
+    $scope.hideKeyInfo = () => $scope.infoModalStyle = {};
+    $scope.showKeyInfo = key => {
         $scope.currKey = key;
-        $scope.currKey.scopeObj = splitScope($scope.currKey.scope);
+        $scope.infoModalStyle = {display: 'block'};
+    };
+
+    function downloadData(mime, filename, data) {
+        const dataStr = 'data:' + mime + ';charset=utf-8,' + encodeURIComponent(data);
+        const anchor = document.createElement('a');
+        anchor.setAttribute('href', dataStr);
+        anchor.setAttribute('download', filename);
+        document.body.appendChild(anchor);
+        anchor.click();
+        anchor.remove();
+    }
+
+    $scope.downloadBash = () => {
+        const data =
+            '#!/bin/bash\n' +
+            'curl \\\n' +
+            '  -F key=' + $scope.currKey.key + ' \\\n' +
+            '  -F "file=@$1" \\\n' +
+            '  https://shimapan.rocks/api/upload \\\n' +
+            '  | grep -Po \'"\'"url"\'"\\s*:\\s*"\\K([^"]*)\'\n';
+        downloadData('text/x-shellscript', 'shimapan.rocks.sh', data);
+    };
+
+    $scope.downloadSharex = () => {
+        const data = {
+            RequestURL: 'https://shimapan.rocks/api/upload',
+            FileFormName: 'file',
+            Arguments: {
+                key: $scope.currKey.key
+            },
+            URL: '$json:url$'
+        };
+        downloadData('text/json', 'shimapan.rocks.sxcu', JSON.stringify(data));
     };
 }]);

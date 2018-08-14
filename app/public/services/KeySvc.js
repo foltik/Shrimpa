@@ -1,28 +1,7 @@
 var angular = require('angular');
 
-angular.module('KeySvc', []).service('KeyService', ['$http', function ($http) {
-    this.getAllKeys = function (cb) {
-        $http({
-            method: 'GET',
-            url: '/api/keys/get'
-        }).then(function (res) {
-            cb(res.data);
-        });
-    };
-
-    this.deleteKey = function (key, cb) {
-        $http({
-            method: 'POST',
-            url: '/api/keys/delete',
-            data: {
-                key: key
-            }
-        }).then(function (res) {
-            cb(res.data);
-        });
-    };
-
-    this.createKey = function (identifier, scope, cb) {
+angular.module('KeySvc', []).service('KeyService', ['$http', function($http) {
+    this.createKey = (identifier, scope, cb) =>
         $http({
             method: 'POST',
             url: '/api/keys/create',
@@ -30,8 +9,32 @@ angular.module('KeySvc', []).service('KeyService', ['$http', function ($http) {
                 identifier: identifier,
                 scope: scope
             }
-        }).then(function(res) {
-            cb(res.data);
+        }).then(res => {
+            cb(null, res.data)
+        }).catch(err => {
+            cb(err);
         });
-    };
+
+    this.deleteKey = (key, cb) =>
+        $http({
+            method: 'POST',
+            url: '/api/keys/delete',
+            data: {
+                key: key
+            }
+        }).then(res => {
+            cb(null, res.data);
+        }).catch(err => {
+            cb(err);
+        });
+
+    this.getAllKeys = cb =>
+        $http({
+            method: 'GET',
+            url: '/api/keys/get'
+        }).then(res => {
+            cb(null, res.data);
+        }).catch(err => {
+            cb(err);
+        });
 }]);

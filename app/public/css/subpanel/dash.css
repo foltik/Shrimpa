@@ -13,12 +13,17 @@
     background: #020202;
     border-radius: 4px;
     padding: 30px;
-    margin: 8px;
+    margin: 5px;
     flex-grow: 1;
     display: flex;
     align-items: center;
+    justify-content: center;
+    border: 1px solid #2a9fd6;
 }
 
+#dash-singlestats {
+    flex-grow: 1;
+}
 .dash-card.dash-card-singlestat {
     justify-content: space-between;
 }
@@ -37,4 +42,11 @@
 }
 .dash-stat-icon {
     color: #2a9fd6;
+}
+
+#dash-historical {
+
+}
+.dash-card.dash-card-graph {
+    width: 100px;
 }

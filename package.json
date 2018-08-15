@@ -49,13 +49,12 @@
     "uglify-es": "^3.3.9"
   },
   "author": "Jack Foltz",
-  "license": "LICENSE",
+  "license": "MIT",
   "scripts": {
     "test": "npx mocha",
     "build": "npx gulp",
     "start": "npx gulp start",
     "watch": "npx gulp watch"
-
   },
   "repository": {
     "type": "git",

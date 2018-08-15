@@ -1,0 +1,40 @@
+#dash-container {
+    display: flex;
+    flex-direction: column;
+}
+
+.dash-row {
+    display: flex;
+    flex-wrap: nowrap;
+    align-items: center;
+}
+
+.dash-card {
+    background: #020202;
+    border-radius: 4px;
+    padding: 30px;
+    margin: 8px;
+    flex-grow: 1;
+    display: flex;
+    align-items: center;
+}
+
+.dash-card.dash-card-singlestat {
+    justify-content: space-between;
+}
+.dash-stat {
+    align-self: flex-start;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    align-items: flex-start;
+}
+.dash-stat-title {
+    font-size: 18px;
+}
+.dash-stat-value {
+    font-size: 48px;
+}
+.dash-stat-icon {
+    color: #2a9fd6;
+}

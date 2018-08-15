@@ -1,1 +1,35 @@
-<h1>Dashboard</h1>
+<div id="dash-container" ng-controller="DashController">
+    <div id="dash-historical" class="dash-row">
+        <div class="dash-card dash-card-graph">
+            <canvas id="dash-upload-historical" class="chart chart-line"
+                    chart-data="uploadData" chart-labels="uploadLabels" chart-series="uploadSeries" chart-options="uploadOptions"
+                    chart-dataset-override="uploadDatasetOverride" chart-click="uploadOnClick" chart-colors="uploadColors"></canvas>
+        </div>
+        <div class="dash-card dash-card-graph">
+
+        </div>
+    </div>
+    <div id="dash-singlestats" class="dash-row" ng-init="statUploads=123;statUploadSize=123;statViews=123;">
+        <div class="dash-card dash-card-singlestat">
+            <div class="dash-stat">
+                <span class="dash-stat-title">Uploads</span>
+                <span class="dash-stat-value" ng-bind="statUploads"></span>
+            </div>
+            <i class="dash-stat-icon fa fa-file fa-3x"></i>
+        </div>
+        <div class="dash-card dash-card-singlestat">
+            <div class="dash-stat">
+                <span class="dash-stat-title">Uploaded Size</span>
+                <span class="dash-stat-value" ng-bind="statUploadSize"></span>
+            </div>
+            <i class="dash-stat-icon fa fa-database fa-3x"></i>
+        </div>
+        <div class="dash-card dash-card-singlestat">
+            <div class="dash-stat">
+                <span class="dash-stat-title">Views</span>
+                <span class="dash-stat-value" ng-bind="statViews"></span>
+            </div>
+            <i class="dash-stat-icon fa fa-eye fa-3x"></i>
+        </div>
+    </div>
+</div>

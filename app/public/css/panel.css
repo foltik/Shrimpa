@@ -2,7 +2,10 @@
 @import url('https://fonts.googleapis.com/css?family=Roboto');
 @import url('https://fonts.googleapis.com/css?family=Roboto+Mono');
 
-@import "sidebar.css";
+@import "navbar.css";
+
+/* Subpanels */
+@import "subpanel/dash.css";
 
 *, *:before, *:after {
     margin: 0;
@@ -18,8 +21,8 @@ body {
 
 .container {
     display: grid;
-    grid-template-columns: 240px 100%;
-    grid-template-rows: 60px 100%;
+    grid-template-columns: 240px auto;
+    grid-template-rows: 60px auto;
     width: 100vw;
     height: 100vh;
 }
@@ -29,6 +32,8 @@ body {
     grid-column-start: 2;
     background: #121212;
     padding: 20px;
+    border-left: 1px solid #2a9fd6;
+    border-top: 1px solid #2a9fd6;
 }
 
 

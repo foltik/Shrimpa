@@ -3,6 +3,7 @@
   "version": "1.0.0",
   "dependencies": {
     "angular": "^1.7.2",
+    "angular-chart.js": "^1.1.1",
     "angular-messages": "^1.7.2",
     "angular-ui-router": "^1.0.19",
     "async": "^2.6.1",

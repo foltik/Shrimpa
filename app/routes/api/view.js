@@ -9,17 +9,17 @@ const Upload = require(ModelPath + 'Upload.js');
 const wrap = require('../../util/wrap.js');
 
 
-const incrementViews = async id =>
-    Upload.updateOne({id: id}, {$inc: {views: 1}});
+const incrementViews = async uid =>
+    Upload.updateOne({uid: uid}, {$inc: {views: 1}});
 
 
-router.get('/:id', wrap(async (req, res) => {
-    const upload = await Upload.findOne({id: req.params.id});
+router.get('/:uid', wrap(async (req, res) => {
+    const upload = await Upload.findOne({uid: req.params.uid});
     if (!upload)
         return res.status(404).json({message: 'File not found.'});
 
     // Increment the file's view counter
-    await incrementViews(req.params.id);
+    await incrementViews(req.params.uid);
 
     // Whether the file should be an attachment or displayed inline on the page
     const mimetype = upload.file.mime.split('/');

@@ -276,13 +276,13 @@ describe('Uploading', () => {
             res.body.should.be.a('object');
             res.body.should.have.property('url');
             const idLength = config.get('Upload.idLength');
-            res.body.should.have.property('id').length(idLength, 'The ID should be a ' + idLength + ' letter lowercase string.');
+            res.body.should.have.property('uid').length(idLength, 'The UID should be a ' + idLength + ' letter lowercase string.');
 
             // Find the uploaded file in the database
-            const upload = await Upload.findOne({id: res.body.id}, {_id: 0, id: 1, file: 1});
+            const upload = await Upload.findOne({uid: res.body.uid}, {_id: 0, uid: 1, file: 1});
             const uploadFile = upload.file.path;
             upload.should.be.a('object');
-            upload.id.should.equal(res.body.id, 'The uploaded file in the database should exist and match the reponse ID.');
+            upload.uid.should.equal(res.body.uid, 'The uploaded file in the database should exist and match the reponse ID.');
 
             // Verify the uploaded file is the same as the file now on disk
             const uploadHash = await util.fileHash(uploadFile);
@@ -444,10 +444,10 @@ describe('Uploading', () => {
 });
 
 describe('Viewing', () => {
-    async function verifyView(file, id, disposition) {
-        const viewsBefore = (await Upload.findOne({id: id})).views;
+    async function verifyView(file, uid, disposition) {
+        const viewsBefore = (await Upload.findOne({uid: uid})).views;
 
-        const res = await util.view(id, agent)
+        const res = await util.view(uid, agent)
             .parse(util.binaryFileParser);
 
         res.should.have.status(200);
@@ -459,7 +459,7 @@ describe('Viewing', () => {
         ]);
         downloadHash.should.equal(uploadHash, 'Uploaded file and downloaded hash should match');
 
-        const viewsAfter = (await Upload.findOne({id: id})).views;
+        const viewsAfter = (await Upload.findOne({uid: uid})).views;
         viewsAfter.should.equal(viewsBefore + 1, 'The files views should be incremented.');
     }
 
@@ -469,7 +469,7 @@ describe('Viewing', () => {
             util.createTestFile(2048, 'test.bin')
         ]);
         const upload = await util.upload('test.bin', agent);
-        await verifyView('test.bin', upload.body.id, 'attachment; filename="test.bin"');
+        await verifyView('test.bin', upload.body.uid, 'attachment; filename="test.bin"');
         return util.deleteFile('test.bin');
     });
 
@@ -479,7 +479,7 @@ describe('Viewing', () => {
             util.createTestFile(2048, 'test.jpg')
         ]);
         const upload = await util.upload('test.jpg', agent);
-        await verifyView('test.jpg', upload.body.id, 'inline');
+        await verifyView('test.jpg', upload.body.uid, 'inline');
         return util.deleteFile('test.jpg');
     });
 

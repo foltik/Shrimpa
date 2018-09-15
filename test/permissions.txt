@@ -9,3 +9,6 @@ file
 api
     create
     delete
+
+stats
+    get

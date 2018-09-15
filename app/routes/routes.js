@@ -12,6 +12,7 @@ const view = require('./api/view.js');
 const invites = require('./api/invites.js');
 const keys = require('./api/keys.js');
 const users = require('./api/users.js');
+const stats = require('./api/stats.js');
 
 module.exports = function (app) {
     app.use('/', index);
@@ -29,4 +30,5 @@ module.exports = function (app) {
     app.use('/api/invites', invites);
     app.use('/api/keys', keys);
     app.use('/api/users', users);
+    app.use('/api/stats', stats);
 };

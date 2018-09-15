@@ -10,6 +10,7 @@ const User = require(ModelPath + 'User.js');
 const Upload = require(ModelPath + 'Upload.js');
 const Key = require(ModelPath + 'Key.js');
 const Invite = require(ModelPath + 'Invite.js');
+const View = require(ModelPath + 'View.js');
 
 const util = require('./testUtil.js');
 const canonicalize = require('../app/util/canonicalize').canonicalize;
@@ -445,7 +446,8 @@ describe('Uploading', () => {
 
 describe('Viewing', () => {
     async function verifyView(file, uid, disposition) {
-        const viewsBefore = (await Upload.findOne({uid: uid})).views;
+        const uploadViewsBefore = (await Upload.findOne({uid: uid})).views;
+        const viewsBefore = await View.countDocuments();
 
         const res = await util.view(uid, agent)
             .parse(util.binaryFileParser);
@@ -459,8 +461,10 @@ describe('Viewing', () => {
         ]);
         downloadHash.should.equal(uploadHash, 'Uploaded file and downloaded hash should match');
 
-        const viewsAfter = (await Upload.findOne({uid: uid})).views;
-        viewsAfter.should.equal(viewsBefore + 1, 'The files views should be incremented.');
+        const viewsAfter = await View.countDocuments();
+        const uploadViewsAfter = (await Upload.findOne({uid: uid})).views;
+        uploadViewsAfter.should.equal(uploadViewsBefore + 1, 'The files views should be incremented.');
+        viewsAfter.should.equal(viewsBefore + 1, 'A view object should have been inserted to the database.');
     }
 
     it('must return an uploaded binary file', async () => {

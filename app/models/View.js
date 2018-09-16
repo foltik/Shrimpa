@@ -3,7 +3,6 @@ const mongoose = require('mongoose');
 const ViewSchema = mongoose.Schema({
     uid: {
         type: String,
-        unique: true,
         required: true
     },
 

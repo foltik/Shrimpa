@@ -28,14 +28,13 @@ function mergeAggregateStats(obj1, obj2) {
 }
 
 function mergeAggregations(res1, res2) {
-    const arr = res1;
-    arr.concat(res2);
+    const arr = res1.concat(res2);
 
     let res = {};
 
     for (let obj of arr) {
         if (res[obj._id])
-            mergeAggregateStats(res[obj._id], obj);
+            res[obj._id] = mergeAggregateStats(res[obj._id], obj);
         else
             res[obj._id] = filterAggregateStats(obj);
     }

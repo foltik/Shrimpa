@@ -8,6 +8,7 @@ const User = require(ModelPath + 'User.js');
 const Upload = require(ModelPath + 'Upload.js');
 const Key = require(ModelPath + 'Key.js');
 const Invite = require(ModelPath + 'Invite.js');
+const View = require(ModelPath + 'View.js');
 
 const Buffer = require('buffer').Buffer;
 const crypto = require('crypto');
@@ -35,7 +36,8 @@ exports.clearDatabase = () =>
         User.remove({}),
         Invite.remove({}),
         Key.remove({}),
-        Upload.remove({})
+        Upload.remove({}),
+        View.remove({})
     ]);
 
 exports.insertInvite = invite =>
@@ -43,6 +45,12 @@ exports.insertInvite = invite =>
 
 exports.insertKey = key =>
     Key.create(key);
+
+exports.insertUpload = upload =>
+    Upload.create(upload);
+
+exports.insertView = view =>
+    View.create(view);
 
 exports.setBanned = (username, banned) =>
     User.updateOne({username: username}, {banned: banned});
@@ -201,3 +209,12 @@ exports.ban = (username, agent) =>
 exports.unban = (username, agent) =>
     agent.post('/api/users/unban')
         .send({username: username});
+
+//---------------- Stats ----------------//
+
+exports.getStatsWeek = agent =>
+    agent.get('/api/stats/week');
+
+exports.getStatsAll = agent =>
+    agent.get('/api/stats/all');
+

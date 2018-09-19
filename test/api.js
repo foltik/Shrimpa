@@ -934,4 +934,99 @@ describe('Users', () => {
     });
 });
 
+describe('Stats', () => {
+    const setupUploadsAndViews = async () => {
+        const oneDay = 1000 * 60 * 60 * 24;
+        const currentDate = new Date();
+
+        const get_uid = i => {
+            return 'abcde' + String.fromCharCode(i + 97)
+        };
+
+        for (let i = 0; i < 8; i++) {
+            await util.insertUpload({
+                uid: get_uid(i),
+                views: 0,
+                uploader: 'user',
+                uploaderKey: null,
+                date: new Date(currentDate - i * oneDay),
+                file: {
+                    size: 1
+                }
+            });
+        }
+
+        await util.insertUpload({
+            uid: 'zyxwvu',
+            uploader: 'someguy',
+            date: new Date(currentDate - 3 * oneDay),
+            file: {
+                size: 1
+            }
+        });
+
+        for (let i = 0; i < 8; i++) {
+            await util.insertView({
+                uid: get_uid(i),
+                uploader: 'user',
+                remoteAddress: '::1',
+                userAgent: 'fiyerfocks',
+                date: new Date(currentDate - i * oneDay),
+            });
+        }
+
+        await util.insertView({
+            uid: 'zyxwvu',
+            uploader: 'someguy',
+            remoteAddress: '::1',
+            userAgent: 'fiyerfocks',
+            date: new Date(currentDate - 3 * oneDay)
+        });
+    };
+
+    describe('/GET week', () => {
+        describe('0 Valid Request', () => {
+            it('must return valid stats for the past week', async () => {
+                await setupUploadsAndViews();
+
+                const oneDay = 1000 * 60 * 60 * 24;
+                const currentDate = new Date();
+
+                await util.createSession(agent, ['stats.get'], 'user');
+                const stats = (await util.getStatsWeek(agent)).body;
+                console.log(stats);
+
+                for (let i = 0; i < 7; i++) {
+                    let date = new Date(currentDate - i * oneDay).toISOString();
+                    let dateStr = date.substr(5, 2) + '-' + date.substr(8, 2);
+                    let dayStats = stats[dateStr];
+                    dayStats.should.be.a('object', 'Stats should exist for the day ' + dateStr);
+                    dayStats.uploads.should.equal(1, 'Should be only one upload for the day ' + dateStr);
+                    dayStats.size.should.equal(1, 'Should be only one byte uploaded for the day ' + dateStr);
+                    dayStats.views.should.equal(1, 'Should be only one view for the day ' + dateStr);
+                }
+
+                let pastDate = new Date(currentDate - 7 * oneDay).toISOString();
+                let pastDateStr = pastDate.substr(5, 2) + '-' + pastDate.substr(8, 2);
+                stats.should.not.have.property(pastDateStr, 'No stats should exist past 1 week ago');
+
+                return util.logout(agent);
+            });
+        });
+    });
+
+    describe('/GET all', () => {
+        describe('0 Valid Request', () => {
+            it('must return valid stats for all time', async () => {
+                await setupUploadsAndViews();
+
+                await util.createSession(agent, ['stats.get'], 'user');
+                const stats = await util.getStatsAll(agent);
+                console.log(stats.body);
+                await util.logout(agent);
+            });
+        });
+    });
+});
+
 after(() => server.close(() => process.exit(0)));

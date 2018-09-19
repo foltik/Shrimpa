@@ -1021,8 +1021,13 @@ describe('Stats', () => {
                 await setupUploadsAndViews();
 
                 await util.createSession(agent, ['stats.get'], 'user');
-                const stats = await util.getStatsAll(agent);
-                console.log(stats.body);
+                const stats = (await util.getStatsAll(agent)).body;
+
+                stats.should.have.property('total');
+                stats.total.should.have.property('count').equal(8);
+                stats.total.should.have.property('size').equal(8);
+                stats.total.should.have.property('views').equal(8);
+
                 await util.logout(agent);
             });
         });

@@ -72,7 +72,6 @@ router.get('/week', requireAuth('stats.get'), wrap(async (req, res) => {
             }
         }
     ]).toArray());
-
     const viewStats = await (View.collection.aggregate([
         {
             $match: {
@@ -105,7 +104,7 @@ router.get('/week', requireAuth('stats.get'), wrap(async (req, res) => {
 }));
 
 router.get('/all', requireAuth('stats.get'), wrap(async (req, res) => {
-    const stats = await (Upload.collection.aggregate([
+    const uploadStats = await (Upload.collection.aggregate([
         {
             $match: {
                 'uploader': req.username
@@ -113,7 +112,6 @@ router.get('/all', requireAuth('stats.get'), wrap(async (req, res) => {
         },
         {
             $project: {
-                'views': '$views',
                 'size': '$file.size'
             }
         },
@@ -121,11 +119,25 @@ router.get('/all', requireAuth('stats.get'), wrap(async (req, res) => {
             $group: {
                 '_id': 'total',
                 'count': {$sum: 1},
-                'views': {$sum: '$views'},
                 'size': {$sum: '$size'}
             }
         }
     ]).toArray());
+    const viewStats = await (View.collection.aggregate([
+        {
+            $match: {
+                'uploader': req.username
+            }
+        },
+        {
+            $group: {
+                '_id': 'total',
+                'views': {$sum: 1},
+            }
+        }
+    ]).toArray());
+
+    const stats = mergeAggregations(uploadStats, viewStats);
 
     res.status(200).json(stats);
 }));

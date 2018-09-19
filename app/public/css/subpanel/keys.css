@@ -6,8 +6,8 @@
 
 .key {
     background: #000;
-    border: 3px solid #2a9fd6;
-    border-radius: 5px;
+    border: 1px solid #2a9fd6;
+    border-radius: 4px;
     box-shadow: 5px 5px 10px #000;
     margin: 20px;
     width: 300px;
@@ -21,7 +21,7 @@
 }
 
 .key:hover {
-    box-shadow: 0 0 10px #eee;
+    box-shadow: 0 0 5px #eee;
 }
 
 .key i {

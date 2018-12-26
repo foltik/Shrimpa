@@ -1,7 +1,8 @@
 {
   "Server": {
     "port": 4433,
-    "hostname": "https://shimapan.rocks"
+    "hostname": "https://shimapan.rocks",
+    "tls": true
   },
   "Database": {
     "host": "mongodb://localhost:27017/shimapan"

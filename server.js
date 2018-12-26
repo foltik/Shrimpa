@@ -1,3 +1,5 @@
+const https = require('https');
+const fs = require('fs');
 const express = require('express');
 const bodyParser = require('body-parser');
 const methodOverride = require('method-override');
@@ -70,9 +72,19 @@ app.use((err, req, res, next) => {
 
 // Start app
 const port = config.get('Server.port');
-const server = app.listen(port, () => {
-    console.log('Listening on port ' + port + '...\n');
-});
+
+let server;
+if (config.get('Server.tls')) {
+    const options = {
+        cert: fs.readFileSync('./cert.pem'),
+        key: fs.readFileSync('./privkey.pem'),
+    };
+    server = https.createServer(options, app).listen(port, () =>
+        console.log(`Listening on port ${port}...`));
+} else {
+    server = app.listen(port, () =>
+        console.log(`Listening on port ${port}...`));
+}
 
 // Expose app
 module.exports.app = app;

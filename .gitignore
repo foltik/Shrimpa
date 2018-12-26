@@ -11,3 +11,6 @@ uploads-test/
 uploads-dev/
 
 .nyc_output/
+
+cert.pem
+privkey.pem

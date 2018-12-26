@@ -1012,6 +1012,20 @@ describe('Stats', () => {
 
                 return util.logout(agent);
             });
+
+            it('must return an empty set when there are no stats', async () => {
+                await util.createSession(agent, ['stats.get'], 'user');
+                const stats_self = (await util.getStatsWeek(agent)).body;
+                stats_self.should.deep.equal({});
+
+
+                await setupUploadsAndViews();
+                await util.createSession(agent, ['stats.get'], 'other_user');
+                const stats_other = (await util.getStatsWeek(agent)).body;
+                stats_other.should.deep.equal({}, 'No stats should be returned from another user');
+
+                return util.logout(agent);
+            });
         });
     });
 
@@ -1028,7 +1042,21 @@ describe('Stats', () => {
                 stats.total.should.have.property('size').equal(8);
                 stats.total.should.have.property('views').equal(8);
 
+                return util.logout(agent);
+            });
+
+            it('must return an empty set when there are no stats', async () => {
+                await util.createSession(agent, ['stats.get'], 'user');
+                const stats_self = (await util.getStatsAll(agent)).body;
+                stats_self.should.deep.equal({}, 'No stats should be returned');
                 await util.logout(agent);
+
+                await setupUploadsAndViews();
+                await util.createSession(agent, ['stats.get'], 'other_user');
+                const stats_other = (await util.getStatsAll(agent)).body;
+                stats_other.should.deep.equal({}, 'No stats should be returned from another user');
+
+                return util.logout(agent);
             });
         });
     });

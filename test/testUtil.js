@@ -33,11 +33,11 @@ exports.verifyResponseObj = (res, status, obj) => {
 
 exports.clearDatabase = () =>
     Promise.all([
-        User.remove({}),
-        Invite.remove({}),
-        Key.remove({}),
-        Upload.remove({}),
-        View.remove({})
+        User.deleteMany(),
+        Invite.deleteMany(),
+        Key.deleteMany(),
+        Upload.deleteMany(),
+        View.deleteMany()
     ]);
 
 exports.insertInvite = invite =>

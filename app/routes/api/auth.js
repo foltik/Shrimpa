@@ -36,7 +36,7 @@ const validateInvite = wrap(async (req, res, next) => {
 
     if (!invite) {
         // Log failure
-        await fs.appendFile('auth.log', `${new Date().toISOString()} register ${req.connection.remoteAddress}`);
+        await fs.appendFile('auth.log', `${new Date().toISOString()} register ${req.connection.remoteAddress}\n`);
         return res.status(422).json({message: 'Invalid invite code.'});
     }
 
@@ -98,7 +98,7 @@ router.post('/login', bodyVerifier(loginProps), canonicalizeRequest, wrap(async 
     const user = await authenticate(req, res, next);
     if (!user) {
         // Log failure
-        await fs.appendFile('auth.log', `${new Date().toISOString()} login ${req.connection.remoteAddress}`);
+        await fs.appendFile('auth.log', `${new Date().toISOString()} login ${req.connection.remoteAddress}\n`);
         return res.status(401).json({'message': 'Unauthorized.'});
     }
 

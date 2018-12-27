@@ -1,6 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const config = require('config');
+const fs = require('fs').promises;
 
 const ModelPath = '../../models/';
 const User = require(ModelPath + 'User.js');
@@ -33,8 +34,11 @@ const login = (user, req) => {
 const validateInvite = wrap(async (req, res, next) => {
     const invite = await Invite.findOne({code: req.body.invite}).catch(next);
 
-    if (!invite)
+    if (!invite) {
+        // Log failure
+        await fs.appendFile('auth.log', `${new Date().toISOString()} register ${req.connection.remoteAddress}`);
         return res.status(422).json({message: 'Invalid invite code.'});
+    }
 
     if (invite.used)
         return res.status(422).json({message: 'Invite already used.'});
@@ -92,8 +96,11 @@ const loginProps = [
 router.post('/login', bodyVerifier(loginProps), canonicalizeRequest, wrap(async (req, res, next) => {
     // Authenticate
     const user = await authenticate(req, res, next);
-    if (!user)
+    if (!user) {
+        // Log failure
+        await fs.appendFile('auth.log', `${new Date().toISOString()} login ${req.connection.remoteAddress}`);
         return res.status(401).json({'message': 'Unauthorized.'});
+    }
 
     // Create session
     await login(user, req);

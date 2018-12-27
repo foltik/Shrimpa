@@ -2,7 +2,8 @@
   "Server": {
     "port": 8080,
     "hostname": "http://localhost:8080",
-    "tls": false
+    "tls": false,
+    "trustProxy": []
   },
   "Database": {
     "host": "mongodb://localhost:27017/shimapan-dev"

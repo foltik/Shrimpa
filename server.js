@@ -70,6 +70,8 @@ app.use((err, req, res, next) => {
     res.status(500).json({'message': 'Internal server error.'});
 });
 
+app.set('trust proxy', config.get('Server.trustProxy'));
+
 // Start app
 const port = config.get('Server.port');
 

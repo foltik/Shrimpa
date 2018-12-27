@@ -2,6 +2,7 @@ const ModelPath = '../models/';
 const Key = require(ModelPath + 'Key.js');
 const User = require(ModelPath + 'User.js');
 
+const fs = require('fs').promises;
 const wrap = require('./wrap.js');
 const verifyScope = require('./verifyScope.js');
 
@@ -30,6 +31,9 @@ const checkKey = async (req, scope, status) => {
                 req.key = key.key;
                 status.permission = true;
             }
+        } else {
+            // Log failure
+            await fs.appendFile('auth.log', `${new Date().toISOString()} key ${req.connection.remoteAddress}`);
         }
     }
 };

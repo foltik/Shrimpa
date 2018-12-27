@@ -13,5 +13,8 @@
   },
   "Log": {
     "httpLevel": "dev"
+  },
+  "RateLimit": {
+    "enable": false
   }
 }

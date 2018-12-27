@@ -9,6 +9,7 @@ const passport = require('passport');
 const session = require('express-session');
 const sanitizer = require('express-sanitizer');
 const helmet = require('helmet');
+const rateLimit = require('express-rate-limit');
 
 const app = express();
 const config = require('config');
@@ -55,6 +56,15 @@ app.use(bodyParser.urlencoded({ extended: true }));
 app.use(bodyParser.text());
 app.use(sanitizer());
 app.use(methodOverride('X-HTTP-Method-Override'));
+
+// Rate limiter
+const global_limiter = rateLimit({
+    windowMs: 60 * 1000, // 1 minute
+    max: 60 // limit to 1 request/second
+});
+
+if (config.get('RateLimit.enable'))
+    app.use(global_limiter);
 
 // Static directories and favicon
 //app.use(favicon(__dirname + '/public/img/favicon.ico'));

@@ -36,5 +36,20 @@
   "Log": {
     "http": true,
     "httpLevel": "combined"
+  },
+  "RateLimit": {
+    "enable": true,
+    "login": {
+      "window": 600,
+      "max": 5
+    },
+    "register": {
+      "window": 600,
+      "max": 5
+    },
+    "api": {
+      "window": 600,
+      "max": 10
+    }
   }
 }

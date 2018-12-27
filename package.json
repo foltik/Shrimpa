@@ -12,6 +12,7 @@
     "config": "^1.31.0",
     "connect-mongo": "^2.0.3",
     "express": "^4.16.4",
+    "express-rate-limit": "^3.3.2",
     "express-sanitizer": "^1.0.4",
     "express-session": "^1.15.6",
     "gulp-nodemon": "^2.4.2",

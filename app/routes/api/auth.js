@@ -13,6 +13,7 @@ const canonicalizeRequest = require('../../util/canonicalize').canonicalizeReque
 const requireAuth = require('../../util/auth').requireAuth;
 const wrap = require('../../util/wrap.js');
 const bodyVerifier = require('../../util/verifyBody').bodyVerifier;
+const rateLimit = require('express-rate-limit');
 
 // Wraps passport.authenticate to return a promise
 const authenticate = (req, res, next) => {
@@ -61,6 +62,13 @@ const validateUsername = wrap(async (req, res, next) => {
     next();
 });
 
+const registerLimiter = config.get('RateLimit.enable')
+    ? rateLimit({
+        windowMs: config.get('RateLimit.register.window') * 1000,
+        max: config.get('RateLimit.register.max'),
+        skipSuccessfulRequests: true
+    })
+    : (req, res, next) => { next(); };
 const registerProps = [
     {
         name: 'displayname',
@@ -72,6 +80,7 @@ const registerProps = [
     {name: 'password', type: 'string'},
     {name: 'invite', type: 'string'}];
 router.post('/register',
+    registerLimiter,
     bodyVerifier(registerProps), canonicalizeRequest,
     validateInvite, validateUsername,
     wrap(async (req, res, next) => {
@@ -89,11 +98,21 @@ router.post('/register',
     res.status(200).json({'message': 'Registration successful.'});
 }));
 
+const loginLimiter = config.get('RateLimit.enable')
+    ? rateLimit({
+        windowMs: config.get('RateLimit.login.window') * 1000,
+        max: config.get('RateLimit.login.max'),
+        skipSuccessfulRequests: true
+    })
+    : (req, res, next) => { next(); };
 const loginProps = [
     {name: 'username', type: 'string', optional: true},
     {name: 'displayname', type: 'string', optional: true},
     {name: 'password', type: 'string'}];
-router.post('/login', bodyVerifier(loginProps), canonicalizeRequest, wrap(async (req, res, next) => {
+router.post('/login',
+    bodyVerifier(loginProps),
+    canonicalizeRequest,
+    wrap(async (req, res, next) => {
     // Authenticate
     const user = await authenticate(req, res, next);
     if (!user) {

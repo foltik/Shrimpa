@@ -19,5 +19,8 @@
       "saltLength": 8,
       "hashIterations": 1
     }
+  },
+  "RateLimit": {
+    "enable": false
   }
 }

@@ -1,10 +1,13 @@
+const fs = require('fs').promises;
+const config = require('config');
+
 const ModelPath = '../models/';
 const Key = require(ModelPath + 'Key.js');
 const User = require(ModelPath + 'User.js');
 
-const fs = require('fs').promises;
 const wrap = require('./wrap.js');
 const verifyScope = require('./verifyScope.js');
+const rateLimit = require('express-rate-limit');
 
 const checkSession = (req, scope, status) => {
     if (req.isAuthenticated()) {
@@ -38,12 +41,20 @@ const checkKey = async (req, scope, status) => {
     }
 };
 
+
+const apiLimiter = config.get('RateLimit.enable')
+    ? rateLimit({
+        windowMs: config.get('RateLimit.api.window') * 1000,
+        max: config.get('RateLimit.api.max'),
+        skip: (req, res) => res.statusCode !== 401 && res.statusCode !== 403
+    })
+    : (req, res, next) => { next(); };
 // Middleware that checks for authentication by either API key or session
 // sets req.username, req.displayname, req.scope, and req.key if authenticated properly,
 // otherwise throws an error code.
 // If the user is banned, also throw an error.
-const requireAuth = scope =>
-    wrap(async (req, res, next) => {
+/*
+const requireAuth = scope => wrap(async (req, res, next) => {
         const status = {
             authenticated: false,
             permission: false
@@ -62,11 +73,39 @@ const requireAuth = scope =>
 
         // Check if the user is banned
         const user = await User.findOne({username: req.username});
-        if(user && user.banned)
+        if (user && user.banned)
             return res.status(403).json({message: 'Forbidden.'});
 
         next();
     });
+    */
+const requireAuth = scope => (req, res, next) => {
+    apiLimiter(req, res, wrap(async () => {
+
+        const status = {
+            authenticated: false,
+            permission: false
+        };
+
+        // First, check the session
+        checkSession(req, scope, status);
+        // If not authenticated yet, check for a key
+        if (!status.authenticated)
+            await checkKey(req, scope, status);
+
+        if (!status.authenticated)
+            return res.status(401).json({message: 'Unauthorized.'});
+        else if (!status.permission)
+            return res.status(403).json({message: 'Forbidden.'});
+
+        // Check if the user is banned
+        const user = await User.findOne({username: req.username});
+        if (user && user.banned)
+            return res.status(403).json({message: 'Forbidden.'});
+
+        next();
+    }));
+};
 
 module.exports.checkSession = checkSession;
 module.exports.checkKey = checkKey;

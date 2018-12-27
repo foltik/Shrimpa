@@ -12,5 +12,6 @@ uploads-dev/
 
 .nyc_output/
 
+auth.log
 cert.pem
 privkey.pem

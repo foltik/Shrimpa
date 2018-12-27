@@ -101,8 +101,9 @@ router.post('/register',
 console.log(config.get('RateLimit'));
 const loginLimiter = config.get('RateLimit.enable')
     ? rateLimit({
-        windowMs: 60 * 60 * 1000,//config.get('RateLimit.login.window') * 1000,
-        max: 5,//config.get('RateLimit.login.max'),
+        windowMs: config.get('RateLimit.login.window') * 1000,
+        max: config.get('RateLimit.login.max'),
+        skipSuccessfulRequests: true
     })
     : (req, res, next) => { next(); };
 const loginProps = [

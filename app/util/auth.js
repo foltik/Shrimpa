@@ -53,32 +53,6 @@ const apiLimiter = config.get('RateLimit.enable')
 // sets req.username, req.displayname, req.scope, and req.key if authenticated properly,
 // otherwise throws an error code.
 // If the user is banned, also throw an error.
-/*
-const requireAuth = scope => wrap(async (req, res, next) => {
-        const status = {
-            authenticated: false,
-            permission: false
-        };
-
-        // First, check the session
-        checkSession(req, scope, status);
-        // If not authenticated yet, check for a key
-        if (!status.authenticated)
-            await checkKey(req, scope, status);
-
-        if (!status.authenticated)
-            return res.status(401).json({message: 'Unauthorized.'});
-        else if (!status.permission)
-            return res.status(403).json({message: 'Forbidden.'});
-
-        // Check if the user is banned
-        const user = await User.findOne({username: req.username});
-        if (user && user.banned)
-            return res.status(403).json({message: 'Forbidden.'});
-
-        next();
-    });
-    */
 const requireAuth = scope => (req, res, next) => {
     apiLimiter(req, res, wrap(async () => {
 

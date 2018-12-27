@@ -98,11 +98,11 @@ router.post('/register',
     res.status(200).json({'message': 'Registration successful.'});
 }));
 
+console.log(config.get('RateLimit'));
 const loginLimiter = config.get('RateLimit.enable')
     ? rateLimit({
-        windowMs: config.get('RateLimit.login.window') * 1000,
-        max: config.get('RateLimit.login.max'),
-        skipSuccessfulRequests: true
+        windowMs: 60 * 60 * 1000,//config.get('RateLimit.login.window') * 1000,
+        max: 5,//config.get('RateLimit.login.max'),
     })
     : (req, res, next) => { next(); };
 const loginProps = [
@@ -110,6 +110,7 @@ const loginProps = [
     {name: 'displayname', type: 'string', optional: true},
     {name: 'password', type: 'string'}];
 router.post('/login',
+    loginLimiter,
     bodyVerifier(loginProps),
     canonicalizeRequest,
     wrap(async (req, res, next) => {

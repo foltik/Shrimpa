@@ -41,11 +41,11 @@
     "enable": true,
     "login": {
       "window": 600,
-      "max": 5
+      "max": 10
     },
     "register": {
       "window": 600,
-      "max": 5
+      "max": 10
     },
     "api": {
       "window": 600,

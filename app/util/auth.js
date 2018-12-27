@@ -33,7 +33,7 @@ const checkKey = async (req, scope, status) => {
             }
         } else {
             // Log failure
-            await fs.appendFile('auth.log', `${new Date().toISOString()} key ${req.connection.remoteAddress}\n`);
+            await fs.appendFile('auth.log', `${new Date().toISOString()} key ${req.ip}\n`);
         }
     }
 };

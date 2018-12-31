@@ -1,4 +1,4 @@
-var angular = require('angular');
+const angular = require('angular');
 
 angular.module('AuthSvc', []).service('AuthService', ['$http', '$window', function($http) {
     this.login = async (displayname, password) =>

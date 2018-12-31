@@ -1,4 +1,4 @@
-var angular = require('angular');
+const angular = require('angular');
 
 angular.module('DashCtrl', ['chart.js', 'StatSvc']).controller('DashController', ['$scope', 'StatService', async ($scope, StatService) => {
     const colorScheme = ['#2a9fd6'];
@@ -9,28 +9,37 @@ angular.module('DashCtrl', ['chart.js', 'StatSvc']).controller('DashController',
         (new Date(currentDate - oneDay * (6 - i))).toISOString().substr(5, 5));
 
     const toHumanReadable = bytes => {
-        const units = ['B', 'KB', 'MB', 'GB', 'TB'];
+        const units = ['B', 'KiB', 'MiB', 'GiB', 'TiB'];
         let index = 0;
-        for (; bytes >= 1024 && index < units.length - 1; index++, bytes /= 1024) {}
+        for(; bytes >= 1024 && index < units.length - 1; index++)
+            bytes /= 1024;
         return bytes.toFixed(3) + ' ' + units[index];
     };
 
-    StatService.getWeek((err, stats) => {
-        $scope.uploadData = [Array.from({length: 7}, (val, i) => stats[labels[i]] && stats[labels[i]].uploads ? stats[labels[i]].uploads : 0)];
-        $scope.viewData = [Array.from({length: 7}, (val, i) => stats[labels[i]] && stats[labels[i]].views ? stats[labels[i]].views : 0)];
+    // Get stats for the week
+    $scope.statWeekUploads = 0;
+    $scope.statWeekUploadSize = 0;
+    $scope.statWeekViews = 0;
 
-        $scope.stats = stats;
+    const weekStats = await StatService.getWeek();
+    console.log(weekStats);
 
-        $scope.statUploads = Object.keys(stats).reduce((acc, key) => acc + (stats[key].uploads ? stats[key].uploads : 0), 0);
-        $scope.statUploadSize = toHumanReadable(Object.keys(stats).reduce((acc, key) => acc + (stats[key].size ? stats[key].size : 0), 0));
-        $scope.statViews = Object.keys(stats).reduce((acc, key) => acc + (stats[key].views ? stats[key].views : 0), 0);
-    });
+    $scope.uploadData = [Array.from({length: 7}, (val, i) => weekStats[labels[i]] && weekStats[labels[i]].uploads ? weekStats[labels[i]].uploads : 0)];
+    $scope.viewData = [Array.from({length: 7}, (val, i) => weekStats[labels[i]] && weekStats[labels[i]].views ? weekStats[labels[i]].views : 0)];
 
-    StatService.getAll((err, stats) => {
-        $scope.statTotalUploads = stats.count;
-        $scope.statTotalUploadSize = toHumanReadable(stats.size);
-        $scope.statTotalViews = stats.views;
-    });
+    $scope.statWeekUploads = Object.keys(weekStats).reduce((acc, key) => acc + (weekStats[key].uploads ? weekStats[key].uploads : 0), 0);
+    $scope.statWeekUploadSize = toHumanReadable(Object.keys(weekStats).reduce((acc, key) => acc + (weekStats[key].size ? weekStats[key].size : 0), 0));
+    $scope.statWeekViews = Object.keys(weekStats).reduce((acc, key) => acc + (weekStats[key].views ? weekStats[key].views : 0), 0);
+
+    // Get all-time stats
+    $scope.statTotalUploads = 0;
+    $scope.statTotalUploadSize = 0;
+    $scope.statTotalViews = 0;
+    const allStats = await StatService.getAll();
+    console.log(allStats);
+    $scope.statTotalUploads = allStats.count;
+    $scope.statTotalUploadSize = toHumanReadable(allStats.size);
+    $scope.statTotalViews = allStats.views;
 
     $scope.uploadColors = colorScheme;
     $scope.uploadLabels = labels;

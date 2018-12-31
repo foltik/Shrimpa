@@ -1,23 +1,21 @@
-var angular = require('angular');
+const angular = require('angular');
 
 angular.module('StatSvc', []).service('StatService', ['$http', function($http) {
-    this.getWeek = cb =>
-        $http({
+    this.getWeek = async () => {
+        const res = await $http({
             method: 'GET',
             url: '/api/stats/week'
-        }).then(res => {
-            cb(null, res.data)
-        }).catch(err => {
-            cb(err);
         });
 
-    this.getAll = cb =>
-        $http({
+        return res.data;
+    };
+
+    this.getAll = async () => {
+        const res = await $http({
             method: 'GET',
             url: '/api/stats/all'
-        }).then(res => {
-            cb(null, res.data[0])
-        }).catch(err => {
-            cb(err);
         });
+
+        return res.data;
+    }
 }]);

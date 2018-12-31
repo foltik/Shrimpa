@@ -98,7 +98,6 @@ router.post('/register',
     res.status(200).json({'message': 'Registration successful.'});
 }));
 
-console.log(config.get('RateLimit'));
 const loginLimiter = config.get('RateLimit.enable')
     ? rateLimit({
         windowMs: config.get('RateLimit.login.window') * 1000,

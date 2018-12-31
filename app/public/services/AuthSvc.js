@@ -1,31 +1,31 @@
 var angular = require('angular');
 
-angular.module('AuthSvc', []).service('AuthService', ['$http', '$window', function($http, $window) {
-    this.login = (displayname, password) => {
-        return $http({
+angular.module('AuthSvc', []).service('AuthService', ['$http', '$window', function($http) {
+    this.login = async (displayname, password) =>
+        $http({
             method: 'POST',
             url: '/api/auth/login',
             data: {
                 displayname: displayname,
                 password: password
             }
-        }).then(res => {
-            if (res.status === 200)
-                $window.location.href = '/home';
-        })
-    };
-
-    this.logout = () => {
-        $http({
-            method: 'GET',
-            url: '/api/auth/logout'
-        }).then(() => {
-            $window.location.href = '/';
+        }).catch(err => {
+            if (err.status === 401)
+                throw 'unauthorized';
+            else if (err.status === 429)
+                throw 'ratelimited';
+            else
+                throw 'unknown';
         });
-    };
 
-    this.register = (displayname, password, invite) => {
-        return $http({
+    this.logout = async () =>
+        $http({
+            method: 'POST',
+            url: '/api/auth/logout'
+        });
+
+    this.register = async (displayname, password, invite) =>
+        $http({
             method: 'POST',
             url: '/api/auth/register',
             data: {
@@ -33,18 +33,15 @@ angular.module('AuthSvc', []).service('AuthService', ['$http', '$window', functi
                 password: password,
                 invite: invite
             }
-        }).then(function(res) {
-            if (res.status === 200)
-                $window.location.href = '/home';
+        }).catch(err => {
+            throw err;
         });
-    };
 
-    this.whoami = function(cb) {
-        return $http({
+    this.whoami = async () =>
+        $http({
             method: 'GET',
             url: '/api/auth/whoami'
-        }).then(function(res) {
-            cb(res.data);
+        }).catch(err => {
+            throw err;
         });
-    }
 }]);

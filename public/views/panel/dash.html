@@ -15,25 +15,25 @@
                     chart-colors="viewColors"></canvas>
         </div>
     </div>
-    <div id="dash-singlestats" class="dash-row" ng-init="statUploads=0;statUploadSize=0;statViews=0;">
+    <div id="dash-singlestats" class="dash-row">
         <div class="dash-card dash-card-singlestat">
             <div class="dash-stat">
                 <span class="dash-stat-title">Week Uploads</span>
-                <span class="dash-stat-value" ng-bind="statUploads"></span>
+                <span class="dash-stat-value" ng-bind="statWeekUploads"></span>
             </div>
             <i class="dash-stat-icon fa fa-file fa-3x"></i>
         </div>
         <div class="dash-card dash-card-singlestat">
             <div class="dash-stat">
                 <span class="dash-stat-title">Week Uploaded Size</span>
-                <span class="dash-stat-value" ng-bind="statUploadSize"></span>
+                <span class="dash-stat-value" ng-bind="statWeekUploadSize"></span>
             </div>
             <i class="dash-stat-icon fa fa-database fa-3x"></i>
         </div>
         <div class="dash-card dash-card-singlestat">
             <div class="dash-stat">
                 <span class="dash-stat-title">Week Views</span>
-                <span class="dash-stat-value" ng-bind="statViews"></span>
+                <span class="dash-stat-value" ng-bind="statWeekViews"></span>
             </div>
             <i class="dash-stat-icon fa fa-eye fa-3x"></i>
         </div>

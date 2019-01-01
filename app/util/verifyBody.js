@@ -8,18 +8,26 @@ const verifyProp = async (prop, expected) => {
         return;
 
     if (expected.type) {
-        if (expected.type === 'date' && isNaN(new Date(prop)))
-            throw {code: 400, message: `${expected.name} malformed.`};
-        else if (expected.type === 'array' && !(prop instanceof Array))
-            throw {code: 400, message: `${expected.name} malformed.`};
-        else if (typeof prop !== expected.type)
-            throw {code: 400, message: `${expected.name} malformed.`};
+        if (expected.type === 'date') {
+            if (isNaN(new Date(prop)))
+                throw {code: 400, message: `${expected.name} malformed.`};
+        } else if (expected.type === 'array') {
+            if (!(prop instanceof Array))
+                throw {code: 400, message: `${expected.name} malformed.`};
+        } else if (expected.type === 'number') {
+            if (isNaN(parseInt(prop)))
+                throw {code: 400, message: `${expected.name} malformed.`};
+        } else {
+            if (typeof prop !== expected.type)
+                throw {code: 400, message: `${expected.name} malformed.`};
+        }
     }
 
-    if (expected.min && prop < expected.min)
+
+    if (expected.min && parseInt(prop) < expected.min)
         throw {code: 400, message: `${expected.name} too small.`};
 
-    if (expected.max && prop > expected.max)
+    if (expected.max && parseInt(prop) > expected.max)
         throw {code: 400, message: `${expected.name} too large.`};
 
     if (expected.maxLength && prop.length > expected.maxLength)

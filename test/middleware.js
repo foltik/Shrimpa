@@ -28,11 +28,11 @@ describe('Body Verification', () => {
             expected: [{name: 'test', type: 'date'}],
             body: {test: '11/12/2018'}
         }, {
-            expected: [{name: 'test', type: 'date'}],
-            body: {test: 1546368715}
+            expected: [{name: 'test', type: 'number'}],
+            body: {test: '1546368715'}
         }, {
             expected: [{name: 'test', type: 'number', min: 12, max: 16}],
-            body: {test: 16}
+            body: {test: '16'}
         }];
 
         return Promise.all(tests.map(test => testVerifyBody(test.body, test.expected)));

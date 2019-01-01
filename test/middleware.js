@@ -30,6 +30,9 @@ describe('Body Verification', () => {
         }, {
             expected: [{name: 'test', type: 'date'}],
             body: {test: 1546368715}
+        }, {
+            expected: [{name: 'test', type: 'number', min: 12, max: 16}],
+            body: {test: 16}
         }];
 
         return Promise.all(tests.map(test => testVerifyBody(test.body, test.expected)));
@@ -58,6 +61,16 @@ describe('Body Verification', () => {
     it('must error with an invalid array type', () => {
         const expected = [{name: 'test', type: 'array'}];
         return testVerifyBody({test: 'test'}, expected, 400, 'test malformed.');
+    });
+
+    it('must error when smaller than the minimum', () => {
+        const expected = [{name: 'test', type: 'number', min: 10}];
+        return testVerifyBody({test: 3}, expected, 400, 'test too small.');
+    });
+
+    it('must error when larger than the maximum', () => {
+        const expected = [{name: 'test', type: 'number', max: 10}];
+        return testVerifyBody({test: 15}, expected, 400, 'test too large.');
     });
 
     it('must error with a length higher than the max', () => {

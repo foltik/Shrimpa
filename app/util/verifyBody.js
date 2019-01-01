@@ -16,6 +16,12 @@ const verifyProp = async (prop, expected) => {
             throw {code: 400, message: `${expected.name} malformed.`};
     }
 
+    if (expected.min && prop < expected.min)
+        throw {code: 400, message: `${expected.name} too small.`};
+
+    if (expected.max && prop > expected.max)
+        throw {code: 400, message: `${expected.name} too large.`};
+
     if (expected.maxLength && prop.length > expected.maxLength)
         throw {code: 400, message: `${expected.name} too long.`};
 

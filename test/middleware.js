@@ -18,8 +18,21 @@ describe('Body Verification', () => {
     };
 
     it('must continue properly with valid prop', () => {
-        const expected = [{name: 'test'}];
-        return testVerifyBody({test: 'test'}, expected);
+        const tests = [{
+            expected: [{name: 'test'}],
+            body: {test: 'test'}
+        }, {
+            expected: [{name: 'test', type: 'array'}],
+            body: {test: [1, 2, 3]}
+        }, {
+            expected: [{name: 'test', type: 'date'}],
+            body: {test: '11/12/2018'}
+        }, {
+            expected: [{name: 'test', type: 'date'}],
+            body: {test: 1546368715}
+        }];
+
+        return Promise.all(tests.map(test => testVerifyBody(test.body, test.expected)));
     });
 
     it('must continue with a missing but optional prop', () => {
@@ -32,13 +45,18 @@ describe('Body Verification', () => {
         return testVerifyBody({}, expected, 400, 'test not specified.');
     });
 
-    it('must error with an invalid type', () => {
+    it('must error with an invalid primitive type', () => {
         const expected = [{name: 'test', type: 'string'}];
         return testVerifyBody({test: [1, 2, 3]}, expected, 400, 'test malformed.');
     });
 
-    it('must error with an invalid instance', () => {
-        const expected = [{name: 'test', instance: Array}];
+    it('must error with an invalid date type', () => {
+        const expected = [{name: 'test', type: 'date'}];
+        return testVerifyBody({test: '123abc'}, expected, 400, 'test malformed.');
+    });
+
+    it('must error with an invalid array type', () => {
+        const expected = [{name: 'test', type: 'array'}];
         return testVerifyBody({test: 'test'}, expected, 400, 'test malformed.');
     });
 

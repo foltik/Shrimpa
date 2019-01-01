@@ -212,6 +212,14 @@ exports.unban = (username, agent) =>
 
 //---------------- Stats ----------------//
 
+exports.getStatsUploads = (query, agent) =>
+    agent.get('/api/stats/uploads')
+        .send(query);
+
+exports.getStatsViews = (query, agent) =>
+    agent.get('/api/stats/views')
+        .send(query);
+
 exports.getStatsWeek = agent =>
     agent.get('/api/stats/week');
 

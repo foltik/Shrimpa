@@ -45,7 +45,10 @@ describe('Authentication', () => {
                 const userCount = await User.countDocuments({displayname: user.displayname});
                 userCount.should.equal(1, 'The user should have be created in the database');
 
-                const inviteCount = await Invite.countDocuments({code: user.invite, recipient: canonicalize(user.displayname)});
+                const inviteCount = await Invite.countDocuments({
+                    code: user.invite,
+                    recipient: canonicalize(user.displayname)
+                });
                 inviteCount.should.equal(1, 'The invite should be marked as used by the user');
             }
 
@@ -66,10 +69,13 @@ describe('Authentication', () => {
                     user.invite = invite.code;
                 }
 
-                const res = await(util.registerUser(user, agent));
+                const res = await (util.registerUser(user, agent));
                 util.verifyResponse(res, 422, message);
 
-                const inviteCount = await Invite.countDocuments({code: user.invite, recipient: canonicalize(user.displayname)});
+                const inviteCount = await Invite.countDocuments({
+                    code: user.invite,
+                    recipient: canonicalize(user.displayname)
+                });
                 inviteCount.should.equal(0, 'Invite should not be marked as used or received by the user');
             }
 
@@ -91,7 +97,10 @@ describe('Authentication', () => {
                 const res = await util.registerUser(user, agent);
                 util.verifyResponse(res, code, message);
 
-                const inviteCount = await Invite.countDocuments({code: user.invite, recipient: canonicalize(user.displayname)});
+                const inviteCount = await Invite.countDocuments({
+                    code: user.invite,
+                    recipient: canonicalize(user.displayname)
+                });
                 inviteCount.should.equal(0, 'The invite should not be inserted into the database after rejection');
             }
 
@@ -694,7 +703,7 @@ describe('Keys', () => {
                 const res = await util.createKey({identifier: 'key', scope: ['file.upload']}, agent);
                 util.verifyResponse(res, 403, 'Forbidden.');
             });
-            
+
             it('SHOULD NOT create a key with scope exceeding the requesters', async () => {
                 await util.createSession(agent, ['key.create']);
                 const res = await util.createKey({identifier: 'key', scope: ['file.upload']}, agent);
@@ -936,14 +945,14 @@ describe('Users', () => {
 
 describe('Stats', () => {
     const setupUploadsAndViews = async () => {
-        const oneDay = 1000 * 60 * 60 * 24;
         const currentDate = new Date();
+        const oneDay = 1000 * 60 * 60 * 24;
 
         const get_uid = i => {
             return 'abcde' + String.fromCharCode(i + 97)
         };
 
-        for (let i = 0; i < 8; i++) {
+        for(let i = 0; i < 8; i++) {
             await util.insertUpload({
                 uid: get_uid(i),
                 views: 0,
@@ -965,7 +974,7 @@ describe('Stats', () => {
             }
         });
 
-        for (let i = 0; i < 8; i++) {
+        for(let i = 0; i < 8; i++) {
             await util.insertView({
                 uid: get_uid(i),
                 uploader: 'user',
@@ -984,6 +993,267 @@ describe('Stats', () => {
         });
     };
 
+    describe('/GET uploads', () => {
+        describe('0 Valid Request', () => {
+            const currentDate = new Date();
+            const oneDay = 1000 * 60 * 60 * 24;
+
+            it('must return valid upload stats', async () => {
+                await Promise.all([
+                    util.insertUpload({
+                        uid: 'uvwxyz',
+                        uploader: 'user',
+                        date: new Date(currentDate - 3 * oneDay),
+                        file: {
+                            originalName: 'lol.png',
+                            size: 1,
+                            mime: 'image/png'
+                        }
+                    }), util.insertUpload({
+                        uid: 'abcdef',
+                        uploader: 'user',
+                        date: new Date(currentDate - 3 * oneDay),
+                        file: {
+                            originalName: 'lol.png',
+                            size: 1,
+                            mime: 'image/png'
+                        }
+                    })
+                ]);
+
+                await util.createSession(agent, ['stats.get'], 'user');
+
+                const res = await util.getStatsUploads({}, agent);
+                res.should.have.status(200);
+
+                const stats = res.body;
+                stats.should.be.a('Array');
+                stats.should.have.length(2, 'There should be exactly two uploads returned');
+
+                const stat = stats[0];
+                stat.should.have.property('date');
+                stat.should.have.property('uid');
+                stat.should.have.property('key');
+                stat.should.have.property('file');
+
+                return util.logout(agent);
+            });
+
+            it('must return an empty set when there are no stats', async () => {
+                await util.createSession(agent, ['stats.get'], 'user');
+
+                const res = await util.getStatsUploads({}, agent);
+                res.should.have.status(200);
+
+                const stats = res.body;
+                stats.should.be.a('Array');
+                stats.should.have.length(0, 'No uploads should be returned');
+            });
+
+            it('must constrain results by date', async () => {
+                await Promise.all([
+                    util.insertUpload({
+                        uid: 'uvwxyz',
+                        uploader: 'user',
+                        date: new Date(currentDate - 8 * oneDay),
+                        file: {
+                            originalName: 'lol.png',
+                            size: 1,
+                            mime: 'image/png'
+                        }
+                    }), util.insertUpload({
+                        uid: 'lmnopq',
+                        uploader: 'user',
+                        date: new Date(currentDate - 6 * oneDay),
+                        file: {
+                            originalName: 'lol.png',
+                            size: 1,
+                            mime: 'image/png'
+                        }
+                    }), util.insertUpload({
+                        uid: 'abcdef',
+                        uploader: 'user',
+                        date: new Date(currentDate - 4 * oneDay),
+                        file: {
+                            originalName: 'lol.png',
+                            size: 1,
+                            mime: 'image/png'
+                        }
+                    })
+                ]);
+
+                await util.createSession(agent, ['stats.get'], 'user');
+
+                const res = await util.getStatsUploads({
+                    before: new Date(currentDate - 5 * oneDay),
+                    after: new Date(currentDate - 7 * oneDay)
+                }, agent);
+                res.should.have.status(200);
+
+                const stats = res.body;
+                stats.should.be.a('Array');
+                stats.should.have.length(1, 'There should be exactly one upload returned');
+
+                return util.logout(agent);
+            });
+
+            it('must limit results', async () => {
+                await Promise.all([
+                    util.insertUpload({
+                        uid: 'uvwxyz',
+                        uploader: 'user',
+                        date: new Date(currentDate - 3 * oneDay),
+                        file: {
+                            originalName: 'lol.png',
+                            size: 1,
+                            mime: 'image/png'
+                        }
+                    }), util.insertUpload({
+                        uid: 'abcdef',
+                        uploader: 'user',
+                        date: new Date(currentDate - 3 * oneDay),
+                        file: {
+                            originalName: 'lol.png',
+                            size: 1,
+                            mime: 'image/png'
+                        }
+                    })
+                ]);
+
+                await util.createSession(agent, ['stats.get'], 'user');
+
+                const res = await util.getStatsUploads({limit: 1}, agent);
+                res.should.have.status(200);
+
+                const stats = res.body;
+                stats.should.be.a('Array');
+                stats.should.have.length(1, 'There should be exactly one upload returned');
+
+                return util.logout(agent);
+            });
+        });
+    });
+
+    describe('/GET views', () => {
+        describe('0 Valid Request', () => {
+            const currentDate = new Date();
+            const oneDay = 1000 * 60 * 60 * 24;
+
+            it('must return valid view stats', async () => {
+                await Promise.all([
+                    util.insertView({
+                        uid: 'abcdef',
+                        uploader: 'user',
+                        remoteAddress: '::1',
+                        userAgent: 'fiyerfocks',
+                        date: new Date(currentDate - 3 * oneDay),
+                    }), util.insertView({
+                        uid: 'uvwxyz',
+                        uploader: 'user',
+                        remoteAddress: '::1',
+                        userAgent: 'fiyerfocks',
+                        date: new Date(currentDate - 3 * oneDay),
+                    })
+                ]);
+
+                await util.createSession(agent, ['stats.get'], 'user');
+
+                const res = await util.getStatsViews({}, agent);
+                res.should.have.status(200);
+
+                const stats = res.body;
+                stats.should.be.a('Array');
+                stats.should.have.length(2, 'There should be exactly two views returned');
+
+                const stat = stats[0];
+                stat.should.have.property('date');
+                stat.should.have.property('uid');
+                stat.should.not.have.property('remoteAddress');
+                stat.should.not.have.property('userAgent');
+
+                return util.logout(agent);
+            });
+
+            it('must return an empty set when there are no stats', async () => {
+                await util.createSession(agent, ['stats.get'], 'user');
+
+                const res = await util.getStatsViews({}, agent);
+                res.should.have.status(200);
+
+                const stats = res.body;
+                stats.should.be.a('Array');
+                stats.should.have.length(0, 'No views should be returned');
+            });
+
+            it('must constrain results by date', async () => {
+                await Promise.all([
+                    util.insertView({
+                        uid: 'abcdef',
+                        uploader: 'user',
+                        remoteAddress: '::1',
+                        userAgent: 'fiyerfocks',
+                        date: new Date(currentDate - 8 * oneDay),
+                    }), util.insertView({
+                        uid: 'uvwxyz',
+                        uploader: 'user',
+                        remoteAddress: '::1',
+                        userAgent: 'fiyerfocks',
+                        date: new Date(currentDate - 6 * oneDay),
+                    }), util.insertView({
+                        uid: 'lmnopq',
+                        uploader: 'user',
+                        remoteAddress: '::1',
+                        userAgent: 'fiyerfocks',
+                        date: new Date(currentDate - 4 * oneDay),
+                    })
+                ]);
+
+                await util.createSession(agent, ['stats.get'], 'user');
+
+                const res = await util.getStatsViews({
+                    before: new Date(currentDate - 5 * oneDay),
+                    after: new Date(currentDate - 7 * oneDay)
+                }, agent);
+                res.should.have.status(200);
+
+                const stats = res.body;
+                stats.should.be.a('Array');
+                stats.should.have.length(1, 'There should be exactly one view returned');
+
+                return util.logout(agent);
+            });
+
+            it('must limit results', async () => {
+                await Promise.all([
+                    util.insertView({
+                        uid: 'abcdef',
+                        uploader: 'user',
+                        remoteAddress: '::1',
+                        userAgent: 'fiyerfocks',
+                        date: new Date(currentDate - 3 * oneDay),
+                    }), util.insertView({
+                        uid: 'uvwxyz',
+                        uploader: 'user',
+                        remoteAddress: '::1',
+                        userAgent: 'fiyerfocks',
+                        date: new Date(currentDate - 3 * oneDay),
+                    })
+                ]);
+
+                await util.createSession(agent, ['stats.get'], 'user');
+
+                const res = await util.getStatsViews({limit: 1}, agent);
+                res.should.have.status(200);
+
+                const stats = res.body;
+                stats.should.be.a('Array');
+                stats.should.have.length(1, 'There should be exactly one view returned');
+
+                return util.logout(agent);
+            });
+        });
+    });
+
     describe('/GET week', () => {
         describe('0 Valid Request', () => {
             it('must return valid stats for the past week', async () => {
@@ -996,7 +1266,7 @@ describe('Stats', () => {
                 const stats = (await util.getStatsWeek(agent)).body;
                 console.log(stats);
 
-                for (let i = 0; i < 7; i++) {
+                for(let i = 0; i < 7; i++) {
                     let date = new Date(currentDate - i * oneDay).toISOString();
                     let dateStr = date.substr(5, 2) + '-' + date.substr(8, 2);
                     let dayStats = stats[dateStr];

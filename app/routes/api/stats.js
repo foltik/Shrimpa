@@ -40,11 +40,9 @@ router.get('/uploads', requireAuth('stats.get'), bodyVerifier(uploadProps), wrap
             date: upload.date,
             uid: upload.uid,
             key: upload.uploaderKey,
-            file: {
-                originalName: upload.file.originalName,
-                size: upload.file.size,
-                mime: upload.file.mime
-            }
+            originalName: upload.file.originalName,
+            size: upload.file.size,
+            mime: upload.file.mime
         }
     });
 

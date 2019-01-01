@@ -985,7 +985,9 @@ describe('Stats', () => {
                 stat.should.have.property('date');
                 stat.should.have.property('uid');
                 stat.should.have.property('key');
-                stat.should.have.property('file');
+                stat.should.have.property('originalName');
+                stat.should.have.property('size');
+                stat.should.have.property('mime');
 
                 return util.logout(agent);
             });

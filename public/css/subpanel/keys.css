@@ -1,0 +1,105 @@
+.keys {
+    display: flex;
+    flex-direction: row;
+    flex-wrap: wrap;
+}
+
+.key {
+    background: #000;
+    border: 1px solid #2a9fd6;
+    border-radius: 4px;
+    box-shadow: 5px 5px 10px #000;
+    margin: 20px;
+    width: 300px;
+    height: 100px;
+    cursor: pointer;
+    display: flex;
+    justify-content: flex-start;
+    flex-direction: row;
+    transition: box-shadow 0.2s;
+    overflow: hidden;
+}
+
+.key:hover {
+    box-shadow: 0 0 5px #eee;
+}
+
+.key i {
+    font-size: 48px;
+    margin: auto 0 auto 20px;
+}
+
+.key span {
+    font-size: 16px;
+    vertical-align: center;
+    margin: auto;
+    -moz-user-select: none;
+    user-select: none;
+}
+
+.key-name {
+    color: #2a9fd6;
+    font-family: 'Roboto Mono', monospace;
+}
+
+pre {
+    overflow: auto;
+    line-height: 1.7em;
+    font-family: 'Roboto Mono', monospace;
+    border: 1px solid #666;
+    border-radius: 4px;
+    display: block;
+    padding: 10px;
+    font-size: 14px;
+    margin: 10px 0;
+    background: #222;
+    color: #2a9fd6;
+}
+
+#createKey {
+    max-width: 920px;
+}
+
+.btn-del {
+    text-transform: uppercase;
+    border: 2px solid #ff6666;
+    color: #ccc;
+}
+
+.btn-del:hover {
+    background-color: #ff6666;
+}
+
+#identifier {
+    font-size: 14px;
+    background: #222;
+    color: #d3d3d3;
+    border: 1px solid #666;
+    border-radius: 4px;
+    padding: 10px;
+    margin: 10px 0;
+}
+
+th {
+    text-transform: uppercase;
+    font-weight: bold;
+    padding: 10px;
+}
+
+td {
+    padding: 10px;
+}
+
+td input {
+    vertical-align: middle;
+}
+
+td label {
+    margin-bottom: 2px;
+    padding-left: 3px;
+}
+
+em {
+    text-transform: uppercase;
+    font-weight: bold;
+}

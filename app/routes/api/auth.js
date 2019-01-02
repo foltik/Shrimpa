@@ -37,7 +37,7 @@ const registerParams = [
     {name: 'invite', type: 'string'}];
 
 router.post('/register',
-    rateLimit(config.get('RateLimit.register.window'), config.get('RateLimit.register.max'), true),
+    rateLimit(config.get('RateLimit.register.window'), config.get('RateLimit.register.max')),
     verifyBody(registerParams),
     async (req, res) => {
         const username = canonicalize(req.body.displayname);
@@ -81,18 +81,15 @@ const loginParams = [
     {name: 'password', type: 'string'}];
 
 router.post('/login',
-    rateLimit(config.get('RateLimit.login.window'), config.get('RateLimit.login.max'), true),
+    rateLimit(config.get('RateLimit.login.window'), config.get('RateLimit.login.max')),
     verifyBody(loginParams),
     async (req, res, next) => {
         req.body.username = canonicalize(req.body.displayname);
 
         // Authenticate
         const user = await passportAuthenticate(req, res, next);
-        if (!user) {
-            // Log failure
-            await fs.appendFile('auth.log', `${new Date().toISOString()} login ${req.ip}\n`);
+        if (!user)
             return res.status(401).json({'message': 'Unauthorized.'});
-        }
 
         // Create session
         await passportLogin(user, req);

@@ -6,13 +6,12 @@ const ModelPath = '../../models/';
 const Invite = require(ModelPath + 'Invite.js');
 const User = require(ModelPath + 'User.js');
 
-const wrap = require('../../util/wrap.js');
 const requireAuth = require('../../util/auth').requireAuth;
 const verifyScope = require('../../util/verifyScope');
 const verifyBody = require('../../util/verifyBody');
 
 const createParams = [{name: 'scope', instance: Array}];
-router.post('/create', requireAuth('invite.create'), verifyBody(createParams), wrap(async (req, res, next) => {
+router.post('/create', requireAuth('invite.create'), verifyBody(createParams), async (req, res, next) => {
     const scope = req.body.scope;
     if (!scope.every(scope => verifyScope(req.scope, scope)))
         return res.status(403).json({message: 'Requested scope exceeds own scope.'});
@@ -34,10 +33,10 @@ router.post('/create', requireAuth('invite.create'), verifyBody(createParams), w
         message: 'Invite created.',
         code: invite.code
     });
-}));
+});
 
 const deleteParams = [{name: 'code', type: 'string'}];
-router.post('/delete', requireAuth('invite.delete'), verifyBody(deleteParams), wrap(async (req, res, next) => {
+router.post('/delete', requireAuth('invite.delete'), verifyBody(deleteParams), async (req, res, next) => {
     let query = {code: req.body.code};
 
     // Users need a permission to delete invites other than their own
@@ -55,10 +54,10 @@ router.post('/delete', requireAuth('invite.delete'), verifyBody(deleteParams), w
 
     await Invite.deleteOne({_id: invite._id}).catch(next);
     res.status(200).json({message: 'Invite deleted.'});
-}));
+});
 
 const getParams = [{name: 'code', type: 'string', optional: true}, {name: 'issuer', type: 'string', optional: true}];
-router.get('/get', requireAuth('invite.get'), verifyBody(getParams), wrap(async (req, res, next) => {
+router.get('/get', requireAuth('invite.get'), verifyBody(getParams), async (req, res, next) => {
     let query = {};
 
     // Users need a permission to list invites other than their own
@@ -73,6 +72,6 @@ router.get('/get', requireAuth('invite.get'), verifyBody(getParams), wrap(async 
 
     const invites = await Invite.find(query).catch(next);
     res.status(200).json(invites);
-}));
+});
 
 module.exports = router;

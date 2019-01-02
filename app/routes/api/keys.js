@@ -6,7 +6,6 @@ const crypto = require('crypto');
 const ModelPath = '../../models/';
 const Key = require(ModelPath + 'Key.js');
 
-const wrap = require('../../util/wrap');
 const verifyBody = require('../../util/verifyBody');
 const verifyScope = require('../../util/verifyScope');
 const requireAuth = require('../../util/auth').requireAuth;
@@ -14,7 +13,7 @@ const requireAuth = require('../../util/auth').requireAuth;
 const createParams = [
     {name: 'identifier', type: 'string', sanitize: true},
     {name: 'scope', instance: Array}];
-router.post('/create', requireAuth('key.create'), verifyBody(createParams), wrap(async (req, res) => {
+router.post('/create', requireAuth('key.create'), verifyBody(createParams), async (req, res) => {
     const keyCount = await Key.countDocuments({issuer: req.username});
     if (keyCount >= config.get('Key.limit'))
         return res.status(403).json({message: 'Key limit reached.'});
@@ -37,12 +36,12 @@ router.post('/create', requireAuth('key.create'), verifyBody(createParams), wrap
         message: 'Key created.',
         key: key.key
     });
-}));
+});
 
 const getProps = [
     {name: 'identifier', type: 'string', optional: true},
     {name: 'issuer', type: 'string', optional: true}];
-router.get('/get', requireAuth('key.get'), verifyBody(getProps), wrap(async (req, res) => {
+router.get('/get', requireAuth('key.get'), verifyBody(getProps), async (req, res) => {
     let query = {};
 
     if (req.body.identifier)
@@ -56,12 +55,12 @@ router.get('/get', requireAuth('key.get'), verifyBody(getProps), wrap(async (req
     const keys = await Key.find(query);
 
     res.status(200).json(keys);
-}));
+});
 
 const deleteProps = [
     {name: 'key', type: 'string'},
     {name: 'issuer', type: 'string', optional: true}];
-router.post('/delete', requireAuth('key.delete'), verifyBody(deleteProps), wrap(async (req, res) => {
+router.post('/delete', requireAuth('key.delete'), verifyBody(deleteProps), async (req, res) => {
     let query = {key : req.body.key};
 
     if (!verifyScope(req.scope, 'key.delete.others'))
@@ -75,6 +74,6 @@ router.post('/delete', requireAuth('key.delete'), verifyBody(deleteProps), wrap(
 
     await Key.deleteOne({_id: key._id});
     res.status(200).json({message: 'Key deleted.'});
-}));
+});
 
 module.exports = router;

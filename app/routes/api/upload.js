@@ -8,9 +8,7 @@ const Upload = require(ModelPath + 'Upload.js');
 const uploadMultipart = require('../../util/upload/multipart');
 const updateStats = require('../../util/upload/stats');
 
-const wrap = require('../../util/wrap.js');
-
-router.post('/', uploadMultipart, wrap(async (req, res) => {
+router.post('/', uploadMultipart, async (req, res) => {
     const upload = {
         uid: req.file.name,
         uploader: req.username,
@@ -29,6 +27,6 @@ router.post('/', uploadMultipart, wrap(async (req, res) => {
         uid: req.file.name,
         url: config.get('Server.hostname') + '/v/' + upload.uid
     });
-}));
+});
 
 module.exports = router;

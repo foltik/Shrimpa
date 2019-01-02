@@ -5,7 +5,6 @@ const ModelPath = '../../models/';
 const Upload = require(ModelPath + 'Upload.js');
 const View = require(ModelPath + 'View.js');
 
-const wrap = require('../../util/wrap');
 const verifyBody = require('../../util/verifyBody');
 const requireAuth = require('../../util/auth').requireAuth;
 
@@ -15,7 +14,7 @@ const uploadProps = [
     {name: 'limit', type: 'number', min: 1, max: 10000, optional: true}
 ];
 
-router.get('/uploads', requireAuth('stats.get'), verifyBody(uploadProps), wrap(async (req, res) => {
+router.get('/uploads', requireAuth('stats.get'), verifyBody(uploadProps), async (req, res) => {
     let constraints = {uploader: req.username};
 
     // Set date constraints if specified
@@ -47,7 +46,7 @@ router.get('/uploads', requireAuth('stats.get'), verifyBody(uploadProps), wrap(a
     });
 
     res.status(200).json(uploads);
-}));
+});
 
 
 const viewProps = [
@@ -56,7 +55,7 @@ const viewProps = [
     {name: 'limit', type: 'number', min: 1, max: 10000, optional: true}
 ];
 
-router.get('/views', requireAuth('stats.get'), verifyBody(viewProps), wrap(async (req, res) => {
+router.get('/views', requireAuth('stats.get'), verifyBody(viewProps), async (req, res) => {
     let constraints = {uploader: req.username};
 
     // Set date constraints if specified
@@ -84,6 +83,6 @@ router.get('/views', requireAuth('stats.get'), verifyBody(viewProps), wrap(async
     });
 
     res.status(200).json(views);
-}));
+});
 
 module.exports = router;

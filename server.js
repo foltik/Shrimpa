@@ -76,6 +76,8 @@ require('./config/passport.js');
 
 // Error handler
 app.use((err, req, res, next) => {
+    console.error('Unhandled error!');
+    console.error(err);
     console.error(err.stack);
     res.status(500).json({'message': 'Internal server error.'});
 });

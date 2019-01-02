@@ -11,7 +11,6 @@ const passport = require('passport');
 
 const canonicalizeRequest = require('../../util/canonicalize').canonicalizeRequest;
 const requireAuth = require('../../util/auth').requireAuth;
-const wrap = require('../../util/wrap.js');
 const verifyBody = require('../../util/verifyBody');
 const rateLimit = require('express-rate-limit');
 
@@ -32,7 +31,7 @@ const login = (user, req) => {
 };
 
 // Query the database for a valid invite code. An error message property is set if invalid.
-const validateInvite = wrap(async (req, res, next) => {
+const validateInvite = async (req, res, next) => {
     const invite = await Invite.findOne({code: req.body.invite}).catch(next);
 
     if (!invite) {
@@ -49,10 +48,10 @@ const validateInvite = wrap(async (req, res, next) => {
 
     req.invite = invite;
     next();
-});
+};
 
 // Check if the requested username is valid
-const validateUsername = wrap(async (req, res, next) => {
+const validateUsername = async (req, res, next) => {
     const username = req.body.username;
 
     const count = await User.countDocuments({username: username}).catch(next);
@@ -60,7 +59,7 @@ const validateUsername = wrap(async (req, res, next) => {
         return res.status(422).json({message: 'Username in use.'});
 
     next();
-});
+};
 
 const registerLimiter = config.get('RateLimit.enable')
     ? rateLimit({
@@ -83,7 +82,7 @@ router.post('/register',
     registerLimiter,
     verifyBody(registerProps), canonicalizeRequest,
     validateInvite, validateUsername,
-    wrap(async (req, res, next) => {
+    async (req, res, next) => {
     // Update the database
     await Promise.all([
         User.register({
@@ -96,7 +95,7 @@ router.post('/register',
     ]);
 
     res.status(200).json({'message': 'Registration successful.'});
-}));
+});
 
 const loginLimiter = config.get('RateLimit.enable')
     ? rateLimit({
@@ -113,7 +112,7 @@ router.post('/login',
     loginLimiter,
     verifyBody(loginProps),
     canonicalizeRequest,
-    wrap(async (req, res, next) => {
+    async (req, res, next) => {
     // Authenticate
     const user = await authenticate(req, res, next);
     if (!user) {
@@ -130,9 +129,9 @@ router.post('/login',
     req.session.passport.scope = user.scope;
 
     res.status(200).json({'message': 'Logged in.'});
-}));
+});
 
-router.post('/logout', function (req, res) {
+router.post('/logout', (req, res) => {
     if (!req.isAuthenticated())
         return res.status(400).json({message: 'Not logged in.'});
 

@@ -2,17 +2,18 @@ const express = require('express');
 const router = express.Router();
 const config = require('config');
 const fs = require('fs').promises;
+const passport = require('passport');
+
+const canonicalize = require('../../util/auth/canonicalize');
 
 const ModelPath = '../../models/';
 const User = require(ModelPath + 'User.js');
 const Invite = require(ModelPath + 'Invite.js');
 
-const passport = require('passport');
 
-const canonicalizeRequest = require('../../util/canonicalize').canonicalizeRequest;
 const requireAuth = require('../../util/auth').requireAuth;
 const verifyBody = require('../../util/verifyBody');
-const rateLimit = require('express-rate-limit');
+const rateLimit = require('../../util/rateLimit');
 
 // Wraps passport.authenticate to return a promise
 const authenticate = (req, res, next) => {
@@ -23,113 +24,87 @@ const authenticate = (req, res, next) => {
     });
 };
 
-// Wraps passport session creation for async usage
+// Wraps passport session creation to return a promise
 const login = (user, req) => {
     return new Promise((resolve) => {
         req.login(user, resolve);
     });
 };
 
-// Query the database for a valid invite code. An error message property is set if invalid.
-const validateInvite = async (req, res, next) => {
-    const invite = await Invite.findOne({code: req.body.invite}).catch(next);
-
-    if (!invite) {
-        // Log failure
-        await fs.appendFile('auth.log', `${new Date().toISOString()} register ${req.ip}\n`);
-        return res.status(422).json({message: 'Invalid invite code.'});
-    }
-
-    if (invite.used)
-        return res.status(422).json({message: 'Invite already used.'});
-
-    if (invite.expires != null && invite.expires < Date.now())
-        return res.status(422).json({message: 'Invite expired.'});
-
-    req.invite = invite;
-    next();
-};
-
-// Check if the requested username is valid
-const validateUsername = async (req, res, next) => {
-    const username = req.body.username;
-
-    const count = await User.countDocuments({username: username}).catch(next);
-    if (count !== 0)
-        return res.status(422).json({message: 'Username in use.'});
-
-    next();
-};
-
-const registerLimiter = config.get('RateLimit.enable')
-    ? rateLimit({
-        windowMs: config.get('RateLimit.register.window') * 1000,
-        max: config.get('RateLimit.register.max'),
-        skipSuccessfulRequests: true
-    })
-    : (req, res, next) => { next(); };
-const registerProps = [
-    {
-        name: 'displayname',
-        type: 'string',
-        maxLength: config.get('User.Username.maxLength'),
-        sanitize: true,
-        restrict: new RegExp(config.get('User.Username.restrictedChars')),
-    },
+const registerParams = [
+    {name: 'displayname', type: 'string', maxLength: config.get('User.Username.maxLength'), sanitize: true, restrict: new RegExp(config.get('User.Username.restrictedChars'))},
     {name: 'password', type: 'string'},
     {name: 'invite', type: 'string'}];
+
 router.post('/register',
-    registerLimiter,
-    verifyBody(registerProps), canonicalizeRequest,
-    validateInvite, validateUsername,
-    async (req, res, next) => {
-    // Update the database
-    await Promise.all([
-        User.register({
-            username: req.body.username,
+    rateLimit(config.get('RateLimit.register.window'), config.get('RateLimit.register.max'), true),
+    verifyBody(registerParams),
+    async (req, res) => {
+        const username = canonicalize(req.body.displayname);
+
+        // Retrieve invite and username status
+        const [invite, usernameCount] = await Promise.all([
+            Invite.findOne({code: req.body.invite}),
+            User.countDocuments({username: username})
+        ]);
+
+        // Validate the invite
+        if (!invite)
+            return res.status(422).json({message: 'Invalid invite code.'});
+        if (invite.used)
+            return res.status(422).json({message: 'Invite already used.'});
+        if (invite.expires != null && invite.expires < Date.now())
+            return res.status(422).json({message: 'Invite expired.'});
+
+        // Validate the username
+        if (usernameCount !== 0)
+            return res.status(422).json({message: 'Username in use.'});
+
+        // Create the user object
+        await User.register({
+            username: username,
             displayname: req.body.displayname,
-            scope: req.invite.scope,
+            scope: invite.scope,
             date: Date.now()
-        }, req.body.password).catch(next),
-        Invite.updateOne({code: req.invite.code}, {recipient: req.body.username, used: Date.now()}).catch(next)
-    ]);
+        }, req.body.password);
 
-    res.status(200).json({'message': 'Registration successful.'});
-});
+        // Update the invite as used
+        await Invite.updateOne({code: invite.code}, {recipient: username, used: Date.now()});
 
-const loginLimiter = config.get('RateLimit.enable')
-    ? rateLimit({
-        windowMs: config.get('RateLimit.login.window') * 1000,
-        max: config.get('RateLimit.login.max'),
-        skipSuccessfulRequests: true
-    })
-    : (req, res, next) => { next(); };
-const loginProps = [
-    {name: 'username', type: 'string', optional: true},
-    {name: 'displayname', type: 'string', optional: true},
+        res.status(200).json({'message': 'Registration successful.'});
+    });
+
+
+
+const loginParams = [
+    {name: 'displayname', type: 'string'},
     {name: 'password', type: 'string'}];
+
 router.post('/login',
-    loginLimiter,
-    verifyBody(loginProps),
-    canonicalizeRequest,
+    rateLimit(config.get('RateLimit.login.window'), config.get('RateLimit.login.max'), true),
+    verifyBody(loginParams),
     async (req, res, next) => {
-    // Authenticate
-    const user = await authenticate(req, res, next);
-    if (!user) {
-        // Log failure
-        await fs.appendFile('auth.log', `${new Date().toISOString()} login ${req.ip}\n`);
-        return res.status(401).json({'message': 'Unauthorized.'});
-    }
+        req.body.username = canonicalize(req.body.displayname);
 
-    // Create session
-    await login(user, req);
+        // Authenticate
+        const user = await authenticate(req, res, next);
+        if (!user) {
+            // Log failure
+            await fs.appendFile('auth.log', `${new Date().toISOString()} login ${req.ip}\n`);
+            return res.status(401).json({'message': 'Unauthorized.'});
+        }
 
-    // Set session vars
-    req.session.passport.displayname = user.displayname;
-    req.session.passport.scope = user.scope;
+        // Create session
+        await login(user, req);
 
-    res.status(200).json({'message': 'Logged in.'});
-});
+        // Set session vars
+        req.session.passport.displayname = user.displayname;
+        req.session.passport.scope = user.scope;
+
+        res.status(200).json({'message': 'Logged in.'});
+    });
+
+
 
 router.post('/logout', (req, res) => {
     if (!req.isAuthenticated())
@@ -138,6 +113,8 @@ router.post('/logout', (req, res) => {
     req.logout();
     res.status(200).json({'message': 'Logged out.'});
 });
+
+
 
 router.get('/whoami', requireAuth(), (req, res) => {
     res.status(200).json({

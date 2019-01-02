@@ -13,7 +13,7 @@ const Invite = require(ModelPath + 'Invite.js');
 const View = require(ModelPath + 'View.js');
 
 const util = require('./testUtil.js');
-const canonicalize = require('../app/util/canonicalize').canonicalize;
+const canonicalize = require('../app/util/auth/canonicalize');
 
 const config = require('config');
 let app;
@@ -169,11 +169,6 @@ describe('Authentication', () => {
             it('SHOULD accept a valid user with a valid password', async () => {
                 await util.createTestUser(agent);
                 return verifySuccessfulLogin({displayname: 'user', password: 'pass'});
-            });
-
-            it('SHOULD accept a username instead of a displayname', async () => {
-                await util.createTestUser(agent);
-                return verifySuccessfulLogin({username: 'user', password: 'pass'});
             });
 
             it('SHOULD accept any non-normalized variant of a username with a valid password', async () => {

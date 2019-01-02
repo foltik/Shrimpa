@@ -7,6 +7,8 @@ const ModelPath = '../../models/';
 const Upload = require(ModelPath + 'Upload.js');
 const View = require(ModelPath + 'View.js');
 
+
+
 const insertView = async (req, upload) =>
     Promise.all([
         View.create({
@@ -17,6 +19,8 @@ const insertView = async (req, upload) =>
         }),
         Upload.updateOne({uid: upload.uid}, {$inc: {views: 1}})
     ]);
+
+
 
 router.get('/:uid', async (req, res) => {
     const upload = await Upload.findOne({uid: req.params.uid});
@@ -42,5 +46,7 @@ router.get('/:uid', async (req, res) => {
     fs.createReadStream(upload.file.path)
         .pipe(res);
 });
+
+
 
 module.exports = router;

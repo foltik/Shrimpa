@@ -8,6 +8,8 @@ const View = require(ModelPath + 'View.js');
 const verifyBody = require('../../util/verifyBody');
 const authenticate = require('../../util/auth/authenticateRequest');
 
+
+
 const uploadProps = [
     {name: 'after', type: 'date', optional: true},
     {name: 'before', type: 'date', optional: true},
@@ -49,6 +51,7 @@ router.get('/uploads', authenticate('stats.get'), verifyBody(uploadProps), async
 });
 
 
+
 const viewProps = [
     {name: 'after', type: 'date', optional: true},
     {name: 'before', type: 'date', optional: true},
@@ -84,5 +87,7 @@ router.get('/views', authenticate('stats.get'), verifyBody(viewProps), async (re
 
     res.status(200).json(views);
 });
+
+
 
 module.exports = router;

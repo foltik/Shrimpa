@@ -7,9 +7,12 @@ const User = require(ModelPath + 'User.js');
 const verifyBody = require('../../util/verifyBody');
 const authenticate = require('../../util/auth/authenticateRequest');
 
+
+
 const getParams = [
     {name: 'username', type: 'string', optional: true},
     {name: 'displayname', type: 'string', optional: true}];
+
 router.get('/get', authenticate('user.get'), verifyBody(getParams), async (req, res) => {
     let query = {};
 
@@ -25,7 +28,10 @@ router.get('/get', authenticate('user.get'), verifyBody(getParams), async (req, 
     res.status(200).json(users);
 });
 
+
+
 const banParams = [{name: 'username', type: 'string'}];
+
 router.post('/ban', authenticate('user.ban'), verifyBody(banParams), async (req, res) => {
     const user = await User.findOne({username: req.body.username});
     if (!user)
@@ -40,7 +46,10 @@ router.post('/ban', authenticate('user.ban'), verifyBody(banParams), async (req,
     res.status(200).json({message: 'User banned.'});
 });
 
+
+
 const unbanParams = [{name: 'username', type: 'string'}];
+
 router.post('/unban', authenticate('user.unban'), verifyBody(unbanParams), async (req, res) => {
     const user = await User.findOne({username: req.body.username});
     if (!user)

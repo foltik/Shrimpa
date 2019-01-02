@@ -2,12 +2,11 @@ const Busboy = require('busboy');
 const is = require('type-is');
 const config = require('config');
 
-const wrap = require('../wrap');
 const auth = require('../auth');
 const disk = require('./disk');
 const identifier = require('./id');
 
-const uploadMultipart = wrap(async (req, res, next) => {
+const uploadMultipart = async (req, res, next) => {
     if (!is(req, ['multipart']))
         return res.status(400).json({message: 'Bad request.'});
 
@@ -108,6 +107,6 @@ const uploadMultipart = wrap(async (req, res, next) => {
     busboy.on('finished', () => done(null, {file: file}));
 
     req.pipe(busboy);
-});
+};
 
 module.exports = uploadMultipart;

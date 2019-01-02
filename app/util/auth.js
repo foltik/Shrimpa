@@ -5,7 +5,6 @@ const ModelPath = '../models/';
 const Key = require(ModelPath + 'Key.js');
 const User = require(ModelPath + 'User.js');
 
-const wrap = require('./wrap.js');
 const verifyScope = require('./verifyScope.js');
 const rateLimit = require('express-rate-limit');
 
@@ -54,7 +53,7 @@ const apiLimiter = config.get('RateLimit.enable')
 // otherwise throws an error code.
 // If the user is banned, also throw an error.
 const requireAuth = scope => (req, res, next) => {
-    apiLimiter(req, res, wrap(async () => {
+    apiLimiter(req, res, async () => {
 
         const status = {
             authenticated: false,
@@ -78,7 +77,7 @@ const requireAuth = scope => (req, res, next) => {
             return res.status(403).json({message: 'Forbidden.'});
 
         next();
-    }));
+    });
 };
 
 module.exports.checkSession = checkSession;

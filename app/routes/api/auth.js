@@ -12,7 +12,7 @@ const passport = require('passport');
 const canonicalizeRequest = require('../../util/canonicalize').canonicalizeRequest;
 const requireAuth = require('../../util/auth').requireAuth;
 const wrap = require('../../util/wrap.js');
-const bodyVerifier = require('../../util/verifyBody').bodyVerifier;
+const verifyBody = require('../../util/verifyBody');
 const rateLimit = require('express-rate-limit');
 
 // Wraps passport.authenticate to return a promise
@@ -81,7 +81,7 @@ const registerProps = [
     {name: 'invite', type: 'string'}];
 router.post('/register',
     registerLimiter,
-    bodyVerifier(registerProps), canonicalizeRequest,
+    verifyBody(registerProps), canonicalizeRequest,
     validateInvite, validateUsername,
     wrap(async (req, res, next) => {
     // Update the database
@@ -111,7 +111,7 @@ const loginProps = [
     {name: 'password', type: 'string'}];
 router.post('/login',
     loginLimiter,
-    bodyVerifier(loginProps),
+    verifyBody(loginProps),
     canonicalizeRequest,
     wrap(async (req, res, next) => {
     // Authenticate

@@ -3,88 +3,66 @@ chai.use(require('chai-http'));
 const should = chai.should();
 const describe = require('mocha').describe;
 
-const verifyBody = require('../app/util/verifyBody').verifyBody;
+const verify = require('../app/util/verify.js');
 
 describe('Body Verification', () => {
-    const testVerifyBody = async (body, expected, code, message) => {
+    const testVerify = async (prop, expected, code, message) => {
         try {
-            await verifyBody(body, expected);
+            await verify(prop, expected);
         } catch (err) {
-            if (code)
-                err.code.should.equal(code);
-            if (message)
-                err.message.should.equal(message);
+            err.code.should.equal(code);
+            err.message.should.equal(message);
         }
     };
 
     it('must continue properly with valid prop', () => {
         const tests = [{
-            expected: [{name: 'test'}],
-            body: {test: 'test'}
+            expected: {name: 'test'},
+            prop: 'test'
         }, {
-            expected: [{name: 'test', type: 'array'}],
-            body: {test: [1, 2, 3]}
+            expected: {name: 'test', type: 'array'},
+            prop: ['1', '2', '3']
         }, {
-            expected: [{name: 'test', type: 'date'}],
-            body: {test: '11/12/2018'}
+            expected: {name: 'test', type: 'date'},
+            prop: '11/12/2018'
         }, {
-            expected: [{name: 'test', type: 'number'}],
-            body: {test: '1546368715'}
+            expected: {name: 'test', type: 'number'},
+            prop: '1546368715'
         }, {
-            expected: [{name: 'test', type: 'number', min: 12, max: 16}],
-            body: {test: '16'}
+            expected: {name: 'test', type: 'number', min: 12, max: 16},
+            prop: '16'
         }];
 
-        return Promise.all(tests.map(test => testVerifyBody(test.body, test.expected)));
+        return Promise.all(tests.map(test => testVerify(test.prop, test.expected)));
     });
 
-    it('must continue with a missing but optional prop', () => {
-        const expected = [{name: 'test', optional: true}];
-        return testVerifyBody({}, expected);
-    });
+    it('must continue with a missing but optional prop', () =>
+        testVerify(undefined, {name: 'test', optional: true}));
 
-    it('must error with a missing prop', () => {
-        const expected = [{name: 'test'}];
-        return testVerifyBody({}, expected, 400, 'test not specified.');
-    });
+    it('must error with a missing prop', () =>
+        testVerify(undefined, {name: 'test'}, 400, 'test not specified.'));
 
-    it('must error with an invalid primitive type', () => {
-        const expected = [{name: 'test', type: 'string'}];
-        return testVerifyBody({test: [1, 2, 3]}, expected, 400, 'test malformed.');
-    });
+    it('must error with an invalid primitive type', () =>
+        testVerify(['1', '2', '3'], {name: 'test', type: 'string'}, 400, 'test malformed.'));
 
-    it('must error with an invalid date type', () => {
-        const expected = [{name: 'test', type: 'date'}];
-        return testVerifyBody({test: '123abc'}, expected, 400, 'test malformed.');
-    });
+    it('must error with an invalid date type', () =>
+        testVerify('123abc', {name: 'test', type: 'date'}, 400, 'test malformed.'));
 
-    it('must error with an invalid array type', () => {
-        const expected = [{name: 'test', type: 'array'}];
-        return testVerifyBody({test: 'test'}, expected, 400, 'test malformed.');
-    });
+    it('must error with an invalid array type', () =>
+        testVerify('test', {name: 'test', type: 'array'}, 400, 'test malformed.'));
 
-    it('must error when smaller than the minimum', () => {
-        const expected = [{name: 'test', type: 'number', min: 10}];
-        return testVerifyBody({test: 3}, expected, 400, 'test too small.');
-    });
+    it('must error when smaller than the minimum', () =>
+        testVerify('3', {name: 'test', type: 'number', min: 10}, 400, 'test too small.'));
 
-    it('must error when larger than the maximum', () => {
-        const expected = [{name: 'test', type: 'number', max: 10}];
-        return testVerifyBody({test: 15}, expected, 400, 'test too large.');
-    });
+    it('must error when larger than the maximum', () =>
+        testVerify('15', {name: 'test', type: 'number', max: 10}, 400, 'test too large.'));
 
-    it('must error with a length higher than the max', () => {
-        const expected = [{name: 'test', maxLength: 5}];
-        return testVerifyBody({test: '123456'}, expected, 400, 'test too long.');
-    });
+    it('must error with a length higher than the max', () =>
+        testVerify('123456', {name: 'test', maxLength: 5}, 400, 'test too long.'));
 
-    it('must error with a dirty prop that gets sanitized', () => {
-        const expected = [{name: 'test', sanitize: true}];
-        return testVerifyBody({test: 'test<svg/onload=alert("XSS")>'}, expected, 400, 'test contains invalid characters.');
-    });
+    it('must error with a dirty prop that gets sanitized', () =>
+        testVerify('test<svg/onload=alert("XSS")>', {name: 'test', sanitize: true}, 400, 'test contains invalid characters.'));
 
-    it('must error with a restricted character', () => {
-        const expected = [{name: 'test', restrict: new RegExp("\\s")}];
-        return testVerifyBody({test: 'test test'}, expected, 400, 'test contains invalid characters.');
-    })
+    it('must error with a restricted character', () =>
+        testVerify('test test', {name: 'test', restrict: new RegExp("\\s")}, 400, 'test contains invalid characters.'));
 });

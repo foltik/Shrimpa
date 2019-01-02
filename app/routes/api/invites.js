@@ -9,10 +9,10 @@ const User = require(ModelPath + 'User.js');
 const wrap = require('../../util/wrap.js');
 const requireAuth = require('../../util/auth').requireAuth;
 const verifyScope = require('../../util/verifyScope');
-const bodyVerifier = require('../../util/verifyBody').bodyVerifier;
+const verifyBody = require('../../util/verifyBody');
 
 const createParams = [{name: 'scope', instance: Array}];
-router.post('/create', requireAuth('invite.create'), bodyVerifier(createParams), wrap(async (req, res, next) => {
+router.post('/create', requireAuth('invite.create'), verifyBody(createParams), wrap(async (req, res, next) => {
     const scope = req.body.scope;
     if (!scope.every(scope => verifyScope(req.scope, scope)))
         return res.status(403).json({message: 'Requested scope exceeds own scope.'});
@@ -37,7 +37,7 @@ router.post('/create', requireAuth('invite.create'), bodyVerifier(createParams),
 }));
 
 const deleteParams = [{name: 'code', type: 'string'}];
-router.post('/delete', requireAuth('invite.delete'), bodyVerifier(deleteParams), wrap(async (req, res, next) => {
+router.post('/delete', requireAuth('invite.delete'), verifyBody(deleteParams), wrap(async (req, res, next) => {
     let query = {code: req.body.code};
 
     // Users need a permission to delete invites other than their own
@@ -58,7 +58,7 @@ router.post('/delete', requireAuth('invite.delete'), bodyVerifier(deleteParams),
 }));
 
 const getParams = [{name: 'code', type: 'string', optional: true}, {name: 'issuer', type: 'string', optional: true}];
-router.get('/get', requireAuth('invite.get'), bodyVerifier(getParams), wrap(async (req, res, next) => {
+router.get('/get', requireAuth('invite.get'), verifyBody(getParams), wrap(async (req, res, next) => {
     let query = {};
 
     // Users need a permission to list invites other than their own

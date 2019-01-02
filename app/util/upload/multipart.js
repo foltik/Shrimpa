@@ -2,7 +2,7 @@ const Busboy = require('busboy');
 const is = require('type-is');
 const config = require('config');
 
-const auth = require('../auth');
+const authenticate = require('../auth/authenticate');
 const disk = require('./disk');
 const identifier = require('./id');
 
@@ -11,12 +11,8 @@ const uploadMultipart = async (req, res, next) => {
         return res.status(400).json({message: 'Bad request.'});
 
     // Store whether the user has authenticated, because an api key might be included with the form later
-    let authStatus = {
-        authenticated: false,
-        permission: false
-    };
     // If not authenticated with a session, we'll have to wait for key authentication from the multipart form data
-    await auth.checkSession(req, 'file.upload', authStatus);
+    let status = await authenticate(req, 'file.upload');
 
     // Function to call once the file is sent or an error is encountered
     let isDone = false;
@@ -65,13 +61,13 @@ const uploadMultipart = async (req, res, next) => {
         fileReceived = true;
 
         // If a key was encountered and we are not authenticated, try to authenticate with it before the final check
-        if (req.body.key && !authStatus.authenticated)
-            await auth.checkKey(req, 'file.upload', authStatus);
+        if (req.body.key && !status.authenticated)
+            status = await authenticate(req, 'file.upload', status);
 
         // Finally, check if we have auth before preceeding, keys should have been processed by now
-        if (!authStatus.authenticated)
+        if (!status.authenticated)
             return res.status(401).json({message: 'Unauthorized.'});
-        if (!authStatus.permission)
+        if (!status.permission)
             return res.status(403).json({message: 'Forbidden.'});
 
         // Don't attach to the files object if there is no file

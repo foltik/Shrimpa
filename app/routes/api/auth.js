@@ -11,12 +11,12 @@ const User = require(ModelPath + 'User.js');
 const Invite = require(ModelPath + 'Invite.js');
 
 
-const requireAuth = require('../../util/auth').requireAuth;
+const authenticate = require('../../util/auth/authenticateRequest');
 const verifyBody = require('../../util/verifyBody');
 const rateLimit = require('../../util/rateLimit');
 
 // Wraps passport.authenticate to return a promise
-const authenticate = (req, res, next) => {
+const passportAuthenticate = (req, res, next) => {
     return new Promise((resolve) => {
         passport.authenticate('local', (err, user) => {
             resolve(user);
@@ -25,7 +25,7 @@ const authenticate = (req, res, next) => {
 };
 
 // Wraps passport session creation to return a promise
-const login = (user, req) => {
+const passportLogin = (user, req) => {
     return new Promise((resolve) => {
         req.login(user, resolve);
     });
@@ -87,7 +87,7 @@ router.post('/login',
         req.body.username = canonicalize(req.body.displayname);
 
         // Authenticate
-        const user = await authenticate(req, res, next);
+        const user = await passportAuthenticate(req, res, next);
         if (!user) {
             // Log failure
             await fs.appendFile('auth.log', `${new Date().toISOString()} login ${req.ip}\n`);
@@ -95,7 +95,7 @@ router.post('/login',
         }
 
         // Create session
-        await login(user, req);
+        await passportLogin(user, req);
 
         // Set session vars
         req.session.passport.displayname = user.displayname;
@@ -116,7 +116,7 @@ router.post('/logout', (req, res) => {
 
 
 
-router.get('/whoami', requireAuth(), (req, res) => {
+router.get('/whoami', authenticate(), (req, res) => {
     res.status(200).json({
         username: req.username,
         displayname: req.displayname,

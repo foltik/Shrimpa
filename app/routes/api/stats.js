@@ -6,7 +6,7 @@ const Upload = require(ModelPath + 'Upload.js');
 const View = require(ModelPath + 'View.js');
 
 const verifyBody = require('../../util/verifyBody');
-const requireAuth = require('../../util/auth').requireAuth;
+const authenticate = require('../../util/auth/authenticateRequest');
 
 const uploadProps = [
     {name: 'after', type: 'date', optional: true},
@@ -14,7 +14,7 @@ const uploadProps = [
     {name: 'limit', type: 'number', min: 1, max: 10000, optional: true}
 ];
 
-router.get('/uploads', requireAuth('stats.get'), verifyBody(uploadProps), async (req, res) => {
+router.get('/uploads', authenticate('stats.get'), verifyBody(uploadProps), async (req, res) => {
     let constraints = {uploader: req.username};
 
     // Set date constraints if specified
@@ -55,7 +55,7 @@ const viewProps = [
     {name: 'limit', type: 'number', min: 1, max: 10000, optional: true}
 ];
 
-router.get('/views', requireAuth('stats.get'), verifyBody(viewProps), async (req, res) => {
+router.get('/views', authenticate('stats.get'), verifyBody(viewProps), async (req, res) => {
     let constraints = {uploader: req.username};
 
     // Set date constraints if specified

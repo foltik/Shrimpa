@@ -70,7 +70,7 @@ exports.registerUser = (user, agent) =>
 
 exports.whoami = (agent, key) =>
     agent.get('/api/auth/whoami')
-        .send({key: key});
+        .query({key: key});
 
 //---------------- TEST ENTRY CREATION ----------------//
 
@@ -173,7 +173,7 @@ exports.createKey = (key, agent) =>
 
 exports.deleteKey = (key, agent) =>
     agent.post('/api/keys/delete')
-        .send({key: key});
+        .send({keyid: key});
 
 exports.getKeys = (query, agent) =>
     agent.get('/api/keys/get')

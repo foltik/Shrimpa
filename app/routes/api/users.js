@@ -5,12 +5,12 @@ const ModelPath = '../../models/';
 const User = require(ModelPath + 'User.js');
 
 const verifyBody = require('../../util/verifyBody');
-const requireAuth = require('../../util/auth').requireAuth;
+const authenticate = require('../../util/auth/authenticateRequest');
 
 const getParams = [
     {name: 'username', type: 'string', optional: true},
     {name: 'displayname', type: 'string', optional: true}];
-router.get('/get', requireAuth('user.get'), verifyBody(getParams), async (req, res) => {
+router.get('/get', authenticate('user.get'), verifyBody(getParams), async (req, res) => {
     let query = {};
 
     if (req.body.username)
@@ -26,7 +26,7 @@ router.get('/get', requireAuth('user.get'), verifyBody(getParams), async (req, r
 });
 
 const banParams = [{name: 'username', type: 'string'}];
-router.post('/ban', requireAuth('user.ban'), verifyBody(banParams), async (req, res) => {
+router.post('/ban', authenticate('user.ban'), verifyBody(banParams), async (req, res) => {
     const user = await User.findOne({username: req.body.username});
     if (!user)
         return res.status(422).json({message: 'User not found.'});
@@ -41,7 +41,7 @@ router.post('/ban', requireAuth('user.ban'), verifyBody(banParams), async (req, 
 });
 
 const unbanParams = [{name: 'username', type: 'string'}];
-router.post('/unban', requireAuth('user.unban'), verifyBody(unbanParams), async (req, res) => {
+router.post('/unban', authenticate('user.unban'), verifyBody(unbanParams), async (req, res) => {
     const user = await User.findOne({username: req.body.username});
     if (!user)
         return res.status(422).json({message: 'User not found.'});

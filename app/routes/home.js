@@ -1,9 +1,9 @@
 const express = require('express');
 const router = express.Router();
 const path = require('path');
-const requireAuth = require('../util/auth').requireAuth;
+const authenticate = require('../util/auth/authenticateRequest');
 
-router.get('/', requireAuth(), function(req, res) {
+router.get('/', authenticate(), function(req, res) {
     res.sendFile(path.join(__dirname, '../../public/views', 'home.html'));
 });
 

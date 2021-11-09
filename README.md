@@ -1,13 +1,13 @@
 [![Build Status][build-image]][build-url] [![Coverage Status][coverage-image]][coverage-url]
-# Shimapan
-Shimapan is an easy to use file sharing website. It's easy to integrate shimapan into
+# Shrimpa
+Shrimpa is an easy to use file sharing website. It's easy to integrate shrimpa into
 most 3rd party utilities with the use of its RESTful API. The web panel gives users the
 means to manage their uploaded content and various other useful utilities.
 
 ## Installation
 Clone the latest release locally:
 ```bash
-$ git clone https://github.com/Foltik/Shimapan
+$ git clone https://github.com/Foltik/Shrimpa
 ```
 
 Next, install dependencies and build into `public/` with `npm`:
@@ -29,8 +29,8 @@ $ npm run watch
 ## Other Notes
 In order to contribute, please read the [Contributing](CONTRIBUTING.md) file.
 
-[build-image]: https://travis-ci.com/Foltik/Shimapan.svg?branch=master
-[build-url]: https://travis-ci.com/Foltik/Shimapan
+[build-image]: https://travis-ci.com/Foltik/Shrimpa.svg?branch=master
+[build-url]: https://travis-ci.com/Foltik/Shrimpa
 
-[coverage-image]: https://img.shields.io/codecov/c/github/Foltik/shimapan/master.svg
-[coverage-url]: https://codecov.io/gh/Foltik/Shimapan
+[coverage-image]: https://img.shields.io/codecov/c/github/Foltik/shrimpa/master.svg
+[coverage-url]: https://codecov.io/gh/Foltik/Shrimpa

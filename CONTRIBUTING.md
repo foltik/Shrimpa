@@ -1,6 +1,6 @@
 # Contributing
 ### Objectives
-Head over to the [projects page](https://github.com/Foltik/Shimapan/projects/). Here you'll find all the current
+Head over to the [projects page](https://github.com/Foltik/shrimpa/projects/). Here you'll find all the current
 and upcoming objectives of the current project. If you have any ideas or suggestions, add it to the relevant
 column in the project page and create an issue to discuss.
 ### Finding Work

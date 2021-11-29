@@ -1,12 +1,12 @@
 {
   "Server": {
     "port": 4433,
-    "hostname": "https://shimapan.rocks",
+    "hostname": "https://shrimpa.rocks",
     "tls": true,
     "trustProxy": []
   },
   "Database": {
-    "host": "mongodb://localhost:27017/shimapan"
+    "host": "mongodb://localhost:27017/shrimpa"
   },
   "Upload": {
     "path": "uploads",

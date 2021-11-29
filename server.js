@@ -42,7 +42,7 @@ app.use(session({
     cookie: {
         //secure: true,
         httpOnly: true,
-        //domain: 'shimapan.rocks',
+        //domain: 'shrimpa.rocks',
         maxAge: 1000 * 60 * 60
     }
 }));

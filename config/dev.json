@@ -6,7 +6,7 @@
     "trustProxy": []
   },
   "Database": {
-    "host": "mongodb://localhost:27017/shimapan-dev"
+    "host": "mongodb://localhost:27017/shrimpa-dev"
   },
   "Upload": {
     "path": "uploads-dev"

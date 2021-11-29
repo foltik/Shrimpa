@@ -91,20 +91,20 @@ angular.module('KeyCtrl', ['KeySvc', 'AuthSvc']).controller('KeyController', ['$
             'curl \\\n' +
             '  -F key=' + $scope.currKey.key + ' \\\n' +
             '  -F "file=@$1" \\\n' +
-            '  https://shimapan.rocks/api/upload \\\n' +
+            '  https://shrimpa.rocks/api/upload \\\n' +
             '  | grep -Po \'"\'"url"\'"\\s*:\\s*"\\K([^"]*)\'\n';
-        downloadData('text/x-shellscript', 'shimapan.rocks.sh', data);
+        downloadData('text/x-shellscript', 'shrimpa.rocks.sh', data);
     };
 
     $scope.downloadSharex = () => {
         const data = {
-            RequestURL: 'https://shimapan.rocks/api/upload',
+            RequestURL: 'https://shrimpa.rocks/api/upload',
             FileFormName: 'file',
             Arguments: {
                 key: $scope.currKey.key
             },
             URL: '$json:url$'
         };
-        downloadData('text/json', 'shimapan.rocks.sxcu', JSON.stringify(data));
+        downloadData('text/json', 'shrimpa.rocks.sxcu', JSON.stringify(data));
     };
 }]);
